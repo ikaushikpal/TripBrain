@@ -1,0 +1,61 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: spring-ai-pdf-qa
+  ai:
+    model:
+      embedding: ollama
+
+    google:
+      genai:
+        api-key: ${GEMINI_KEY}
+
+    ollama:
+      chat:
+        enabled: false
+        
+
+      base-url: http://localhost:11434
+      embedding:
+        options:
+          model: nomic-embed-text
+    vectorstore:
+      qdrant:
+        initialize-schema: true
+        
+  datasource:
+    url: jdbc:sqlite:db/chatmemory.db
+    driver-class-name: org.sqlite.JDBC
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+
+    properties:
+      hibernate:
+        dialect: org.hibernate.community.dialect.SQLiteDialect
+
+    show-sql: false
+
+#   sql:
+#     init:
+#       mode: always
+#       platform: sqlite
+#       separator: "^^^"
+logging:
+  level:
+    "[org.springframework.ai.chat.client.advisor]": DEBUG
+
+app:
+  upload:
+    base-dir: uploads
+  pdf:
+    public-base-url: /resources  # served via Spring's resource handler
+
+qdrant:
+  host: ${QDRANT_HOST}
+  api-key: ${QDRANT_KEY}
+tavily:
+  api-key: ${TAVILY_KEY}

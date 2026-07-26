@@ -1,0 +1,84 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.5.13'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.learn'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(25)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+ext {
+	set('springAiVersion', "1.1.4")
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	
+	// gemini chat model
+	implementation 'org.springframework.ai:spring-ai-starter-model-google-genai'
+	
+	implementation 'org.springframework.ai:spring-ai-starter-model-ollama'
+	
+	// gemini embedding model
+// Source: https://mvnrepository.com/artifact/org.springframework.ai/spring-ai-google-genai-embedding
+// implementation("org.springframework.ai:spring-ai-google-genai-embedding:1.1.0-M1")
+
+	// gRpc
+	implementation("io.grpc:grpc-netty-shaded:1.80.0")
+	
+	// spring rag	
+	implementation 'org.springframework.ai:spring-ai-rag'
+
+	// vector db
+	implementation 'org.springframework.ai:spring-ai-starter-vector-store-qdrant'
+	
+	// pdf reader
+	implementation 'org.springframework.ai:spring-ai-pdf-document-reader'
+	
+	// SQL chat memory
+	// implementation 'org.springframework.ai:spring-ai-starter-model-chat-memory-repository-jdbc'
+
+	// for sqlite
+  	runtimeOnly 'org.xerial:sqlite-jdbc'
+	implementation 'org.hibernate.orm:hibernate-community-dialects'
+
+	// jpa
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+  	testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
+
+	// hash password
+	implementation 'org.springframework.security:spring-security-crypto'
+	
+    // pdf generation
+    implementation("com.itextpdf:itext-core:9.6.0")
+
+    // load dot env similar
+    implementation("me.paulschwarz:spring-dotenv:5.1.0")
+    
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testCompileOnly 'org.projectlombok:lombok'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	testAnnotationProcessor 'org.projectlombok:lombok'
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
+	}
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
