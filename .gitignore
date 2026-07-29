@@ -26,6 +26,7 @@ backend/out/
 backend/uploads/
 backend/db/
 backend/.env
+backend/db/**
 .env
 
 # Frontend Build & Run
