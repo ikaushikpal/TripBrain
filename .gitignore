@@ -1,37 +1,39 @@
-HELP.md
-.gradle
-build/
-!gradle/wrapper/gradle-wrapper.jar
-!**/src/main/**/build/
-!**/src/test/**/build/
+# Root .gitignore for TripBrain
 
-### STS ###
-.apt_generated
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDEs/Editors
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+.settings/
 .classpath
-.factorypath
 .project
-.settings
+.factorypath
+.apt_generated/
 .springBeans
 .sts4-cache
-bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
 
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
-out/
-!**/src/main/**/out/
-!**/src/test/**/out/
+# Backend Build & Run
+backend/.gradle/
+backend/build/
+backend/bin/
+backend/out/
+backend/uploads/
+backend/db/
+backend/.env
+.env
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
+# Frontend Build & Run
+frontend/trip-brain-frontend-app/.angular/
+frontend/trip-brain-frontend-app/node_modules/
+frontend/trip-brain-frontend-app/dist/
+frontend/trip-brain-frontend-app/tmp/
+frontend/trip-brain-frontend-app/.sass-cache/
 
-### VS Code ###
-.vscode/
+# Local logs
+*.log

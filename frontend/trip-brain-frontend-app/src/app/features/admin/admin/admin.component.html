@@ -1,0 +1,186 @@
+<div class="flex flex-col min-h-screen">
+  <app-navbar />
+
+  <main class="flex-1 px-6 py-8 max-w-7xl mx-auto w-full">
+    <!-- Header -->
+    <div class="mb-8 flex items-center justify-between">
+      <div>
+        <div class="flex items-center gap-3 mb-1">
+          <div class="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/50 flex items-center justify-center">
+            <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            </svg>
+          </div>
+          <h1 class="text-2xl font-extrabold text-white">Admin Panel</h1>
+        </div>
+        <p class="text-gray-400 text-sm">Manage users, monitor activity, and control platform access.</p>
+      </div>
+      <button
+        (click)="loadUsers()"
+        class="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-800 border border-gray-700 text-gray-300 text-sm hover:border-gray-600 transition-all"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+        Refresh
+      </button>
+    </div>
+
+    <!-- Stats Strip -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+      <div class="bg-gray-900/60 border border-gray-800 rounded-xl p-4">
+        <p class="text-gray-500 text-xs font-medium mb-1">Total Users</p>
+        <p class="text-2xl font-extrabold text-white">{{ users().length }}</p>
+      </div>
+      <div class="bg-gray-900/60 border border-gray-800 rounded-xl p-4">
+        <p class="text-gray-500 text-xs font-medium mb-1">Active Users</p>
+        <p class="text-2xl font-extrabold text-emerald-400">{{ activeCount() }}</p>
+      </div>
+      <div class="bg-gray-900/60 border border-gray-800 rounded-xl p-4">
+        <p class="text-gray-500 text-xs font-medium mb-1">Blocked</p>
+        <p class="text-2xl font-extrabold text-red-400">{{ blockedCount() }}</p>
+      </div>
+      <div class="bg-gray-900/60 border border-gray-800 rounded-xl p-4">
+        <p class="text-gray-500 text-xs font-medium mb-1">Admins</p>
+        <p class="text-2xl font-extrabold text-amber-400">{{ adminCount() }}</p>
+      </div>
+    </div>
+
+    <!-- User Table -->
+    <div class="bg-gray-900/60 border border-gray-800 rounded-2xl overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-800">
+        <h2 class="text-white font-semibold">All Users</h2>
+      </div>
+
+      <!-- Loading State -->
+      @if (isLoading()) {
+        <div class="flex items-center justify-center py-16">
+          <div class="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      }
+
+      <!-- Table -->
+      @if (!isLoading()) {
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-gray-800">
+                <th class="text-left px-6 py-3 text-gray-500 font-medium text-xs uppercase tracking-wider">User</th>
+                <th class="text-left px-6 py-3 text-gray-500 font-medium text-xs uppercase tracking-wider">Role</th>
+                <th class="text-left px-6 py-3 text-gray-500 font-medium text-xs uppercase tracking-wider">API Calls</th>
+                <th class="text-left px-6 py-3 text-gray-500 font-medium text-xs uppercase tracking-wider">Last Login</th>
+                <th class="text-left px-6 py-3 text-gray-500 font-medium text-xs uppercase tracking-wider">Status</th>
+                <th class="text-right px-6 py-3 text-gray-500 font-medium text-xs uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-800/50">
+              @for (user of users(); track user.id) {
+                <tr class="hover:bg-gray-800/30 transition-colors">
+                  <!-- User Info -->
+                  <td class="px-6 py-4">
+                    <div class="flex items-center gap-3">
+                      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-amber-500 flex items-center justify-center text-sm font-bold text-white shrink-0">
+                        {{ (user.name || user.email).charAt(0).toUpperCase() }}
+                      </div>
+                      <div>
+                        <p class="text-white font-semibold">{{ user.name }}</p>
+                        <p class="text-gray-500 text-xs">{{ user.email }}</p>
+                      </div>
+                    </div>
+                  </td>
+
+                  <!-- Role Badge -->
+                  <td class="px-6 py-4">
+                    <span
+                      class="px-2.5 py-1 rounded-lg text-xs font-bold"
+                      [class.bg-amber-500]="user.role === 'ADMIN'"
+                      [class.text-amber-950]="user.role === 'ADMIN'"
+                      [class.bg-gray-700]="user.role !== 'ADMIN'"
+                      [class.text-gray-300]="user.role !== 'ADMIN'"
+                    >
+                      {{ user.role }}
+                    </span>
+                  </td>
+
+                  <!-- API Calls -->
+                  <td class="px-6 py-4 text-gray-300 font-mono">
+                    {{ user.apiCallCount ?? 0 }}
+                  </td>
+
+                  <!-- Last Login -->
+                  <td class="px-6 py-4 text-gray-400 text-xs">
+                    {{ user.lastLoginAt ? (user.lastLoginAt | date:'MMM d, y HH:mm') : 'Never' }}
+                  </td>
+
+                  <!-- Status Badge -->
+                  <td class="px-6 py-4">
+                    <span
+                      class="flex items-center gap-1.5 text-xs font-medium"
+                      [class.text-emerald-400]="!user.blocked"
+                      [class.text-red-400]="user.blocked"
+                    >
+                      <span
+                        class="w-2 h-2 rounded-full inline-block"
+                        [class.bg-emerald-400]="!user.blocked"
+                        [class.bg-red-400]="user.blocked"
+                      ></span>
+                      {{ user.blocked ? 'Blocked' : 'Active' }}
+                    </span>
+                  </td>
+
+                  <!-- Action Buttons -->
+                  <td class="px-6 py-4">
+                    @if (user.role !== 'ADMIN') {
+                      <div class="flex items-center justify-end gap-2">
+                        <button
+                          (click)="toggleBlock(user)"
+                          class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border"
+                          [class.border-red-700]="!user.blocked"
+                          [class.text-red-400]="!user.blocked"
+                          [class.hover:bg-red-950]="!user.blocked"
+                          [class.border-emerald-700]="user.blocked"
+                          [class.text-emerald-400]="user.blocked"
+                          [class.hover:bg-emerald-950]="user.blocked"
+                        >
+                          {{ user.blocked ? 'Unblock' : 'Block' }}
+                        </button>
+                        <button
+                          (click)="deleteUser(user)"
+                          class="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-400 border border-gray-700 hover:bg-gray-800 hover:text-red-400 hover:border-red-700 transition-all"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    } @else {
+                      <span class="text-xs text-gray-600 italic text-right block">protected</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  </main>
+</div>
+
+<!-- Custom Confirmation Modal -->
+@if (showConfirmModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md">
+    <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl">
+      <h3 class="text-lg font-bold text-white mb-2">{{ confirmTitle() }}</h3>
+      <p class="text-sm text-gray-400 mb-6 leading-relaxed">{{ confirmMessage() }}</p>
+      <div class="flex justify-end gap-3">
+        <button type="button" (click)="onConfirmCancel()"
+                class="px-4 py-2 rounded-xl text-sm font-semibold border border-gray-700 bg-gray-800 hover:bg-gray-700 text-white transition-all">
+          Cancel
+        </button>
+        <button type="button" (click)="onConfirmAccept()"
+                class="px-4 py-2 rounded-xl text-sm font-semibold bg-blue-600 hover:bg-blue-500 text-white transition-all">
+          Confirm
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -1,0 +1,129 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.5.13'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.learn'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(25)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+ext {
+	set('springAiVersion', "1.1.4")
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	implementation 'org.opensearch.client:opensearch-rest-client:2.8.0'
+	implementation 'org.springframework.ai:spring-ai-transformers'
+	
+	// gemini chat model
+	implementation 'org.springframework.ai:spring-ai-starter-model-google-genai'
+	
+	implementation 'org.springframework.ai:spring-ai-starter-model-openai'
+	
+	// gemini embedding model
+
+	// gRpc
+	implementation("io.grpc:grpc-netty-shaded:1.80.0")
+	
+	// spring rag	
+	implementation 'org.springframework.ai:spring-ai-rag'
+
+	// vector db
+	implementation 'org.springframework.ai:spring-ai-starter-vector-store-qdrant'
+	implementation 'org.springframework.ai:spring-ai-starter-vector-store-opensearch'
+	
+	// pdf reader
+	implementation 'org.springframework.ai:spring-ai-pdf-document-reader'
+	
+	// SQL chat memory
+	// implementation 'org.springframework.ai:spring-ai-starter-model-chat-memory-repository-jdbc'
+
+	// for postgresql
+	runtimeOnly 'org.postgresql:postgresql'
+
+	// jpa
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+	// caching
+	implementation 'org.springframework.boot:spring-boot-starter-cache'
+	implementation 'com.github.ben-manes.caffeine:caffeine'
+
+	// hash password
+	implementation 'org.springframework.security:spring-security-crypto'
+	
+    // pdf generation
+    implementation("com.itextpdf:itext-core:9.6.0")
+
+    // load dot env similar
+    implementation("me.paulschwarz:spring-dotenv:5.1.0")
+    
+    // AWS SDK v2 for S3 (Backblaze B2 compatible)
+    implementation 'software.amazon.awssdk:s3:2.25.10'
+    
+    // Apache Tika for document and mime-type parsing
+    implementation 'org.apache.tika:tika-core:3.0.0'
+    implementation 'org.apache.tika:tika-parsers-standard-package:3.0.0'
+    
+    // Tess4J for OCR
+    implementation 'net.sourceforge.tess4j:tess4j:5.11.0'
+    
+    // JJWT for JSON Web Token signature & parsing
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5'
+
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testCompileOnly 'org.projectlombok:lombok'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	testAnnotationProcessor 'org.projectlombok:lombok'
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
+	}
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+
+task buildFrontend(type: Exec) {
+    onlyIf { !project.hasProperty('skipFrontend') }
+    workingDir '../frontend/trip-brain-frontend-app'
+    inputs.dir '../frontend/trip-brain-frontend-app/src'
+    inputs.file '../frontend/trip-brain-frontend-app/package.json'
+    outputs.dir '../frontend/trip-brain-frontend-app/dist'
+
+    if (System.getProperty('os.name').toLowerCase().contains('windows')) {
+        commandLine 'cmd', '/c', 'npm install && npm run build'
+    } else {
+        commandLine 'sh', '-c', 'npm install && npm run build'
+    }
+}
+
+task copyFrontend(type: Copy) {
+    onlyIf { !project.hasProperty('skipFrontend') }
+    dependsOn buildFrontend
+    from '../frontend/trip-brain-frontend-app/dist/trip-brain-frontend-app/browser'
+    into 'src/main/resources/static'
+}
+
+if (!project.hasProperty('skipFrontend')) {
+    processResources.dependsOn copyFrontend
+}

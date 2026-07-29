@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  # =========================================================================
+  # TripBrain Unified Service (Spring Boot + Built Angular Frontend)
+  # =========================================================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: trip-brain-app
+    ports:
+      - "8080:8080"
+    environment:
+      # LLM APIs
+      - GEMINI_KEY=${GEMINI_KEY}
+      - GROQ_KEY=${GROQ_KEY}
+      - GROQ_MODEL=${GROQ_MODEL:-llama-3.3-70b-versatile}
+      - TAVILY_KEY=${TAVILY_KEY}
+      - UNSPLASH_ACCESS_KEY=${UNSPLASH_ACCESS_KEY}
+
+      # Database Configuration (defaults to your remote Aiven database)
+      - SPRING_DATASOURCE_URL=${DATABASE_URL}
+      - SPRING_DATASOURCE_USERNAME=${DATABASE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${DATABASE_PASSWORD}
+
+      # Vector Database Configuration (defaults to remote Opensearch/Qdrant)
+      - SPRING_AI_VECTORSTORE_TYPE=${VECTORSTORE_TYPE:-opensearch}
+      - SPRING_AI_VECTORSTORE_OPENSEARCH_URIS=${OPENSEARCH_URIS}
+      - SPRING_AI_VECTORSTORE_OPENSEARCH_USERNAME=${OPENSEARCH_USERNAME}
+      - SPRING_AI_VECTORSTORE_OPENSEARCH_PASSWORD=${OPENSEARCH_PASSWORD}
+      - SPRING_AI_VECTORSTORE_OPENSEARCH_INDEX_NAME=${OPENSEARCH_INDEX_NAME:-pdf-lookup-app}
+      - SPRING_AI_VECTORSTORE_QDRANT_HOST=${QDRANT_HOST}
+      - SPRING_AI_VECTORSTORE_QDRANT_API_KEY=${QDRANT_KEY}
+
+      # Cache Configuration (defaults to remote Valkey)
+      - SPRING_DATA_REDIS_URL=${REDIS_URL}
+
+      # Storage & Backblaze B2 Config
+      - B2_ACCESS_KEY_ID=${B2_ACCESS_KEY_ID}
+      - B2_SECRET_ACCESS_KEY=${B2_SECRET_ACCESS_KEY}
+      - B2_ENDPOINT=${B2_ENDPOINT}
+      - B2_REGION=${B2_REGION}
+      - B2_BUCKET_NAME=${B2_BUCKET_NAME}
+    env_file:
+      - backend/.env
+    volumes:
+      # Mount the local uploads directory to persist PDFs if running locally
+      - uploads_data:/app/uploads
+    restart: always
+
+volumes:
+  uploads_data:

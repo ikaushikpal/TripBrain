@@ -1,0 +1,112 @@
+server:
+  port: 8080
+
+spring:
+  config:
+    import: optional:file:.env[.properties]
+  data:
+    redis:
+      url: ${REDIS_URL}
+  application:
+    name: spring-ai-pdf-qa
+  ai:
+    google:
+      genai:
+        api-key: ${GEMINI_KEY}
+        embedding:
+          options:
+            model: models/gemini-embedding-2
+        chat:
+          options:
+            safety-settings:
+              - category: HARM_CATEGORY_HATE_SPEECH
+                threshold: BLOCK_LOW_AND_ABOVE
+              - category: HARM_CATEGORY_HARASSMENT
+                threshold: BLOCK_LOW_AND_ABOVE
+              - category: HARM_CATEGORY_SEXUALLY_EXPLICIT
+                threshold: BLOCK_LOW_AND_ABOVE
+              - category: HARM_CATEGORY_DANGEROUS_CONTENT
+                threshold: BLOCK_LOW_AND_ABOVE
+
+    openai:
+      api-key: ${GROQ_KEY}
+      base-url: https://api.groq.com/openai
+      embedding:
+        enabled: false
+      chat:
+        options:
+          model: ${GROQ_MODEL:llama-3.1-8b-instant}
+
+    vectorstore:
+      type: ${VECTORSTORE_TYPE:qdrant}
+      qdrant:
+        initialize-schema: true
+      opensearch:
+        uris: ${OPENSEARCH_URIS:http://localhost:9200}
+        username: ${OPENSEARCH_USERNAME:}
+        password: ${OPENSEARCH_PASSWORD:}
+        index-name: ${OPENSEARCH_INDEX_NAME:pdf-lookup-app}
+        
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/tripbrain}
+    username: ${DATABASE_USERNAME:postgres}
+    password: ${DATABASE_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+    show-sql: false
+
+  sql:
+    init:
+      mode: never
+
+#   sql:
+#     init:
+#       mode: always
+#       platform: sqlite
+#       separator: "^^^"
+logging:
+  level:
+    "[org.springframework.ai.chat.client.advisor]": DEBUG
+
+qdrant:
+  host: ${QDRANT_HOST}
+  api-key: ${QDRANT_KEY}
+tavily:
+  api-key: ${TAVILY_KEY}
+
+admin:
+  username: admin
+  email: admin@tripbrain.com
+  password: $2a$10$tZp65x5j4Z6H/K56QJz31uqLd/4f7E106d391y/06c278e906c278 # BCrypt hash of "admin123"
+
+app:
+  upload:
+    base-dir: uploads
+  pdf:
+    public-base-url: /resources  # served via Spring's resource handler
+  jwt:
+    secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+    access-token-expiration-ms: 3600000 # 1 hour
+    refresh-token-expiration-ms: 604800000 # 7 days
+
+aws:
+  s3:
+    endpoint: ${B2_ENDPOINT:https://s3.us-west-004.backblazeb2.com}
+    access-key: ${B2_ACCESS_KEY_ID:placeholder}
+    secret-key: ${B2_SECRET_ACCESS_KEY:placeholder}
+    bucket-name: ${B2_BUCKET_NAME:trip-brain-storage}
+    region: ${B2_REGION:us-west-004}
+
+tessdata:
+  path: ${TESSDATA_PATH:/opt/homebrew/Cellar/tesseract/5.5.0_1/share/tessdata}
+
+unsplash:
+  access-key: ${UNSPLASH_ACCESS_KEY:niT_Aaw0FaQHRQVqKFG1Rr5ix0vaCaY1lbc_dXp3uy4}

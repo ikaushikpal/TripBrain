@@ -1,0 +1,28 @@
+import { Injectable, signal } from '@angular/core';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class ThemeService {
+  darkMode = signal(true); // Default to dark mode (aesthetics)
+
+  toggleTheme() {
+    // Theme toggling is disabled as theme toggler is removed
+  }
+
+  applyTheme() {
+    if (typeof document !== 'undefined') {
+      const htmlEl = document.documentElement;
+      htmlEl.classList.add('dark');
+      htmlEl.style.colorScheme = 'dark';
+      localStorage.setItem('theme', 'dark');
+    }
+  }
+
+  initTheme() {
+    if (typeof window !== 'undefined') {
+      this.darkMode.set(true);
+      this.applyTheme();
+    }
+  }
+}

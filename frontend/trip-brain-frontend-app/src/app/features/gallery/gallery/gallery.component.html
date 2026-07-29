@@ -1,0 +1,125 @@
+<div class="flex flex-col min-h-screen">
+  <app-navbar />
+
+  <main class="flex-1 px-6 py-8 max-w-7xl mx-auto w-full">
+    <!-- Hero Header -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-extrabold text-white tracking-tight">Shared Trip Gallery</h1>
+      <p class="text-gray-400 mt-1">Explore AI-planned itineraries shared by the community. Fork any trip to customize it with your own AI agent.</p>
+    </div>
+
+    <!-- Search + Filter Bar -->
+    <div class="mb-6 flex items-center gap-3">
+      <div class="relative flex-1 max-w-md">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input
+          id="gallery-search"
+          type="text"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="onSearch($event)"
+          placeholder="Search by destination..."
+          class="w-full pl-10 pr-4 py-2.5 bg-gray-800 border border-gray-700 text-white rounded-xl placeholder-gray-500 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+        />
+      </div>
+      <span class="text-gray-500 text-sm">{{ filtered().length }} trips</span>
+    </div>
+
+    <!-- Loading Skeleton -->
+    @if (isLoading()) {
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        @for (i of [1,2,3,4,5,6]; track i) {
+          <div class="rounded-2xl bg-gray-800/50 border border-gray-700 animate-pulse h-64"></div>
+        }
+      </div>
+    }
+
+    <!-- Empty State -->
+    @if (!isLoading() && filtered().length === 0) {
+      <div class="flex flex-col items-center justify-center py-20 gap-4 text-center">
+        <div class="w-16 h-16 bg-gray-800 rounded-2xl flex items-center justify-center">
+          <svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"/>
+          </svg>
+        </div>
+        <p class="text-gray-400 font-medium">No public trips found</p>
+        <p class="text-gray-600 text-sm">Be the first to share a trip from your dashboard!</p>
+      </div>
+    }
+
+    <!-- Trips Grid -->
+    @if (!isLoading() && filtered().length > 0) {
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        @for (trip of filtered(); track trip.id) {
+          <div
+            class="group relative rounded-2xl bg-gray-900/80 border border-gray-800 overflow-hidden hover:border-blue-600/50 hover:shadow-xl hover:shadow-blue-900/20 transition-all duration-300"
+          >
+            <!-- Thumbnail Preview -->
+            <div class="h-44 bg-gradient-to-br from-blue-900/30 to-gray-800 flex items-center justify-center overflow-hidden relative">
+              @if (trip.thumbnailUrl) {
+                <img
+                  [src]="'http://localhost:8080' + trip.thumbnailUrl"
+                  [alt]="trip.destination + ' itinerary thumbnail'"
+                  class="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300"
+                />
+              } @else {
+                <div class="text-6xl select-none">🗺️</div>
+              }
+
+              <!-- Hover Overlay -->
+              <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-3">
+                <a
+                  [href]="'http://localhost:8080' + trip.publicUrl"
+                  target="_blank"
+                  class="px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white text-xs font-semibold hover:bg-white/20 transition-colors backdrop-blur-sm flex items-center gap-1.5"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                  </svg>
+                  Preview PDF
+                </a>
+                <button
+                  (click)="forkTrip(trip)"
+                  [disabled]="forkingId() === trip.id"
+                  class="px-3 py-2 rounded-lg bg-blue-600/80 border border-blue-500/50 text-white text-xs font-semibold hover:bg-blue-600 transition-colors backdrop-blur-sm flex items-center gap-1.5 disabled:opacity-50"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"/>
+                  </svg>
+                  {{ forkingId() === trip.id ? 'Forking...' : 'Fork Trip' }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Card Info -->
+            <div class="p-4">
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <h3 class="text-white font-bold text-base truncate">{{ trip.destination }}</h3>
+                  <p class="text-gray-500 text-xs mt-0.5">{{ trip.generatedAt | date:'MMMM d, y' }}</p>
+                </div>
+                <span class="shrink-0 px-2 py-0.5 rounded-md text-xs font-semibold bg-blue-600/20 border border-blue-600/50 text-blue-400">
+                  Public
+                </span>
+              </div>
+              <!-- Tags List -->
+              @if (trip.tags) {
+                <div class="flex flex-wrap gap-1.5 mt-3">
+                  @for (tag of trip.tags.split(','); track tag) {
+                    <span
+                      class="px-2 py-0.5 rounded-lg text-[10px] font-medium bg-slate-800/80 border border-slate-700/60 text-slate-300"
+                    >
+                      #{{ tag }}
+                    </span>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </main>
+</div>

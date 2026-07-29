@@ -1,0 +1,48 @@
+<nav class="sticky top-0 z-50 px-6 py-4 flex justify-between items-center transition-all duration-300 border-b backdrop-blur-md"
+     [class.bg-surface-900]="isDark()"
+     [class.border-slate-800]="isDark()"
+     [class.text-white]="isDark()"
+     [class.bg-white]="!isDark()"
+     [class.border-slate-200]="!isDark()"
+     [class.text-slate-900]="!isDark()">
+  
+  <a routerLink="/" class="flex items-center gap-3">
+    <!-- Logo -->
+    <div class="w-10 h-10 rounded-xl overflow-hidden shadow-lg shadow-blue-500/20">
+      <img src="/images/logo.jpeg" class="w-full h-full object-cover" alt="Logo" />
+    </div>
+    <span class="font-extrabold text-2xl tracking-tight text-white">
+      TripBrain
+    </span>
+  </a>
+
+  <!-- Nav Links -->
+  <div class="flex items-center gap-6 font-medium">
+    <a routerLink="/dashboard" routerLinkActive="text-blue-500 border-b-2 border-blue-500 pb-1" class="hover:text-blue-500 transition-colors duration-200">
+      Dashboard
+    </a>
+    <a routerLink="/gallery" routerLinkActive="text-blue-500 border-b-2 border-blue-500 pb-1" class="hover:text-blue-500 transition-colors duration-200">
+      Shared Gallery
+    </a>
+    @if (authService.isAdmin()) {
+      <a routerLink="/admin" routerLinkActive="text-amber-500 border-b-2 border-amber-500 pb-1" class="hover:text-amber-500 transition-colors duration-200 text-amber-500">
+        Admin Panel
+      </a>
+    }
+  </div>
+
+  <!-- User Info + Theme + Logout -->
+  <div class="flex items-center gap-4">
+    @if (authService.isAuthenticated()) {
+      <div class="text-right hidden sm:block">
+        <p class="font-semibold text-sm">{{ authService.currentUser()?.name }}</p>
+        <p class="text-xs transition-colors" [class.text-gray-400]="isDark()" [class.text-gray-500]="!isDark()">{{ authService.currentUser()?.email }}</p>
+      </div>
+      
+      <button (click)="logout()"
+              class="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 border border-slate-700 bg-slate-800 hover:bg-red-950/40 hover:border-red-800 text-white">
+        Log Out
+      </button>
+    }
+  </div>
+</nav>
