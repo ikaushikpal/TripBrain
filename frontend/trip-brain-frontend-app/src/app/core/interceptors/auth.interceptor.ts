@@ -19,7 +19,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const token = authService.getAccessToken();
 
   let authReq = req;
-  if (token && (req.url.includes('/api/') || req.url.startsWith('/api'))) {
+  if (token && req.url.includes('/api')) {
     authReq = addTokenHeader(req, token);
   }
 

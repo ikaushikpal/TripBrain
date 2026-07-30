@@ -1,4 +1,4 @@
-import { Component, signal, Input, OnChanges, SimpleChanges, inject, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
+import { Component, signal, Input, Output, EventEmitter, OnChanges, SimpleChanges, inject, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
@@ -24,6 +24,7 @@ export interface AssistantBuffer {
 })
 export class ChatWindowComponent implements OnChanges, AfterViewChecked {
   @Input() conversationId: string | null = null;
+  @Output() toggleSidebar = new EventEmitter<void>();
   @ViewChild('messagesContainer') messagesContainer!: ElementRef;
 
   private readonly chatService = inject(ChatService);

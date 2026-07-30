@@ -12,8 +12,16 @@ import { ChatWindowComponent } from '../chat-window/chat-window.component';
 })
 export class DashboardComponent {
   activeConversationId = signal<string | null>(null);
+  sidebarOpen = signal(typeof window !== 'undefined' ? window.innerWidth > 768 : true);
 
   onConversationSelected(id: string) {
     this.activeConversationId.set(id);
+    if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+      this.sidebarOpen.set(false); // Only auto-close sidebar on mobile after selection
+    }
+  }
+
+  toggleSidebar() {
+    this.sidebarOpen.set(!this.sidebarOpen());
   }
 }

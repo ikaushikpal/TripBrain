@@ -1,4 +1,4 @@
-import { Component, signal, inject, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, signal, inject, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ChatService, Conversation } from '../../../core/services/chat.service';
@@ -12,7 +12,9 @@ import { NotificationService } from '../../../core/services/notification.service
   templateUrl: './sidebar.component.html'
 })
 export class SidebarComponent implements OnInit {
+  @Input() isOpen = false;
   @Output() conversationSelected = new EventEmitter<string>();
+  @Output() closeSidebar = new EventEmitter<void>();
 
   private readonly chatService = inject(ChatService);
   private readonly authService = inject(AuthService);

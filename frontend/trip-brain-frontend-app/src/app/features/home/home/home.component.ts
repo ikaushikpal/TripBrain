@@ -19,6 +19,12 @@ export class HomeComponent implements OnInit {
   readonly themeService = inject(ThemeService);
   readonly baseUrl = BASE_URL;
 
+  getAuthenticatedUrl(url: string | null | undefined): string {
+    if (!url) return '';
+    const token = this.authService.getAccessToken();
+    return token ? `${this.baseUrl}${url}?token=${encodeURIComponent(token)}` : `${this.baseUrl}${url}`;
+  }
+
   publicTrips = signal<PublicTrip[]>([]);
   isLoading = signal(true);
 

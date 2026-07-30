@@ -17,6 +17,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.scheduling.annotation.EnableAsync;
 
 import com.learn.springai.advisor.ConversationPersistenceAdvisor;
+import com.learn.springai.repository.DbChatMemoryRepository;
 import com.learn.springai.advisor.ContentModerationAdvisor;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import com.learn.springai.tool.CountryTool;
@@ -29,170 +30,6 @@ import com.learn.springai.tool.TransportTool;
 import com.learn.springai.tool.TripRequestTool;
 import com.learn.springai.tool.VisaTool;
 import com.learn.springai.tool.WeatherTool;
-
-// @Configuration
-// public class ClientClientConfig {
-
-//     @Value("classpath:/promptTemplates/startPrompt.st")
-//     private Resource startSystemPrompt;
-
-//     /*
-//      * Explicit Gemini Builder Bean
-//      * Prevents Spring confusion between Gemini/Ollama Chat Models
-//      */
-//     @Bean
-//     @Primary
-//     ChatClient.Builder geminiChatClientBuilder(
-//             GoogleGenAiChatModel geminiChatModel) {
-//         ChatOptions chatOptions = ChatOptions.builder()
-//                 // .model("gemma-3-27b-it")
-//                 .model("gemini-3.1-flash-lite-preview")
-//                 .temperature(0.7)
-//                 .build();
-
-//         return ChatClient.builder(geminiChatModel).defaultOptions(chatOptions);
-//     }
-
-//     // @Bean
-//     // ChatClient geminiChatClient(
-//     // ChatClient.Builder chatClientBuilder,
-//     // ChatMemory chatMemory,
-//     // ConversationPersistenceAdvisor conversationPersistenceAdvisor,
-//     // RetrievalAugmentationAdvisor retrievalAugmentationAdvisor,
-//     // TripRequestTool tripRequestTool,
-//     // HotelTool hotelTool,
-//     // PlaceTool placeTool,
-//     // RestaurantTool restaurantTool,
-//     // TransportTool transportTool,
-//     // WeatherTool weatherTool) {
-
-//     // Advisor loggerAdvisor = new SimpleLoggerAdvisor();
-
-//     // Advisor memoryAdvisor = MessageChatMemoryAdvisor.builder(chatMemory)
-//     // .build();
-
-//     // return chatClientBuilder.clone()
-//     // .defaultSystem(systemPromptTemplate)
-//     // .defaultTools(
-//     // tripRequestTool,
-//     // placeTool,
-//     // restaurantTool,
-//     // hotelTool,
-//     // transportTool,
-//     // weatherTool)
-//     // .defaultAdvisors(
-//     // List.of(
-//     // retrievalAugmentationAdvisor,
-//     // memoryAdvisor,
-//     // conversationPersistenceAdvisor,
-//     // loggerAdvisor))
-//     // .build();
-//     // }
-
-//     // @Bean
-//     // RetrievalAugmentationAdvisor retrievalAugmentationAdvisor(
-//     // VectorStore vectorStore,
-//     // @Qualifier("geminiChatClientBuilder") ChatClient.Builder chatClientBuilder,
-//     // DocumentRetriever documentRetriever) {
-
-//     // return RetrievalAugmentationAdvisor.builder()
-
-//     // // .queryTransformers(
-//     // // TranslationQueryTransformer.builder()
-//     // // .chatClientBuilder(chatClientBuilder.clone())
-//     // // .targetLanguage("en")
-//     // // .build()
-//     // // )
-//     // // .documentRetriever(request -> {
-//     // // String conversationId = (String) request.context().get(CONVERSATION_ID);
-
-//     // // System.out.println("\n==== RETRIEVER ====");
-//     // // System.out.println("Query: " + request.text());
-//     // // System.out.println("ConversationId: " + conversationId);
-
-//     // // var filteredDocs = vectorStore.similaritySearch(
-//     // // SearchRequest.builder()
-//     // // .query(request.text())
-//     // // .topK(5)
-//     // // .similarityThreshold(0.4)
-//     // // .filterExpression(
-//     // // new FilterExpressionBuilder()
-//     // // .eq("conversation_id", conversationId)
-//     // // .build())
-//     // // .build());
-
-//     // // System.out.println("WITH FILTER: " + filteredDocs.size());
-
-//     // // filteredDocs.forEach(doc -> {
-//     // // System.out.println("----- DOC -----");
-//     // // System.out.println(doc.getText());
-//     // // System.out.println(doc.getMetadata());
-//     // // });
-
-//     // // return filteredDocs;
-//     // // })
-
-//     // // .documentPostProcessors(
-//     // // PIIMaskingDocumentPostProcessor.builder()
-//     // // .build())
-//     // .documentRetriever(documentRetriever)
-//     // .build();
-//     // }
-
-//     @Bean
-//     ChatMemory chatMemory(SqliteChatMemoryRepository repository) {
-//         return MessageWindowChatMemory.builder()
-//                 .chatMemoryRepository(repository)
-//                 .maxMessages(20)
-//                 .build();
-//     }
-
-//     @Bean
-//     public ChatClient geminiChatClient(
-//             ChatClient.Builder chatClientBuilder,
-//             ChatMemory chatMemory,
-//             ConversationPersistenceAdvisor conversationPersistenceAdvisor,
-
-//             // Tools
-//             TripRequestTool tripRequestTool,
-//             HotelTool hotelTool,
-//             PlaceTool placeTool,
-//             RestaurantTool restaurantTool,
-//             TransportTool transportTool,
-//             WeatherTool weatherTool,
-//             NewsTool newsTool,
-//             CurrencyTool currencyTool,
-//             VisaTool visaTool,
-//             CountryTool countryTool) {
-
-//         Advisor loggerAdvisor = new SimpleLoggerAdvisor();
-
-//         Advisor memoryAdvisor = MessageChatMemoryAdvisor.builder(chatMemory)
-//                 .build();
-
-//         return chatClientBuilder.clone()
-//                 .defaultSystem(startSystemPrompt)
-//                 .defaultTools(
-//                         tripRequestTool,
-//                         placeTool,
-//                         restaurantTool,
-//                         hotelTool,
-//                         transportTool,
-//                         weatherTool,
-//                         newsTool,
-//                         currencyTool,
-//                         visaTool,
-//                         countryTool)
-//                 .defaultAdvisors(
-//                         List.of(
-//                                 memoryAdvisor,
-//                                 conversationPersistenceAdvisor,
-//                                 loggerAdvisor))
-
-//                 .build();
-//     }
-// }
-
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @Configuration
@@ -440,13 +277,16 @@ public class ClientClientConfig {
 
         public static class UseLocalEmbeddingCondition implements org.springframework.context.annotation.Condition {
                 @Override
-                public boolean matches(org.springframework.context.annotation.ConditionContext context, org.springframework.core.type.AnnotatedTypeMetadata metadata) {
+                public boolean matches(org.springframework.context.annotation.ConditionContext context,
+                                org.springframework.core.type.AnnotatedTypeMetadata metadata) {
                         String apiKey = context.getEnvironment().getProperty("spring.ai.google.genai.api-key");
                         String geminiKey = context.getEnvironment().getProperty("GEMINI_KEY");
-                        
-                        boolean noApiKey = apiKey == null || apiKey.trim().isEmpty() || "XXX".equals(apiKey.trim()) || "${GEMINI_KEY}".equals(apiKey.trim());
-                        boolean noGeminiKey = geminiKey == null || geminiKey.trim().isEmpty() || "XXX".equals(geminiKey.trim());
-                        
+
+                        boolean noApiKey = apiKey == null || apiKey.trim().isEmpty() || "XXX".equals(apiKey.trim())
+                                        || "${GEMINI_KEY}".equals(apiKey.trim());
+                        boolean noGeminiKey = geminiKey == null || geminiKey.trim().isEmpty()
+                                        || "XXX".equals(geminiKey.trim());
+
                         return noApiKey && noGeminiKey;
                 }
         }

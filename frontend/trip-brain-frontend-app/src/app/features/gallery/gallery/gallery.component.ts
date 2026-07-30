@@ -20,6 +20,12 @@ export class GalleryComponent implements OnInit {
   private readonly notificationService = inject(NotificationService);
   readonly baseUrl = BASE_URL;
 
+  getAuthenticatedUrl(url: string | null | undefined): string {
+    if (!url) return '';
+    const token = this.authService.getAccessToken();
+    return token ? `${this.baseUrl}${url}?token=${encodeURIComponent(token)}` : `${this.baseUrl}${url}`;
+  }
+
   trips = signal<PublicTrip[]>([]);
   searchQuery = signal('');
   isLoading = signal(true);

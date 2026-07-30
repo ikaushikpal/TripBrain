@@ -18,6 +18,7 @@ Thumbs.db
 .springBeans
 .sts4-cache
 
+
 # Backend Build & Run
 backend/.gradle/
 backend/build/
@@ -28,6 +29,8 @@ backend/db/
 backend/.env
 backend/db/**
 .env
+backend/src/main/resources/static/**
+
 
 # Frontend Build & Run
 frontend/trip-brain-frontend-app/.angular/

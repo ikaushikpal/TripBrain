@@ -1,4 +1,4 @@
-package com.learn.springai.config;
+package com.learn.springai.repository;
 
 import java.util.Collections;
 import java.util.List;
@@ -10,7 +10,6 @@ import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.stereotype.Component;
 
 import com.learn.springai.model.ChatMessage;
-import com.learn.springai.repository.ChatMessageRepository;
 
 import lombok.RequiredArgsConstructor;
 

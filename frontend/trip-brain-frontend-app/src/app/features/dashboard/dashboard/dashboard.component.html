@@ -1,13 +1,29 @@
-<div class="flex flex-col h-screen overflow-hidden">
+<div class="flex flex-col h-screen overflow-hidden relative">
   <app-navbar />
 
-  <div class="flex flex-1 overflow-hidden">
+  <div class="flex flex-1 overflow-hidden relative">
+    <!-- Mobile Backdrop overlay when sidebar is open -->
+    @if (sidebarOpen()) {
+      <div 
+        (click)="sidebarOpen.set(false)" 
+        class="fixed inset-0 bg-black/50 z-45 md:hidden backdrop-blur-xs transition-opacity duration-200"
+      ></div>
+    }
+
     <!-- Sidebar -->
-    <app-sidebar (conversationSelected)="onConversationSelected($event)" />
+    <app-sidebar 
+      [isOpen]="sidebarOpen()" 
+      (closeSidebar)="sidebarOpen.set(false)"
+      (conversationSelected)="onConversationSelected($event)" 
+    />
 
     <!-- Main Chat Panel -->
     <main class="flex-1 flex flex-col overflow-hidden">
-      <app-chat-window [conversationId]="activeConversationId()" class="flex-1 flex flex-col overflow-hidden" />
+      <app-chat-window 
+        [conversationId]="activeConversationId()" 
+        (toggleSidebar)="toggleSidebar()"
+        class="flex-1 flex flex-col overflow-hidden" 
+      />
     </main>
   </div>
 </div>
