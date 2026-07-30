@@ -433,7 +433,21 @@ public class ClientClientConfig {
 
         @Bean
         @Primary
+        @org.springframework.context.annotation.Conditional(UseLocalEmbeddingCondition.class)
         public org.springframework.ai.embedding.EmbeddingModel primaryEmbeddingModel() {
                 return new org.springframework.ai.transformers.TransformersEmbeddingModel();
+        }
+
+        public static class UseLocalEmbeddingCondition implements org.springframework.context.annotation.Condition {
+                @Override
+                public boolean matches(org.springframework.context.annotation.ConditionContext context, org.springframework.core.type.AnnotatedTypeMetadata metadata) {
+                        String apiKey = context.getEnvironment().getProperty("spring.ai.google.genai.api-key");
+                        String geminiKey = context.getEnvironment().getProperty("GEMINI_KEY");
+                        
+                        boolean noApiKey = apiKey == null || apiKey.trim().isEmpty() || "XXX".equals(apiKey.trim()) || "${GEMINI_KEY}".equals(apiKey.trim());
+                        boolean noGeminiKey = geminiKey == null || geminiKey.trim().isEmpty() || "XXX".equals(geminiKey.trim());
+                        
+                        return noApiKey && noGeminiKey;
+                }
         }
 }
