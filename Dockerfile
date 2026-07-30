@@ -15,7 +15,7 @@ RUN npm run build
 # ==========================================================
 # Stage 2: Build the Spring Boot backend
 # ==========================================================
-FROM eclipse-temurin:25-jdk-alpine AS backend-builder
+FROM eclipse-temurin:25-jdk AS backend-builder
 WORKDIR /app
 
 # Copy gradle wrapper and project descriptors
@@ -42,7 +42,7 @@ RUN ./gradlew bootJar -PskipFrontend=true -x test --no-daemon
 # ==========================================================
 # Stage 3: Package lightweight runtime container JRE
 # ==========================================================
-FROM eclipse-temurin:25-jre-alpine
+FROM eclipse-temurin:25-jre
 WORKDIR /app
 
 # Copy the built jar file
