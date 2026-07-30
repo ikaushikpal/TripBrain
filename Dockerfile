@@ -53,4 +53,4 @@ RUN mkdir -p uploads/final_trip_pdfs
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-Xmx384m", "-XX:+UseSerialGC", "-jar", "app.jar"]
