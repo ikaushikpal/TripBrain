@@ -6,6 +6,8 @@ import { ChatService, PublicTrip } from '../../../core/services/chat.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
 
+import { BASE_URL } from '../../../core/constants';
+
 @Component({
   selector: 'app-gallery',
   standalone: true,
@@ -16,6 +18,7 @@ export class GalleryComponent implements OnInit {
   private readonly chatService = inject(ChatService);
   private readonly authService = inject(AuthService);
   private readonly notificationService = inject(NotificationService);
+  readonly baseUrl = BASE_URL;
 
   trips = signal<PublicTrip[]>([]);
   searchQuery = signal('');

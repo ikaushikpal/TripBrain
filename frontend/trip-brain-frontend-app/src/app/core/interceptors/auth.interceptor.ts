@@ -1,13 +1,20 @@
-import { HttpInterceptorFn, HttpRequest, HttpHandlerFn, HttpEvent, HttpErrorResponse } from '@angular/common/http';
+import { HttpInterceptorFn, HttpRequest, HttpHandlerFn, HttpEvent, HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { AuthService } from '../services/auth.service';
-import { Observable, throwError, BehaviorSubject } from 'rxjs';
+import { Observable, throwError, BehaviorSubject, of } from 'rxjs';
 import { catchError, switchMap, filter, take } from 'rxjs/operators';
 
 let isRefreshing = false;
 const refreshTokenSubject = new BehaviorSubject<string | null>(null);
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
+  if (typeof window === 'undefined') {
+    // Return empty list by default for GET list endpoints, otherwise empty object
+    const isGet = req.method === 'GET';
+    const mockBody = isGet ? [] : {};
+    return of(new HttpResponse({ status: 200, body: mockBody }));
+  }
+
   const authService = inject(AuthService);
   const token = authService.getAccessToken();
 

@@ -186,7 +186,7 @@
               <!-- Thumbnail preview -->
               <div class="h-40 relative flex items-center justify-center bg-gradient-to-br from-blue-900/10 to-amber-900/10 overflow-hidden">
                 @if (trip.thumbnailUrl) {
-                  <img [src]="'http://localhost:8080' + trip.thumbnailUrl" [alt]="trip.destination"
+                  <img [src]="baseUrl + trip.thumbnailUrl" [alt]="trip.destination"
                     class="w-full h-full object-contain p-2" />
                 } @else {
                   <span class="text-5xl">🗺️</span>
@@ -194,7 +194,7 @@
 
                 <!-- Hover Overlay -->
                 <div class="absolute inset-0 bg-surface-950/70 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
-                  <a [href]="'http://localhost:8080' + trip.publicUrl" target="_blank"
+                  <a [href]="baseUrl + trip.publicUrl" target="_blank"
                     class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition-all shadow-lg flex items-center gap-1.5">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

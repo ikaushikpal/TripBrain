@@ -7,6 +7,7 @@ import { NotificationService } from '../../../core/services/notification.service
 import { MapOverlayComponent } from '../../../shared/components/map-overlay/map-overlay.component';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { marked } from 'marked';
+import { BASE_URL } from '../../../core/constants';
 
 export interface AssistantBuffer {
   role: 'ASSISTANT';
@@ -604,7 +605,7 @@ export class ChatWindowComponent implements OnChanges, AfterViewChecked {
   downloadPdfFile(url: string, destination: string) {
     if (!this.conversationId) {
       if (url) {
-        window.open(`http://localhost:8080${url}`, '_blank');
+        window.open(`${BASE_URL}${url}`, '_blank');
       }
       return;
     }
@@ -616,7 +617,7 @@ export class ChatWindowComponent implements OnChanges, AfterViewChecked {
       error: (err) => {
         console.error("Failed to fetch direct download url, falling back to redirect:", err);
         const token = this.authService.getAccessToken();
-        const downloadUrl = `http://localhost:8080${url}` + (token ? `?token=${encodeURIComponent(token)}` : '');
+        const downloadUrl = `${BASE_URL}${url}` + (token ? `?token=${encodeURIComponent(token)}` : '');
         window.open(downloadUrl, '_blank');
       }
     });

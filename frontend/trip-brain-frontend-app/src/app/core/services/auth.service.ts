@@ -17,13 +17,15 @@ export interface LoginResponse {
   user: User;
 }
 
+import { BASE_API_URL } from '../constants';
+
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
-  private readonly apiUrl = 'http://localhost:8080/api';
+  private readonly apiUrl = BASE_API_URL;
 
   readonly currentUser = signal<User | null>(null);
   readonly isAuthenticated = computed(() => this.currentUser() !== null);

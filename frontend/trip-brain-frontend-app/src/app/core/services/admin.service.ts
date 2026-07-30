@@ -3,13 +3,15 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { User, AuthService } from './auth.service';
 
+import { BASE_API_URL } from '../constants';
+
 @Injectable({
   providedIn: 'root'
 })
 export class AdminService {
   private readonly http = inject(HttpClient);
   private readonly auth = inject(AuthService);
-  private readonly apiUrl = 'http://localhost:8080/api/admin';
+  private readonly apiUrl = `${BASE_API_URL}/admin`;
 
   private getHeaders(): HttpHeaders {
     const adminId = this.auth.currentUser()?.id || '';

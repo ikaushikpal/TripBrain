@@ -33,13 +33,15 @@ export interface PublicTrip {
   tags?: string;
 }
 
+import { BASE_API_URL } from '../constants';
+
 @Injectable({
   providedIn: 'root'
 })
 export class ChatService {
   private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
-  private readonly apiUrl = 'http://localhost:8080/api';
+  private readonly apiUrl = BASE_API_URL;
   public readonly conversationUpdated$ = new EventEmitter<void>();
 
   getUserConversations(): Observable<Conversation[]> {

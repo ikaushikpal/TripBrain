@@ -4,6 +4,7 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import { ChatService, ChatMessage, Conversation } from '../../../core/services/chat.service';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { marked } from 'marked';
+import { BASE_URL } from '../../../core/constants';
 
 @Component({
   selector: 'app-share-chat',
@@ -174,7 +175,7 @@ export class ShareChatComponent implements OnInit {
     const convId = this.conversationId();
     if (!convId) {
       if (url) {
-        window.open(`http://localhost:8080${url}`, '_blank');
+        window.open(`${BASE_URL}${url}`, '_blank');
       }
       return;
     }
@@ -185,7 +186,7 @@ export class ShareChatComponent implements OnInit {
       },
       error: (err) => {
         console.error("Failed to fetch direct download url, falling back to redirect:", err);
-        const downloadUrl = `http://localhost:8080${url}`;
+        const downloadUrl = `${BASE_URL}${url}`;
         window.open(downloadUrl, '_blank');
       }
     });

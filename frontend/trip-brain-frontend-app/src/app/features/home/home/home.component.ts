@@ -5,6 +5,8 @@ import { ChatService, PublicTrip } from '../../../core/services/chat.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ThemeService } from '../../../core/services/theme.service';
 
+import { BASE_URL } from '../../../core/constants';
+
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -15,6 +17,7 @@ export class HomeComponent implements OnInit {
   readonly chatService = inject(ChatService);
   readonly authService = inject(AuthService);
   readonly themeService = inject(ThemeService);
+  readonly baseUrl = BASE_URL;
 
   publicTrips = signal<PublicTrip[]>([]);
   isLoading = signal(true);
