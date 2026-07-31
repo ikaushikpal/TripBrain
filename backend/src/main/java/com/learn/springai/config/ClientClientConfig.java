@@ -263,9 +263,17 @@ public class ClientClientConfig {
         }
 
         @Bean
-        public org.springframework.boot.web.client.RestClientCustomizer restClientCustomizer() {
+        public java.net.http.HttpClient sharedHttpClient() {
+                return java.net.http.HttpClient.newBuilder()
+                                .connectTimeout(java.time.Duration.ofSeconds(15))
+                                .followRedirects(java.net.http.HttpClient.Redirect.NORMAL)
+                                .build();
+        }
+
+        @Bean
+        public org.springframework.boot.web.client.RestClientCustomizer restClientCustomizer(java.net.http.HttpClient sharedHttpClient) {
                 return restClientBuilder -> restClientBuilder
-                                .requestFactory(new org.springframework.http.client.JdkClientHttpRequestFactory());
+                                .requestFactory(new org.springframework.http.client.JdkClientHttpRequestFactory(sharedHttpClient));
         }
 
         @Bean
