@@ -53,4 +53,4 @@ RUN mkdir -p uploads/final_trip_pdfs
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-Xms128m", "-Xmx256m", "-Xss256k", "-XX:MaxMetaspaceSize=100m", "-XX:ReservedCodeCacheSize=64m", "-XX:CICompilerCount=2", "-XX:+UseSerialGC", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-Xms128m", "-Xmx192m", "-Xss256k", "-XX:MaxMetaspaceSize=180m", "-XX:ReservedCodeCacheSize=64m", "-XX:CICompilerCount=2", "-XX:+UseSerialGC", "-jar", "app.jar"]
