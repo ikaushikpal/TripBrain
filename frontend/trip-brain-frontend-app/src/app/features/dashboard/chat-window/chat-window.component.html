@@ -9,6 +9,7 @@
       <!-- Toggle Sidebar Hamburger Button -->
       <button 
         (click)="toggleSidebar.emit()" 
+        [class.md:hidden]="isSidebarOpen"
         class="text-gray-400 hover:text-white hover:bg-gray-800/60 p-1.5 rounded-lg border border-gray-800 hover:border-gray-700 transition-all flex items-center justify-center shrink-0"
         title="Toggle conversation list"
       >
@@ -244,9 +245,22 @@
           </div>
         }
       </div>
-      </div>
     </div>
   </div>
+  
+  <!-- Floating Scroll to Bottom Button -->
+  @if (showScrollBottomButton()) {
+    <button
+      (click)="scrollToBottomSmooth()"
+      class="absolute bottom-6 right-6 z-20 w-11 h-11 rounded-full bg-slate-900/90 hover:bg-slate-800 text-slate-100 hover:text-white shadow-2xl shadow-black/40 border border-slate-750 flex items-center justify-center transition-all transform scale-100 active:scale-95 animate-scaleUp backdrop-blur-md"
+      title="Scroll to bottom"
+    >
+      <svg class="w-5 h-5 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 13l-7 7-7-7m14-6l-7 7-7-7"/>
+      </svg>
+    </button>
+  }
+</div>
 
   <!-- Input Bar -->
   @if (conversationId) {
@@ -305,7 +319,7 @@
 <!-- Details Form Modal -->
 @if (showDetailsModal() && conversationId) {
   <div class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/80 backdrop-blur-md px-4">
-    <div class="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-4 animate-scaleUp text-slate-100">
+    <div class="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-4 animate-scaleUp text-slate-100 max-h-[90vh] overflow-y-auto scrollbar-thin">
       <div class="flex items-center justify-between">
         <h3 class="text-xl font-bold bg-gradient-to-r from-indigo-400 to-blue-500 bg-clip-text text-transparent">⚙️ Edit Travel Details</h3>
         <button (click)="showDetailsModal.set(false)" class="text-gray-500 hover:text-gray-300">
@@ -369,7 +383,7 @@
           </div>
           <div>
             <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Travelers Count</label>
-            <input type="number" [(ngModel)]="detailsHeadcount" name="detailsHeadcount" required
+            <input type="number" [(ngModel)]="detailsHeadcount" (ngModelChange)="onDetailsHeadcountChange()" name="detailsHeadcount" required
                    class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white" />
           </div>
         </div>
@@ -412,42 +426,185 @@
         <!-- Expandable Optional Fields -->
         @if (detailsShowOptional) {
           <div class="space-y-4 pt-2 border-t border-slate-800/80 animate-fadeIn">
+            <!-- Guest counts -->
             <div class="grid grid-cols-2 gap-4">
               <div>
                 <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Adults Count</label>
-                <input type="number" [(ngModel)]="detailsAdults" name="detailsAdults" min="1"
+                <input type="number" [(ngModel)]="detailsAdults" (ngModelChange)="onDetailsAdultsChange()" name="detailsAdults" min="1"
                        class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white" />
               </div>
               <div>
                 <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Children Count</label>
-                <input type="number" [(ngModel)]="detailsChildren" name="detailsChildren" min="0"
+                <input type="number" [(ngModel)]="detailsChildren" (ngModelChange)="onDetailsChildrenChange()" name="detailsChildren" min="0"
                        class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white" />
               </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Min Hotel Stars</label>
-                <select [(ngModel)]="detailsMinHotelStars" name="detailsMinHotelStars"
-                        class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white">
-                  <option [ngValue]="1">1 Star</option>
-                  <option [ngValue]="2">2 Stars</option>
-                  <option [ngValue]="3">3 Stars</option>
-                  <option [ngValue]="4">4 Stars</option>
-                  <option [ngValue]="5">5 Stars</option>
-                </select>
+            <!-- Grouped Accordions -->
+            <div class="space-y-3">
+              
+              <!-- Group 1: Flights & Transport -->
+              <div class="border border-slate-800 rounded-xl overflow-hidden bg-slate-900/40">
+                <button type="button" (click)="showDetailsTransportGroup.set(!showDetailsTransportGroup())"
+                  class="flex items-center justify-between w-full px-4 py-2.5 bg-slate-800/30 hover:bg-slate-800/50 text-xs font-semibold text-slate-300 transition-all">
+                  <span>✈️ Flights & Transport</span>
+                  <svg class="w-4 h-4 transition-transform duration-200" [class.rotate-180]="showDetailsTransportGroup()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                @if (showDetailsTransportGroup()) {
+                  <div class="p-4 space-y-3 border-t border-slate-800/60 bg-slate-950/20 text-sm">
+                    <div class="grid grid-cols-2 gap-4">
+                      <div>
+                        <label class="block text-xs font-semibold text-gray-400 mb-1">Cabin Class</label>
+                        <select [(ngModel)]="detailsCabinClass" name="detailsCabinClass"
+                          class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none">
+                          <option value="ECONOMY">Economy</option>
+                          <option value="BUSINESS">Business</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label class="block text-xs font-semibold text-gray-400 mb-1">Max Travel Hours/Day</label>
+                        <input type="number" [(ngModel)]="detailsMaxTravelTime" name="detailsMaxTravelTime" min="1" max="24"
+                          class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none" />
+                      </div>
+                    </div>
+                    <div class="flex flex-col gap-2 pt-1">
+                      <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-300">
+                        <input type="checkbox" [(ngModel)]="detailsDirectFlightsOnly" name="detailsDirectFlightsOnly"
+                          class="rounded border-slate-700 bg-slate-850 text-blue-600 focus:ring-blue-500" />
+                        Direct Flights Only
+                      </label>
+                      <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-300">
+                        <input type="checkbox" [(ngModel)]="detailsPrivateTransfer" name="detailsPrivateTransfer"
+                          class="rounded border-slate-700 bg-slate-850 text-blue-600 focus:ring-blue-500" />
+                        Private Transfer Preferred
+                      </label>
+                    </div>
+                  </div>
+                }
               </div>
-              <div>
-                <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Max Hotel Stars</label>
-                <select [(ngModel)]="detailsMaxHotelStars" name="detailsMaxHotelStars"
-                        class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white">
-                  <option [ngValue]="1">1 Star</option>
-                  <option [ngValue]="2">2 Stars</option>
-                  <option [ngValue]="3">3 Stars</option>
-                  <option [ngValue]="4">4 Stars</option>
-                  <option [ngValue]="5">5 Stars</option>
-                </select>
+
+              <!-- Group 2: Hotel Star Ratings -->
+              <div class="border border-slate-800 rounded-xl overflow-hidden bg-slate-900/40">
+                <button type="button" (click)="showDetailsHotelGroup.set(!showDetailsHotelGroup())"
+                  class="flex items-center justify-between w-full px-4 py-2.5 bg-slate-800/30 hover:bg-slate-800/50 text-xs font-semibold text-slate-300 transition-all">
+                  <span>🏨 Hotel Star Ratings</span>
+                  <svg class="w-4 h-4 transition-transform duration-200" [class.rotate-180]="showDetailsHotelGroup()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                @if (showDetailsHotelGroup()) {
+                  <div class="p-4 space-y-3 border-t border-slate-800/60 bg-slate-950/20 text-sm">
+                    <div class="grid grid-cols-2 gap-4">
+                      <div>
+                        <label class="block text-xs font-semibold text-gray-400 mb-1">Min Stars</label>
+                        <select [(ngModel)]="detailsMinHotelStars" name="detailsMinHotelStars"
+                          class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none">
+                          <option [ngValue]="1">1 Star</option>
+                          <option [ngValue]="2">2 Stars</option>
+                          <option [ngValue]="3">3 Stars</option>
+                          <option [ngValue]="4">4 Stars</option>
+                          <option [ngValue]="5">5 Stars</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label class="block text-xs font-semibold text-gray-400 mb-1">Max Stars</label>
+                        <select [(ngModel)]="detailsMaxHotelStars" name="detailsMaxHotelStars"
+                          class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none">
+                          <option [ngValue]="1">1 Star</option>
+                          <option [ngValue]="2">2 Stars</option>
+                          <option [ngValue]="3">3 Stars</option>
+                          <option [ngValue]="4">4 Stars</option>
+                          <option [ngValue]="5">5 Stars</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                }
               </div>
+
+              <!-- Group 3: Dining Options -->
+              <div class="border border-slate-800 rounded-xl overflow-hidden bg-slate-900/40">
+                <button type="button" (click)="showDetailsDiningGroup.set(!showDetailsDiningGroup())"
+                  class="flex items-center justify-between w-full px-4 py-2.5 bg-slate-800/30 hover:bg-slate-800/50 text-xs font-semibold text-slate-300 transition-all">
+                  <span>🍽️ Dining Options</span>
+                  <svg class="w-4 h-4 transition-transform duration-200" [class.rotate-180]="showDetailsDiningGroup()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                @if (showDetailsDiningGroup()) {
+                  <div class="p-4 space-y-3 border-t border-slate-800/60 bg-slate-950/20 text-sm">
+                    <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-300">
+                      <input type="checkbox" [(ngModel)]="detailsIncludeFoodTour" name="detailsIncludeFoodTour"
+                        class="rounded border-slate-700 bg-slate-850 text-blue-600 focus:ring-blue-500" />
+                      Include Guided Food Tour
+                    </label>
+                  </div>
+                }
+              </div>
+
+              <!-- Group 4: Profile & Accessibility -->
+              <div class="border border-slate-800 rounded-xl overflow-hidden bg-slate-900/40">
+                <button type="button" (click)="showDetailsProfileGroup.set(!showDetailsProfileGroup())"
+                  class="flex items-center justify-between w-full px-4 py-2.5 bg-slate-800/30 hover:bg-slate-800/50 text-xs font-semibold text-slate-300 transition-all">
+                  <span>🌍 Profile & Accessibility</span>
+                  <svg class="w-4 h-4 transition-transform duration-200" [class.rotate-180]="showDetailsProfileGroup()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                @if (showDetailsProfileGroup()) {
+                  <div class="p-4 space-y-3 border-t border-slate-800/60 bg-slate-950/20 text-sm">
+                    <div class="grid grid-cols-2 gap-4">
+                      <div>
+                        <label class="block text-xs font-semibold text-gray-400 mb-1">Activity Level</label>
+                        <select [(ngModel)]="detailsActivityIntensity" name="detailsActivityIntensity"
+                          class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none">
+                          <option value="LIGHT">Light</option>
+                          <option value="MODERATE">Moderate</option>
+                          <option value="ACTIVE">Active</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label class="block text-xs font-semibold text-gray-400 mb-1">Nationality</label>
+                        <input type="text" [(ngModel)]="detailsNationality" name="detailsNationality" placeholder="e.g. Indian"
+                          class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none" />
+                      </div>
+                    </div>
+                    <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-300 pt-1">
+                      <input type="checkbox" [(ngModel)]="detailsAccessibility" name="detailsAccessibility"
+                        class="rounded border-slate-700 bg-slate-850 text-blue-600 focus:ring-blue-500" />
+                      Accessibility / Wheelchair Required
+                    </label>
+                  </div>
+                }
+              </div>
+
+              <!-- Group 5: Places & Attractions -->
+              <div class="border border-slate-800 rounded-xl overflow-hidden bg-slate-900/40">
+                <button type="button" (click)="showDetailsPlacesGroup.set(!showDetailsPlacesGroup())"
+                  class="flex items-center justify-between w-full px-4 py-2.5 bg-slate-800/30 hover:bg-slate-800/50 text-xs font-semibold text-slate-300 transition-all">
+                  <span>📍 Places & Attractions</span>
+                  <svg class="w-4 h-4 transition-transform duration-200" [class.rotate-180]="showDetailsPlacesGroup()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                @if (showDetailsPlacesGroup()) {
+                  <div class="p-4 space-y-3 border-t border-slate-800/60 bg-slate-950/20 text-sm">
+                    <div>
+                      <label class="block text-xs font-semibold text-gray-400 mb-1">Must-Visit Places</label>
+                      <input type="text" [(ngModel)]="detailsMustVisit" name="detailsMustVisit" placeholder="e.g. Eiffel Tower, Louvre Museum (comma separated)"
+                        class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500" />
+                    </div>
+                    <div>
+                      <label class="block text-xs font-semibold text-gray-400 mb-1">Places to Avoid</label>
+                      <input type="text" [(ngModel)]="detailsAvoid" name="detailsAvoid" placeholder="e.g. Crowded markets, noisy clubs (comma separated)"
+                        class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500" />
+                    </div>
+                  </div>
+                }
+              </div>
+
             </div>
 
             <div>

@@ -69,6 +69,25 @@ export class SidebarComponent implements OnInit {
   prefMinHotelStars = 3;
   prefMaxHotelStars = 5;
   prefNotes = '';
+  
+  // Advanced optional settings
+  prefCabinClass = 'ECONOMY';
+  prefDirectFlightsOnly = false;
+  prefPrivateTransfer = false;
+  prefIncludeFoodTour = false;
+  prefActivityIntensity = 'MODERATE';
+  prefNationality = '';
+  prefAccessibility = false;
+  prefMaxTravelTime = 4;
+  prefMustVisit = '';
+  prefAvoid = '';
+
+  // Subgroup collapse states
+  showTransportGroup = signal(false);
+  showHotelGroup = signal(false);
+  showDiningGroup = signal(false);
+  showProfileGroup = signal(false);
+  showPlacesGroup = signal(false);
 
   get minStartDate(): string {
     const today = new Date();
@@ -147,7 +166,7 @@ export class SidebarComponent implements OnInit {
           destination: this.prefDestination,
           startDate: this.prefStartDate,
           endDate: this.prefEndDate,
-          maxBudgetInr: this.prefBudget,
+          maxBudget: this.prefBudget,
           travellerType: this.prefTravelerType,
           budgetPreference: this.prefBudgetClass,
           headcount: this.prefHeadcount,
@@ -157,7 +176,8 @@ export class SidebarComponent implements OnInit {
           minHotelStars: this.prefMinHotelStars,
           maxHotelStars: this.prefMaxHotelStars,
           notes: this.prefNotes,
-          mustVisitPlaces: [],
+          mustVisitPlaces: this.prefMustVisit ? this.prefMustVisit.split(',').map(s => s.trim()).filter(Boolean) : [],
+          avoidPlaces: this.prefAvoid ? this.prefAvoid.split(',').map(s => s.trim()).filter(Boolean) : [],
           vacationStyles: [],
           interests: [],
           preferredTransportModes: [],
@@ -165,7 +185,15 @@ export class SidebarComponent implements OnInit {
           includeHotels: true,
           includeTransport: true,
           includeWeatherForecast: true,
-          generateWeatherFallbacks: true
+          generateWeatherFallbacks: true,
+          cabinClass: this.prefCabinClass,
+          directFlightsOnly: this.prefDirectFlightsOnly,
+          privateTransferPreferred: this.prefPrivateTransfer,
+          includeFoodTour: this.prefIncludeFoodTour,
+          activityIntensity: this.prefActivityIntensity,
+          nationality: this.prefNationality,
+          accessibilityRequired: this.prefAccessibility,
+          maxTravelTimePerDay: this.prefMaxTravelTime
         };
 
         this.chatService.uploadPreferences(conv.id, preferences).subscribe({
@@ -243,5 +271,53 @@ export class SidebarComponent implements OnInit {
     this.prefMaxHotelStars = 5;
     this.prefNotes = '';
     this.showOptional = false;
+    this.prefCabinClass = 'ECONOMY';
+    this.prefDirectFlightsOnly = false;
+    this.prefPrivateTransfer = false;
+    this.prefIncludeFoodTour = false;
+    this.prefActivityIntensity = 'MODERATE';
+    this.prefNationality = '';
+    this.prefAccessibility = false;
+    this.prefMaxTravelTime = 4;
+    this.prefMustVisit = '';
+    this.prefAvoid = '';
+    this.showTransportGroup.set(false);
+    this.showHotelGroup.set(false);
+    this.showDiningGroup.set(false);
+    this.showProfileGroup.set(false);
+    this.showPlacesGroup.set(false);
+  }
+
+  onHeadcountChange() {
+    if (this.prefHeadcount < 1) this.prefHeadcount = 1;
+    
+    // Suggest traveler type based on headcount
+    if (this.prefHeadcount === 1) {
+      this.prefTravelerType = 'SOLO';
+    } else if (this.prefHeadcount === 2) {
+      if (this.prefTravelerType !== 'COUPLE' && this.prefTravelerType !== 'HONEYMOON') {
+        this.prefTravelerType = 'COUPLE';
+      }
+    } else {
+      if (this.prefTravelerType !== 'FAMILY_WITH_KIDS' && this.prefTravelerType !== 'GROUP_FRIENDS') {
+        this.prefTravelerType = 'FAMILY_WITH_KIDS';
+      }
+    }
+
+    // Set initial adults/children count to match headcount
+    this.prefAdults = this.prefHeadcount;
+    this.prefChildren = 0;
+  }
+
+  onAdultsChange() {
+    if (this.prefAdults < 1) this.prefAdults = 1;
+    if (this.prefAdults > this.prefHeadcount) this.prefAdults = this.prefHeadcount;
+    this.prefChildren = this.prefHeadcount - this.prefAdults;
+  }
+
+  onChildrenChange() {
+    if (this.prefChildren < 0) this.prefChildren = 0;
+    if (this.prefChildren >= this.prefHeadcount) this.prefChildren = this.prefHeadcount - 1;
+    this.prefAdults = this.prefHeadcount - this.prefChildren;
   }
 }

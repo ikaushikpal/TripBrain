@@ -33,8 +33,10 @@ public class JwtInterceptor implements HandlerInterceptor {
                 || "/api/conversations/trips/public".equals(path)
                 || (path.startsWith("/api/conversations/trips/") && path.endsWith("/download"))
                 || (path.startsWith("/api/conversations/trips/") && path.endsWith("/download-url"))
+                || (path.startsWith("/api/conversations/trips/") && path.endsWith("/thumbnail"))
                 || path.startsWith("/api/conversations/share/")
                 || (path.startsWith("/api/conversations/") && path.endsWith("/destination-image"))
+                || path.startsWith("/api/public-static/")
                 || "/resources/".startsWith(path); // Static resources/uploads
 
         String authHeader = request.getHeader("Authorization");

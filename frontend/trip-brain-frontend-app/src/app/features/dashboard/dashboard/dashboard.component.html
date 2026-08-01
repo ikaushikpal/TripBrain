@@ -21,6 +21,7 @@
     <main class="flex-1 flex flex-col overflow-hidden">
       <app-chat-window 
         [conversationId]="activeConversationId()" 
+        [isSidebarOpen]="sidebarOpen()"
         (toggleSidebar)="toggleSidebar()"
         class="flex-1 flex flex-col overflow-hidden" 
       />

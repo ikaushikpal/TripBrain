@@ -256,24 +256,17 @@ public class ConversationService {
                     .travellerType(originalRequest.getTravellerType())
                     .currency(originalRequest.getCurrency())
                     .budgetPreference(originalRequest.getBudgetPreference())
+                    .maxBudget(originalRequest.getMaxBudget())
+                    .dailyBudgetPerPerson(originalRequest.getDailyBudgetPerPerson())
                     .flightsIncludedInBudget(originalRequest.getFlightsIncludedInBudget())
                     .maxTravelTimePerDay(originalRequest.getMaxTravelTimePerDay())
                     .cabinClass(originalRequest.getCabinClass())
                     .directFlightsOnly(originalRequest.getDirectFlightsOnly())
-                    .preferredTransportModes(originalRequest.getPreferredTransportModes())
                     .privateTransferPreferred(originalRequest.getPrivateTransferPreferred())
                     .minHotelStars(originalRequest.getMinHotelStars())
                     .maxHotelStars(originalRequest.getMaxHotelStars())
-                    .accommodationTypes(originalRequest.getAccommodationTypes())
-                    .requiredAmenities(originalRequest.getRequiredAmenities())
-                    .foodStyles(originalRequest.getFoodStyles())
-                    .foodAllergies(originalRequest.getFoodAllergies())
-                    .diningStyles(originalRequest.getDiningStyles())
                     .includeFoodTour(originalRequest.getIncludeFoodTour())
-                    .vacationStyles(originalRequest.getVacationStyles())
-                    .extras(originalRequest.getExtras())
                     .activityIntensity(originalRequest.getActivityIntensity())
-                    .interests(originalRequest.getInterests())
                     .includeTransport(originalRequest.getIncludeTransport())
                     .includeHotels(originalRequest.getIncludeHotels())
                     .includeRestaurants(originalRequest.getIncludeRestaurants())
@@ -285,24 +278,69 @@ public class ConversationService {
                     .passportCountry(originalRequest.getPassportCountry())
                     .accessibilityRequired(originalRequest.getAccessibilityRequired())
                     .notes(originalRequest.getNotes())
-                    .mustVisitPlaces(originalRequest.getMustVisitPlaces())
-                    .avoidPlaces(originalRequest.getAvoidPlaces())
+                    
+                    // Safely clone persistent collections by copying elements into new HashSets
+                    .preferredTransportModes(originalRequest.getPreferredTransportModes() != null ? new java.util.HashSet<>(originalRequest.getPreferredTransportModes()) : null)
+                    .accommodationTypes(originalRequest.getAccommodationTypes() != null ? new java.util.HashSet<>(originalRequest.getAccommodationTypes()) : null)
+                    .requiredAmenities(originalRequest.getRequiredAmenities() != null ? new java.util.HashSet<>(originalRequest.getRequiredAmenities()) : null)
+                    .foodStyles(originalRequest.getFoodStyles() != null ? new java.util.HashSet<>(originalRequest.getFoodStyles()) : null)
+                    .foodAllergies(originalRequest.getFoodAllergies() != null ? new java.util.HashSet<>(originalRequest.getFoodAllergies()) : null)
+                    .diningStyles(originalRequest.getDiningStyles() != null ? new java.util.HashSet<>(originalRequest.getDiningStyles()) : null)
+                    .vacationStyles(originalRequest.getVacationStyles() != null ? new java.util.HashSet<>(originalRequest.getVacationStyles()) : null)
+                    .extras(originalRequest.getExtras() != null ? new java.util.HashSet<>(originalRequest.getExtras()) : null)
+                    .interests(originalRequest.getInterests() != null ? new java.util.HashSet<>(originalRequest.getInterests()) : null)
+                    .mustVisitPlaces(originalRequest.getMustVisitPlaces() != null ? new java.util.HashSet<>(originalRequest.getMustVisitPlaces()) : null)
+                    .avoidPlaces(originalRequest.getAvoidPlaces() != null ? new java.util.HashSet<>(originalRequest.getAvoidPlaces()) : null)
                     .build();
             tripRequestRepository.save(clonedRequest);
         }
 
-        // Add intro system assistant message for the user to start customizing
-        chatMessageRepository.save(ChatMessage.builder()
+        // Clone the TripPdf entity to link the new conversation to the same PDF resource
+        TripPdf clonedPdf = TripPdf.builder()
                 .conversation(savedConv)
-                .role("ASSISTANT")
-                .content("I have duplicated the trip request for '" + originalPdf.getDestination() + "'. Let me know if you would like to customize dates, budget, or anything else!")
-                .sequenceNumber(0)
-                .messageTimestamp(LocalDateTime.now())
-                .deleted(false)
-                .build());
+                .filePath(originalPdf.getFilePath())
+                .publicUrl(originalPdf.getPublicUrl())
+                .isPublic(false) // Forked trip is private to this new user by default
+                .generatedAt(LocalDateTime.now())
+                .destination(originalPdf.getDestination())
+                .thumbnailUrl(originalPdf.getThumbnailUrl())
+                .tags(originalPdf.getTags())
+                .checksum(originalPdf.getChecksum())
+                .build();
+        tripPdfRepository.save(clonedPdf);
+
+        // Copy original chat messages to the cloned conversation to provide full contextual history
+        List<ChatMessage> originalMessages = chatMessageRepository.findByConversationIdAndDeletedFalseOrderBySequenceNumberAsc(originalConv.getId());
+        int seq = 0;
+        for (ChatMessage msg : originalMessages) {
+            ChatMessage clonedMsg = ChatMessage.builder()
+                    .conversation(savedConv)
+                    .role(msg.getRole())
+                    .content(msg.getContent())
+                    .messageType(msg.getMessageType())
+                    .metadataJson(msg.getMetadataJson())
+                    .sequenceNumber(seq++)
+                    .messageTimestamp(LocalDateTime.now())
+                    .deleted(false)
+                    .build();
+            chatMessageRepository.save(clonedMsg);
+        }
+
+        // If no original messages exist, add a standard welcome message
+        if (originalMessages.isEmpty()) {
+            chatMessageRepository.save(ChatMessage.builder()
+                    .conversation(savedConv)
+                    .role("ASSISTANT")
+                    .content("I have duplicated the trip request for '" + originalPdf.getDestination() + "'. Let me know if you would like to customize dates, budget, or anything else!")
+                    .sequenceNumber(0)
+                    .messageTimestamp(LocalDateTime.now())
+                    .deleted(false)
+                    .build());
+        }
 
         return ConversationDTO.createFromConversation(savedConv);
     }
+
 
     public List<PublicTripGalleryItem> getPublicTrips() {
         return publicTripGalleryRepository.findAllByOrderByGeneratedAtDesc();

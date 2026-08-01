@@ -58,7 +58,8 @@ public class AuthController {
                             .user(UserDTO.createFromUser(user))
                             .build());
                 })
-                .orElseThrow(() -> new RuntimeException("Refresh token is not in database!"));
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.UNAUTHORIZED, "Refresh token is not in database!"));
     }
 }
 

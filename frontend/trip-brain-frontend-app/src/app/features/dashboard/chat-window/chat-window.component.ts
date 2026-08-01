@@ -1,10 +1,11 @@
-import { Component, signal, Input, Output, EventEmitter, OnChanges, SimpleChanges, inject, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
+import { Component, signal, Input, Output, EventEmitter, OnChanges, SimpleChanges, inject, ViewChild, ElementRef, AfterViewChecked, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
 import { ChatService, ChatMessage } from '../../../core/services/chat.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { MapOverlayComponent } from '../../../shared/components/map-overlay/map-overlay.component';
+import { MapService } from '../../../core/services/map.service';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { marked } from 'marked';
 import { BASE_URL } from '../../../core/constants';
@@ -22,8 +23,9 @@ export interface AssistantBuffer {
   templateUrl: './chat-window.component.html',
   styleUrl: './chat-window.component.css'
 })
-export class ChatWindowComponent implements OnChanges, AfterViewChecked {
+export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked, OnDestroy {
   @Input() conversationId: string | null = null;
+  @Input() isSidebarOpen = false;
   @Output() toggleSidebar = new EventEmitter<void>();
   @ViewChild('messagesContainer') messagesContainer!: ElementRef;
 
@@ -31,12 +33,14 @@ export class ChatWindowComponent implements OnChanges, AfterViewChecked {
   private readonly sanitizer = inject(DomSanitizer);
   private readonly authService = inject(AuthService);
   private readonly notificationService = inject(NotificationService);
+  private readonly mapService = inject(MapService);
 
   messages = signal<(ChatMessage | AssistantBuffer)[]>([]);
   streamStatus = signal<string | null>(null);
   isStreaming = signal(false);
   isExporting = signal(false);
   showMap = signal(false);
+  showScrollBottomButton = signal(false);
   inputMessage = '';
   private shouldScrollToBottom = false;
 
@@ -70,6 +74,25 @@ export class ChatWindowComponent implements OnChanges, AfterViewChecked {
   detailsShowOptional = false;
   detailsCurrency = 'INR';
 
+  // Advanced optional settings
+  detailsCabinClass = 'ECONOMY';
+  detailsDirectFlightsOnly = false;
+  detailsPrivateTransfer = false;
+  detailsIncludeFoodTour = false;
+  detailsActivityIntensity = 'MODERATE';
+  detailsNationality = '';
+  detailsAccessibility = false;
+  detailsMaxTravelTime = 4;
+  detailsMustVisit = '';
+  detailsAvoid = '';
+
+  // Subgroup collapse states
+  showDetailsTransportGroup = signal(false);
+  showDetailsHotelGroup = signal(false);
+  showDetailsDiningGroup = signal(false);
+  showDetailsProfileGroup = signal(false);
+  showDetailsPlacesGroup = signal(false);
+
   nextCursor: number | null = null;
   isLoadingMore = signal(false);
 
@@ -100,6 +123,20 @@ export class ChatWindowComponent implements OnChanges, AfterViewChecked {
 
   get allMessages() {
     return this.messages;
+  }
+
+  private updateSub: any;
+
+  ngOnInit() {
+    this.updateSub = this.chatService.conversationUpdated$.subscribe(() => {
+      this.fetchLatestPageInBackground();
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.updateSub) {
+      this.updateSub.unsubscribe();
+    }
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -136,6 +173,22 @@ export class ChatWindowComponent implements OnChanges, AfterViewChecked {
     if (el.scrollTop < 50 && this.nextCursor !== null && !this.isLoadingMore()) {
       this.loadMoreMessages();
     }
+    
+    // Show button if user scrolled up more than 150px from the bottom
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    this.showScrollBottomButton.set(distanceFromBottom > 150);
+  }
+
+  scrollToBottomSmooth() {
+    try {
+      const el = this.messagesContainer?.nativeElement;
+      if (el) {
+        el.scrollTo({
+          top: el.scrollHeight,
+          behavior: 'smooth'
+        });
+      }
+    } catch (e) {}
   }
 
   loadMoreMessages() {
@@ -330,7 +383,7 @@ export class ChatWindowComponent implements OnChanges, AfterViewChecked {
         this.detailsDestination = req.destination || '';
         this.detailsStartDate = req.startDate || '';
         this.detailsEndDate = req.endDate || '';
-        this.detailsBudget = req.maxBudgetInr;
+        this.detailsBudget = req.maxBudget;
         this.detailsHeadcount = req.headcount || 2;
         this.detailsBudgetClass = req.budgetPreference || 'MID';
         this.detailsTravelerType = req.travellerType || 'COUPLE';
@@ -340,6 +393,24 @@ export class ChatWindowComponent implements OnChanges, AfterViewChecked {
         this.detailsMaxHotelStars = req.maxHotelStars || 5;
         this.detailsNotes = req.notes || '';
         this.detailsCurrency = req.currency || 'INR';
+
+        // Advanced optional fields
+        this.detailsCabinClass = req.cabinClass || 'ECONOMY';
+        this.detailsDirectFlightsOnly = req.directFlightsOnly || false;
+        this.detailsPrivateTransfer = req.privateTransferPreferred || false;
+        this.detailsIncludeFoodTour = req.includeFoodTour || false;
+        this.detailsActivityIntensity = req.activityIntensity || 'MODERATE';
+        this.detailsNationality = req.nationality || '';
+        this.detailsAccessibility = req.accessibilityRequired || false;
+        this.detailsMaxTravelTime = req.maxTravelTimePerDay || 4;
+        this.detailsMustVisit = req.mustVisitPlaces ? req.mustVisitPlaces.join(', ') : '';
+        this.detailsAvoid = req.avoidPlaces ? req.avoidPlaces.join(', ') : '';
+
+        this.showDetailsTransportGroup.set(false);
+        this.showDetailsHotelGroup.set(false);
+        this.showDetailsDiningGroup.set(false);
+        this.showDetailsProfileGroup.set(false);
+        this.showDetailsPlacesGroup.set(false);
         
         this.showDetailsModal.set(true);
       },
@@ -367,7 +438,7 @@ export class ChatWindowComponent implements OnChanges, AfterViewChecked {
       destination: this.detailsDestination,
       startDate: this.detailsStartDate,
       endDate: this.detailsEndDate,
-      maxBudgetInr: this.detailsBudget,
+      maxBudget: this.detailsBudget,
       headcount: this.detailsHeadcount,
       budgetPreference: this.detailsBudgetClass,
       travellerType: this.detailsTravelerType,
@@ -376,11 +447,23 @@ export class ChatWindowComponent implements OnChanges, AfterViewChecked {
       minHotelStars: this.detailsMinHotelStars,
       maxHotelStars: this.detailsMaxHotelStars,
       notes: this.detailsNotes,
-      currency: this.detailsCurrency
+      currency: this.detailsCurrency,
+      cabinClass: this.detailsCabinClass,
+      directFlightsOnly: this.detailsDirectFlightsOnly,
+      privateTransferPreferred: this.detailsPrivateTransfer,
+      includeFoodTour: this.detailsIncludeFoodTour,
+      activityIntensity: this.detailsActivityIntensity,
+      nationality: this.detailsNationality,
+      accessibilityRequired: this.detailsAccessibility,
+      maxTravelTimePerDay: this.detailsMaxTravelTime,
+      mustVisitPlaces: this.detailsMustVisit ? this.detailsMustVisit.split(',').map(s => s.trim()).filter(Boolean) : [],
+      avoidPlaces: this.detailsAvoid ? this.detailsAvoid.split(',').map(s => s.trim()).filter(Boolean) : []
     };
+
 
     this.chatService.updateTripRequest(this.conversationId, payload).subscribe({
       next: () => {
+        this.mapService.clearCache(this.conversationId!);
         this.showDetailsModal.set(false);
         this.loadMessages();
         this.loadWallpaper();
@@ -444,6 +527,9 @@ export class ChatWindowComponent implements OnChanges, AfterViewChecked {
         assistantBuffer.isStreaming = false;
         this.messages.update(msgs => [...msgs]);
         this.shouldScrollToBottom = true;
+        if (this.conversationId) {
+          this.mapService.clearCache(this.conversationId);
+        }
         this.chatService.conversationUpdated$.emit();
         this.loadMessages();
       }
@@ -622,5 +708,38 @@ export class ChatWindowComponent implements OnChanges, AfterViewChecked {
         window.open(downloadUrl, '_blank');
       }
     });
+  }
+
+  onDetailsHeadcountChange() {
+    if (this.detailsHeadcount < 1) this.detailsHeadcount = 1;
+    
+    // Suggest traveler type based on headcount
+    if (this.detailsHeadcount === 1) {
+      this.detailsTravelerType = 'SOLO';
+    } else if (this.detailsHeadcount === 2) {
+      if (this.detailsTravelerType !== 'COUPLE' && this.detailsTravelerType !== 'HONEYMOON') {
+        this.detailsTravelerType = 'COUPLE';
+      }
+    } else {
+      if (this.detailsTravelerType !== 'FAMILY_WITH_KIDS' && this.detailsTravelerType !== 'GROUP_FRIENDS') {
+        this.detailsTravelerType = 'FAMILY_WITH_KIDS';
+      }
+    }
+
+    // Set initial adults/children count to match headcount
+    this.detailsAdults = this.detailsHeadcount;
+    this.detailsChildren = 0;
+  }
+
+  onDetailsAdultsChange() {
+    if (this.detailsAdults < 1) this.detailsAdults = 1;
+    if (this.detailsAdults > this.detailsHeadcount) this.detailsAdults = this.detailsHeadcount;
+    this.detailsChildren = this.detailsHeadcount - this.detailsAdults;
+  }
+
+  onDetailsChildrenChange() {
+    if (this.detailsChildren < 0) this.detailsChildren = 0;
+    if (this.detailsChildren >= this.detailsHeadcount) this.detailsChildren = this.detailsHeadcount - 1;
+    this.detailsAdults = this.detailsHeadcount - this.detailsChildren;
   }
 }

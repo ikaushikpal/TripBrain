@@ -11,9 +11,12 @@ import org.springframework.stereotype.Service;
 import com.learn.springai.model.Conversation;
 import com.learn.springai.model.TripRequest;
 import com.learn.springai.model.TripPdf;
+import com.learn.springai.model.ChatMessage;
 import com.learn.springai.repository.ChatMessageRepository;
 import reactor.core.publisher.Flux;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.learn.springai.dto.tripRequest.TripRequestUpdateDTO;
 
 @Service
 public class OrchestrationService {
@@ -54,6 +57,7 @@ public class OrchestrationService {
     private final TripRequestService tripRequestService;
     private final com.learn.springai.tool.RetrievalHelper retrievalHelper;
     private final TripPdfService tripPdfService;
+    private final ObjectMapper objectMapper;
 
     public OrchestrationService(
             @Qualifier("routerChatClient") ChatClient routerChatClient,
@@ -68,7 +72,8 @@ public class OrchestrationService {
             com.learn.springai.config.LlmBulkheadManager llmBulkheadManager,
             TripRequestService tripRequestService,
             com.learn.springai.tool.RetrievalHelper retrievalHelper,
-            TripPdfService tripPdfService) {
+            TripPdfService tripPdfService,
+            ObjectMapper objectMapper) {
         this.routerChatClient = routerChatClient;
         this.itineraryChatClient = itineraryChatClient;
         this.visaChatClient = visaChatClient;
@@ -82,6 +87,7 @@ public class OrchestrationService {
         this.tripRequestService = tripRequestService;
         this.retrievalHelper = retrievalHelper;
         this.tripPdfService = tripPdfService;
+        this.objectMapper = objectMapper;
     }
 
     private String classifyIntent(String message) {
@@ -139,14 +145,30 @@ public class OrchestrationService {
 
         // Retrieve user long-term preferences
         List<String> preferences = userProfileService.getUserPreferences(userId);
-        if (preferences == null || preferences.isEmpty()) {
-            return message;
-        }
 
         StringBuilder enriched = new StringBuilder(message);
-        enriched.append("\n\n(Context about the traveler's preference history for personalization: ")
-                .append(String.join(", ", preferences))
-                .append(")");
+
+        // Retrieve current conversation specific TripRequest
+        var tripReqOpt = tripRequestService.findEntityByConversationId(conversationId);
+        if (tripReqOpt.isPresent()) {
+            com.learn.springai.model.TripRequest tr = tripReqOpt.get();
+            String serializedTrip = com.learn.springai.config.TripRequestPromptSerializer.serialize(tr);
+            enriched.append("\n\n(Current Trip Configuration: ").append(serializedTrip).append(")");
+            
+            if (tr.getMaxBudget() != null) {
+                enriched.append("\nCRITICAL BUDGET RULE: The traveler's fixed highest bar budget is exactly ")
+                        .append(tr.getCurrency() != null ? tr.getCurrency() : "INR")
+                        .append(" ")
+                        .append(tr.getMaxBudget())
+                        .append(". You must NEVER suggest, estimate, or recommend any itinerary, hotels, flights, or activities that would exceed this total budget constraint. Make sure all recommendations fit within this highest bar.");
+            }
+        }
+
+        if (preferences != null && !preferences.isEmpty()) {
+            enriched.append("\n\n(Context about the traveler's preference history for personalization: ")
+                    .append(String.join(", ", preferences))
+                    .append(")");
+        }
         return enriched.toString();
     }
 
@@ -573,6 +595,8 @@ public class OrchestrationService {
             chatMessageRepository.save(assistantMsg);
             chatMessageRepository.flush();
 
+            extractAndSaveTripRequestDetails(conversationId, cleanMarkdown);
+
             java.util.Optional<com.learn.springai.model.TripRequest> tripReqOpt = tripRequestService.findEntityByConversationId(conversationId);
             if (tripReqOpt.isPresent()) {
                 com.learn.springai.model.TripRequest tr = tripReqOpt.get();
@@ -623,6 +647,8 @@ public class OrchestrationService {
             String text = latestMsg.getContent();
             if (text == null) return;
 
+            extractAndSaveTripRequestDetails(conversationId, text);
+
             if (text.contains("[HOTEL_RECOMMENDATION_METADATA:")) {
                 int start = text.indexOf("[HOTEL_RECOMMENDATION_METADATA:");
                 int end = text.indexOf("]", start);
@@ -646,6 +672,91 @@ public class OrchestrationService {
             }
         } catch (Exception e) {
             logger.error("Failed to post-process assistant message for metadata", e);
+        }
+    }
+
+    private void extractAndSaveTripRequestDetails(String conversationId, String content) {
+        try {
+            logger.info("Extracting structured trip details for conversation [{}]", conversationId);
+            String systemInstruction = """
+                    You are a data extraction agent. Analyze the provided conversation snippet or itinerary to extract the structured trip parameters.
+                    You MUST return ONLY a JSON block containing the following fields:
+                    - 'adults': Integer
+                    - 'children': Integer
+                    - 'travellerType': String (exactly one of: SOLO, COUPLE, HONEYMOON, FAMILY_WITH_KIDS, GROUP_FRIENDS)
+                    - 'currency': String (e.g. INR, USD)
+                    - 'maxBudget': Double
+                    - 'budgetPreference': String (exactly one of: BACKPACKER, MID, LUXURY)
+                    - 'minHotelStars': Integer
+                    - 'maxHotelStars': Integer
+                    - 'cabinClass': String (exactly one of: ECONOMY, BUSINESS)
+                    - 'mustVisitPlaces': Array of Strings (places explicitly mentioned to visit or include)
+                    - 'avoidPlaces': Array of Strings (places explicitly mentioned to avoid)
+                    
+                    Return null or omit any field that is NOT mentioned, NOT changed, or NOT present in the content.
+                    Do not add any preamble, conversational text, explanations, or code blocks. Just return the raw JSON object.
+                    """;
+
+            String jsonResult = llmBulkheadManager.executeWithGroq(() -> generalChatClient.prompt()
+                    .options(getRandomModelOptions())
+                    .system(systemInstruction)
+                    .user("Itinerary/Conversation Content:\n" + content)
+                    .call()
+                    .content());
+
+            if (jsonResult != null && !jsonResult.trim().isEmpty()) {
+                String cleanJson = jsonResult.trim();
+                
+                // Find first '{' and last '}' to extract raw JSON block
+                int firstBrace = cleanJson.indexOf('{');
+                int lastBrace = cleanJson.lastIndexOf('}');
+                if (firstBrace != -1 && lastBrace != -1 && lastBrace > firstBrace) {
+                    cleanJson = cleanJson.substring(firstBrace, lastBrace + 1);
+                }
+
+                try {
+                    TripRequestUpdateDTO patch = objectMapper.readValue(cleanJson, TripRequestUpdateDTO.class);
+                    
+                    // Fetch existing trip request to merge/append places instead of clearing
+                    java.util.Optional<com.learn.springai.model.TripRequest> existingOpt = tripRequestService.findEntityByConversationId(conversationId);
+                    if (existingOpt.isPresent()) {
+                        com.learn.springai.model.TripRequest existing = existingOpt.get();
+                        
+                        if (patch.getMustVisitPlaces() != null && !patch.getMustVisitPlaces().isEmpty()) {
+                            java.util.Set<String> mergedMustVisit = new java.util.HashSet<>();
+                            if (existing.getMustVisitPlaces() != null) {
+                                mergedMustVisit.addAll(existing.getMustVisitPlaces());
+                            }
+                            mergedMustVisit.addAll(patch.getMustVisitPlaces());
+                            patch.setMustVisitPlaces(mergedMustVisit);
+                        }
+                        
+                        if (patch.getAvoidPlaces() != null && !patch.getAvoidPlaces().isEmpty()) {
+                            java.util.Set<String> mergedAvoid = new java.util.HashSet<>();
+                            if (existing.getAvoidPlaces() != null) {
+                                mergedAvoid.addAll(existing.getAvoidPlaces());
+                            }
+                            mergedAvoid.addAll(patch.getAvoidPlaces());
+                            patch.setAvoidPlaces(mergedAvoid);
+                        }
+                    }
+
+                    // Only apply update if there is at least one non-null field extracted
+                    if (patch.getAdults() != null || patch.getChildren() != null || patch.getTravellerType() != null ||
+                        patch.getCurrency() != null || patch.getMaxBudget() != null || patch.getBudgetPreference() != null ||
+                        patch.getMinHotelStars() != null || patch.getMaxHotelStars() != null || patch.getCabinClass() != null ||
+                        (patch.getMustVisitPlaces() != null && !patch.getMustVisitPlaces().isEmpty()) ||
+                        (patch.getAvoidPlaces() != null && !patch.getAvoidPlaces().isEmpty())) {
+                        
+                        tripRequestService.update(conversationId, patch);
+                        logger.info("Successfully extracted and auto-updated TripRequest for conversation [{}]", conversationId);
+                    }
+                } catch (Exception ex) {
+                    logger.error("Failed to parse extracted JSON in extractAndSaveTripRequestDetails", ex);
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Failed to extract trip request details for conversation [" + conversationId + "]", e);
         }
     }
 }
