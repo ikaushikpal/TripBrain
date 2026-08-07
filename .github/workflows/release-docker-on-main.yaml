@@ -292,13 +292,17 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
+
+          # Build for both Intel/AMD and ARM
+          platforms: linux/amd64,linux/arm64
+
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-          # Enable GitHub Actions cache backend for fast incremental builds
+          # Enable GitHub Actions cache backend
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-          # Attach build provenance and Software Bill of Materials (SBOM) metadata
+          # Optional metadata
           provenance: true
           sbom: true
