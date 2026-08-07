@@ -1,0 +1,304 @@
+# ==============================================================================
+# Workflow Name: Release Docker On Main
+# Purpose: Triggers upon pushes to the 'main' branch (e.g. PR merge), detects the
+#          merged PR metadata, computes the next Semantic Version tag (semver),
+#          creates and pushes Git tags ('vX.Y.Z' and 'latest'), and builds and
+#          pushes the production Docker image to Docker Hub with GitHub layer caching.
+# ==============================================================================
+name: Release Docker On Main
+
+# Trigger events for this workflow
+on:
+  # Triggers whenever code is pushed directly or merged into the 'main' branch
+  push:
+    branches:
+      - main
+
+# Global permissions granted to the default GITHUB_TOKEN for security
+permissions:
+  contents: write         # Requires write access to create git tags and push them to origin
+  pull-requests: read     # Read PR metadata associated with the merged commit
+
+# Concurrency management: serializes release runs to prevent tag collisions
+concurrency:
+  group: release-main
+  cancel-in-progress: false # Do not cancel active releases; queue them sequentially
+
+jobs:
+  # ----------------------------------------------------------------------------
+  # Job 1: Compute Version And Create Tags
+  # Analyzes merged PR title/commit message, calculates semver bump, creates git tags
+  # ----------------------------------------------------------------------------
+  version-and-tag:
+    name: Compute Version And Create Tags
+    runs-on: ubuntu-latest
+
+    # Job outputs passed downstream to docker-build-and-push job
+    outputs:
+      version: ${{ steps.bump.outputs.version }}
+      bump: ${{ steps.bump.outputs.bump }}
+      pr_number: ${{ steps.pr.outputs.pr_number }}
+      pr_title: ${{ steps.pr.outputs.pr_title }}
+      pr_branch: ${{ steps.pr.outputs.pr_branch }}
+
+    steps:
+      # Step 1: Checkout git repository with full commit history (fetch-depth: 0) for tag listing
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Step 2: Use Octokit API script to find the merged Pull Request associated with commit SHA
+      - name: Detect merged PR metadata
+        id: pr
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const sha = context.sha;
+
+            let pr = null;
+
+            try {
+              // Query associated pull requests for the commit SHA
+              const associated =
+                await github.rest.repos.listPullRequestsAssociatedWithCommit({
+                  owner,
+                  repo,
+                  commit_sha: sha,
+                });
+
+              if (associated.data?.length > 0) {
+                // Find merged PRs sorted by merge date
+                const mergedFirst = associated.data
+                  .filter(pr => pr.merged_at)
+                  .sort(
+                    (a, b) =>
+                      new Date(b.merged_at) -
+                      new Date(a.merged_at)
+                  );
+
+                pr = mergedFirst[0] || associated.data[0];
+              }
+            } catch (e) {
+              core.warning(
+                `Unable to locate PR metadata: ${e.message}`
+              );
+            }
+
+            // Fallback: parse PR number from commit message (e.g. "Merge pull request #12")
+            if (!pr) {
+              const message =
+                context.payload.head_commit?.message || '';
+
+              const match = message.match(/#(\d+)/);
+
+              if (match) {
+                const pull_number = Number(match[1]);
+
+                const fetched =
+                  await github.rest.pulls.get({
+                    owner,
+                    repo,
+                    pull_number,
+                  });
+
+                pr = fetched.data;
+              }
+            }
+
+            // Set outputs if PR found
+            if (!pr) {
+              core.setOutput('pr_number', '');
+              core.setOutput('pr_title', '');
+              core.setOutput('pr_branch', '');
+              return;
+            }
+
+            core.setOutput('pr_number', String(pr.number));
+            core.setOutput('pr_title', pr.title || '');
+            core.setOutput('pr_branch', pr.head?.ref || '');
+
+      # Step 3: Verify PR title adheres to Conventional Commit format
+      - name: Validate Conventional Commit
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          TITLE="${{ steps.pr.outputs.pr_title }}"
+
+          if [ -z "$TITLE" ]; then
+            echo "No PR title detected. Continuing."
+            exit 0
+          fi
+
+          if [[ ! "$TITLE" =~ ^(feat|fix|refactor|perf|docs|build|ci|chore|test)(\(.+\))?(!)?:\ .+ ]]; then
+            echo "Invalid PR title:"
+            echo "$TITLE"
+            echo ""
+            echo "Expected Conventional Commit format."
+            exit 1
+          fi
+
+      # Step 4: Calculate Semantic Version (SemVer) bump based on title/commit signals
+      - name: Compute semantic version bump
+        id: bump
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Fetch all remote git tags
+          git fetch --tags --force
+
+          # Get latest semver tag (defaults to 0.0.0 if no tags exist)
+          PREV_TAG=$(
+            git tag --list \
+              --sort=-version:refname \
+              | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' \
+              | head -n 1
+          )
+
+          PREV_TAG=${PREV_TAG:-0.0.0}
+
+          TITLE="${{ steps.pr.outputs.pr_title }}"
+          BRANCH="${{ steps.pr.outputs.pr_branch }}"
+          COMMIT="${{ github.event.head_commit.message }}"
+
+          SIGNAL=$(
+            printf '%s %s %s' \
+              "$TITLE" \
+              "$BRANCH" \
+              "$COMMIT" \
+            | tr '[:upper:]' '[:lower:]'
+          )
+
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$PREV_TAG"
+
+          BUMP="patch"
+
+          # Breaking changes -> Major bump
+          if [[ "$SIGNAL" == *"feat!"* ]] \
+            || [[ "$SIGNAL" == *"breaking"* ]]; then
+
+            MAJOR=$((MAJOR + 1))
+            MINOR=0
+            PATCH=0
+            BUMP="major"
+
+          # New features -> Minor bump
+          elif [[ "$SIGNAL" =~ (^|[[:space:]])feat(\(|:|[[:space:]]|$) ]]; then
+
+            MINOR=$((MINOR + 1))
+            PATCH=0
+            BUMP="minor"
+
+          # Fixes / Chores -> Patch bump
+          else
+
+            PATCH=$((PATCH + 1))
+            BUMP="patch"
+
+          fi
+
+          VERSION="${MAJOR}.${MINOR}.${PATCH}"
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "bump=$BUMP" >> "$GITHUB_OUTPUT"
+
+      # Step 5: Create and push new version tag & update 'latest' tag on GitHub
+      - name: Create version tag
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          VERSION="${{ steps.bump.outputs.version }}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email \
+            "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if git ls-remote --tags origin \
+            | grep -q "refs/tags/${VERSION}$"; then
+            echo "Tag ${VERSION} already exists."
+            exit 1
+          fi
+
+          # Tag current commit with semver version
+          git tag -a "$VERSION" -m "Release $VERSION"
+          git push origin "$VERSION"
+
+          # Force update 'latest' tag to point to current release
+          git tag -f latest
+          git push origin latest --force
+
+  # ----------------------------------------------------------------------------
+  # Job 2: Build And Push Docker Image
+  # Builds Docker image and pushes to Docker Hub registry with GHA layer caching
+  # ----------------------------------------------------------------------------
+  docker-build-and-push:
+    name: Build And Push Docker Image
+    needs:
+      - version-and-tag
+
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout repository code at the exact commit SHA
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+
+      # Step 2: Initialize Docker Buildx multi-platform builder
+      - name: Set Up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Step 3: Determine target Docker Hub image repository name
+      - name: Resolve Image Repository
+        id: image
+        run: |
+          set -euo pipefail
+
+          if [ -n "${{ secrets.DOCKERHUB_REPOSITORY }}" ]; then
+            IMAGE_REPO="${{ secrets.DOCKERHUB_REPOSITORY }}"
+          else
+            IMAGE_REPO="${{ secrets.DOCKERHUB_USERNAME }}/tripbrain"
+          fi
+
+          echo "repo=$IMAGE_REPO" >> "$GITHUB_OUTPUT"
+
+      # Step 4: Authenticate with Docker Hub using repository secrets
+      - name: Login To Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # Step 5: Generate Docker image tags (version tag and 'latest')
+      - name: Extract Docker Metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ steps.image.outputs.repo }}
+          tags: |
+            type=raw,value=${{ needs.version-and-tag.outputs.version }}
+            type=raw,value=latest
+
+      # Step 6: Build container image and push to Docker Hub with GitHub layer caching
+      - name: Build And Push Image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+          # Enable GitHub Actions cache backend for fast incremental builds
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+          # Attach build provenance and Software Bill of Materials (SBOM) metadata
+          provenance: true
+          sbom: true
