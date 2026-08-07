@@ -1,7 +1,7 @@
 # ==========================================================
 # Stage 1: Build the Angular frontend
 # ==========================================================
-FROM node:22-alpine AS frontend-builder
+FROM --platform=$BUILDPLATFORM node:22-alpine AS frontend-builder
 WORKDIR /app
 
 # Copy package lock and install dependencies
@@ -53,4 +53,4 @@ RUN mkdir -p uploads/final_trip_pdfs
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-Xms128m", "-Xmx192m", "-Xss256k", "-XX:MaxMetaspaceSize=180m", "-XX:ReservedCodeCacheSize=64m", "-XX:CICompilerCount=2", "-XX:+UseSerialGC", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-Xms512m", "-Xmx896m", "-Xss512k", "-XX:MaxMetaspaceSize=256m", "-XX:ReservedCodeCacheSize=128m", "-XX:CICompilerCount=2", "-XX:+UseSerialGC", "-jar", "app.jar"]

@@ -250,7 +250,11 @@ jobs:
         with:
           ref: ${{ github.sha }}
 
-      # Step 2: Initialize Docker Buildx multi-platform builder
+      # Step 2: Set Up QEMU for ARM64 cross-platform emulation
+      - name: Set Up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      # Step 3: Initialize Docker Buildx multi-platform builder
       - name: Set Up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
