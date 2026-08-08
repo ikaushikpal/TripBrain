@@ -1,10 +1,9 @@
 # Build stage
 FROM gradle:8.11-jdk21 AS builder
 WORKDIR /app
-COPY build.gradle settings.gradle gradlew ./
-COPY gradle ./gradle
+COPY build.gradle settings.gradle ./
 COPY src ./src
-RUN chmod +x gradlew && ./gradlew bootJar --no-daemon
+RUN gradle bootJar --no-daemon
 
 # Execution stage
 FROM eclipse-temurin:21-jre-alpine
