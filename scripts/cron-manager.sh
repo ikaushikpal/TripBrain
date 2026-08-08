@@ -16,10 +16,8 @@ CERT_SCRIPT="${PLATFORM_DIR}/cert-manager/manage_cert.py"
 LOG_DIR="/var/log"
 
 DEPLOY_LOG="${LOG_DIR}/tripbrain-deploy.log"
-CERT_LOG="${LOG_DIR}/tripbrain-cert.log"
-
-DEPLOY_CRON="* * * * * python3 ${DEPLOYER_SCRIPT} >> ${DEPLOY_LOG} 2>&1"
-CERT_CRON="0 3 * * * python3 ${CERT_SCRIPT} tripbrain >> ${CERT_LOG} 2>&1"
+CERT_CRON_TRIPBRAIN="0 3 * * * python3 ${CERT_SCRIPT} tripbrain >> ${LOG_DIR}/tripbrain-cert.log 2>&1"
+CERT_CRON_NETDATA="15 3 * * * python3 ${CERT_SCRIPT} netdata >> ${LOG_DIR}/netdata-cert.log 2>&1"
 
 # ------------------------------------------------------------------------------
 # Helpers
@@ -87,12 +85,20 @@ install_crons() {
         log "1-minute deployment poller cron job is already installed."
     fi
 
-    # Add SSL certificate renewal if not already installed
-    if ! echo "${NEW_CRON}" | grep -Fq "cert-manager/manage_cert.py"; then
-        log "Adding daily 03:00 AM SSL certificate renewal cron job..."
-        NEW_CRON="$(echo "${NEW_CRON}"; echo "${CERT_CRON}")"
+    # Add SSL certificate renewal for tripbrain
+    if ! echo "${NEW_CRON}" | grep -Fq "manage_cert.py tripbrain"; then
+        log "Adding daily 03:00 AM SSL certificate renewal cron job for tripbrain..."
+        NEW_CRON="$(echo "${NEW_CRON}"; echo "${CERT_CRON_TRIPBRAIN}")"
     else
-        log "Daily SSL certificate renewal cron job is already installed."
+        log "Daily SSL certificate renewal cron job for tripbrain is already installed."
+    fi
+
+    # Add SSL certificate renewal for netdata
+    if ! echo "${NEW_CRON}" | grep -Fq "manage_cert.py netdata"; then
+        log "Adding daily 03:15 AM SSL certificate renewal cron job for netdata..."
+        NEW_CRON="$(echo "${NEW_CRON}"; echo "${CERT_CRON_NETDATA}")"
+    else
+        log "Daily SSL certificate renewal cron job for netdata is already installed."
     fi
 
     # Atomically update crontab
