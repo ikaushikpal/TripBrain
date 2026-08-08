@@ -5,12 +5,24 @@ management:
   endpoints:
     web:
       exposure:
-        include: health, info
+        include: "*"
   endpoint:
     health:
       show-details: always
 
 spring:
+  boot:
+    admin:
+      client:
+        url: ${SPRING_BOOT_ADMIN_URL:http://localhost:8085}
+        username: ${SPRING_BOOT_ADMIN_USERNAME:admin}
+        password: ${SPRING_BOOT_ADMIN_PASSWORD:admin123}
+        auto-registration: true
+        instance:
+          service-url: ${SPRING_BOOT_SERVICE_URL:http://localhost:8080}
+          management-url: ${SPRING_BOOT_MANAGEMENT_URL:http://localhost:8080/actuator}
+          health-url: ${SPRING_BOOT_HEALTH_URL:http://localhost:8080/actuator/health}
+          prefer-ip: false
   config:
     import: optional:file:.env[.properties]
   data:
@@ -110,7 +122,7 @@ app:
     public-base-url: /resources  # served via Spring's resource handler
   jwt:
     secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
-    access-token-expiration-ms: 3600000 # 1 hour
+    access-token-expiration-ms: 1800000 # 30 minutes (30 * 60 * 1000)
     refresh-token-expiration-ms: 604800000 # 7 days
 
 aws:

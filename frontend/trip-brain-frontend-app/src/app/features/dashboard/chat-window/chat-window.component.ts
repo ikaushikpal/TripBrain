@@ -15,6 +15,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { ChatService, ChatMessage } from '../../../core/services/chat.service';
 import { NotificationService } from '../../../core/services/notification.service';
@@ -57,6 +58,7 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
   showScrollBottomButton = signal(false);
   inputMessage = '';
   private shouldScrollToBottom = false;
+  private activeStreamSubscription?: Subscription;
 
   // New signals for wallpaper and file upload
   wallpaperUrl = signal<string | null>(null);
@@ -85,10 +87,9 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
   detailsMinHotelStars = 3;
   detailsMaxHotelStars = 5;
   detailsNotes = '';
-  detailsShowOptional = false;
   detailsCurrency = 'INR';
 
-  // Advanced optional settings
+  // Advanced optional fields
   detailsCabinClass = 'ECONOMY';
   detailsDirectFlightsOnly = false;
   detailsPrivateTransfer = false;
@@ -100,71 +101,35 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
   detailsMustVisit = '';
   detailsAvoid = '';
 
-  // Subgroup collapse states
+  // Expandable UI sections in Details Modal
   showDetailsTransportGroup = signal(false);
   showDetailsHotelGroup = signal(false);
   showDetailsDiningGroup = signal(false);
+  showDetailsActivitiesGroup = signal(false);
   showDetailsProfileGroup = signal(false);
   showDetailsPlacesGroup = signal(false);
 
-  nextCursor: number | null = null;
-  isLoadingMore = signal(false);
-
-  // Custom Confirmation Modal State
+  // Confirm Modal
   showConfirmModal = signal(false);
   confirmTitle = signal('');
   confirmMessage = signal('');
-  confirmCallback: (() => void) | null = null;
+  confirmAction?: () => void;
 
-  openConfirm(title: string, message: string, callback: () => void) {
-    this.confirmTitle.set(title);
-    this.confirmMessage.set(message);
-    this.confirmCallback = callback;
-    this.showConfirmModal.set(true);
-  }
-
-  onConfirmAccept() {
-    this.showConfirmModal.set(false);
-    if (this.confirmCallback) {
-      this.confirmCallback();
-    }
-  }
-
-  onConfirmCancel() {
-    this.showConfirmModal.set(false);
-    this.confirmCallback = null;
-  }
-
-  get allMessages() {
-    return this.messages;
-  }
-
-  private updateSub: any;
+  // Infinite Scroll Pagination
+  nextCursor: number | null = null;
+  isLoadingMore = signal(false);
 
   ngOnInit() {
-    this.updateSub = this.chatService.conversationUpdated$.subscribe(() => {
-      this.fetchLatestPageInBackground();
-    });
-  }
-
-  ngOnDestroy() {
-    if (this.updateSub) {
-      this.updateSub.unsubscribe();
-    }
+    this.loadMessages();
+    this.loadWallpaper();
   }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['conversationId']) {
-      const current = changes['conversationId'].currentValue;
-      if (current) {
-        this.loadMessages();
-        this.loadWallpaper();
-      } else {
-        this.messages.set([]);
-        this.wallpaperUrl.set(null);
-        this.currentConversation.set(null);
-        this.inputMessage = '';
-      }
+      this.stopStreaming();
+      this.loadMessages();
+      this.loadWallpaper();
+      this.showHamburgerMenu.set(false);
     }
   }
 
@@ -175,28 +140,28 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
     }
   }
 
-  private scrollToBottom() {
-    try {
-      const el = this.messagesContainer?.nativeElement;
-      if (el) el.scrollTop = el.scrollHeight;
-    } catch (e) {}
+  ngOnDestroy() {
+    this.stopStreaming();
   }
 
   onScroll(event: Event) {
     const el = event.target as HTMLElement;
-    if (el.scrollTop < 50 && this.nextCursor !== null && !this.isLoadingMore()) {
-      this.loadMoreMessages();
-    }
+    if (!el) return;
 
-    // Show button if user scrolled up more than 150px from the bottom
+    // Show scroll bottom button if scrolled up > 150px
     const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
     this.showScrollBottomButton.set(distanceFromBottom > 150);
+
+    // Infinite scroll up
+    if (el.scrollTop < 80 && !this.isLoadingMore() && this.nextCursor !== null) {
+      this.loadMoreMessages();
+    }
   }
 
-  scrollToBottomSmooth() {
+  scrollToBottom() {
     try {
-      const el = this.messagesContainer?.nativeElement;
-      if (el) {
+      if (this.messagesContainer?.nativeElement) {
+        const el = this.messagesContainer.nativeElement;
         el.scrollTo({
           top: el.scrollHeight,
           behavior: 'smooth',
@@ -355,43 +320,17 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
     }
   }
 
-  private copyShareLink(conversationId: string) {
-    const origin = typeof window !== 'undefined' ? window.location.origin : '';
-    const shareUrl = `${origin}/share/${conversationId}`;
+  private copyShareLink(convId: string) {
+    const shareUrl = `${window.location.origin}/share/${convId}`;
     navigator.clipboard
       .writeText(shareUrl)
       .then(() => {
-        this.notificationService.success('Read-only share link copied to clipboard!');
+        this.notificationService.success('Shareable trip plan link copied to clipboard!');
         this.showHamburgerMenu.set(false);
       })
-      .catch((err) => {
-        console.error('Failed to copy link', err);
-        this.notificationService.info(`Here is your share link: ${shareUrl}`);
+      .catch(() => {
+        this.notificationService.error('Failed to copy link.');
       });
-  }
-
-  deleteActiveConversation() {
-    const conv = this.currentConversation();
-    if (!conv) return;
-
-    this.openConfirm(
-      'Delete Conversation',
-      'Are you sure you want to delete this conversation?',
-      () => {
-        this.chatService.deleteConversation(conv.id).subscribe({
-          next: () => {
-            this.showHamburgerMenu.set(false);
-            this.chatService.conversationUpdated$.emit();
-            this.conversationId = null;
-            this.currentConversation.set(null);
-            this.messages.set([]);
-          },
-          error: () => {
-            this.notificationService.error('Failed to delete conversation.');
-          },
-        });
-      },
-    );
   }
 
   openDetailsModal() {
@@ -402,7 +341,7 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
         this.detailsDestination = req.destination || '';
         this.detailsStartDate = req.startDate || '';
         this.detailsEndDate = req.endDate || '';
-        this.detailsBudget = req.maxBudget;
+        this.detailsBudget = req.maxBudget || 100000;
         this.detailsHeadcount = req.headcount || 2;
         this.detailsBudgetClass = req.budgetPreference || 'MID';
         this.detailsTravelerType = req.travellerType || 'COUPLE';
@@ -428,13 +367,13 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
         this.showDetailsTransportGroup.set(false);
         this.showDetailsHotelGroup.set(false);
         this.showDetailsDiningGroup.set(false);
-        this.showDetailsProfileGroup.set(false);
-        this.showDetailsPlacesGroup.set(false);
+        this.showDetailsActivitiesGroup.set(false);
 
         this.showDetailsModal.set(true);
+        this.showHamburgerMenu.set(false);
       },
       error: () => {
-        this.notificationService.info('No travel preferences are configured for this chat.');
+        this.notificationService.error('Failed to load travel preferences.');
       },
     });
   }
@@ -443,26 +382,20 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
     event.preventDefault();
     if (!this.conversationId) return;
 
-    if (
-      !this.detailsSource ||
-      !this.detailsDestination ||
-      !this.detailsStartDate ||
-      !this.detailsEndDate
-    ) {
-      this.notificationService.error('Source, Destination, Start Date and End Date are required.');
-      return;
-    }
-    if (new Date(this.detailsEndDate) < new Date(this.detailsStartDate)) {
-      this.notificationService.error('End date must be on or after the start date.');
-      return;
-    }
+    const parseList = (str: string) =>
+      str
+        ? str
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [];
 
-    const payload = {
+    const updatePayload = {
       source: this.detailsSource,
       destination: this.detailsDestination,
       startDate: this.detailsStartDate,
       endDate: this.detailsEndDate,
-      maxBudget: this.detailsBudget,
+      maxBudget: this.detailsBudget || 100000,
       headcount: this.detailsHeadcount,
       budgetPreference: this.detailsBudgetClass,
       travellerType: this.detailsTravelerType,
@@ -472,6 +405,7 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
       maxHotelStars: this.detailsMaxHotelStars,
       notes: this.detailsNotes,
       currency: this.detailsCurrency,
+
       cabinClass: this.detailsCabinClass,
       directFlightsOnly: this.detailsDirectFlightsOnly,
       privateTransferPreferred: this.detailsPrivateTransfer,
@@ -480,23 +414,12 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
       nationality: this.detailsNationality,
       accessibilityRequired: this.detailsAccessibility,
       maxTravelTimePerDay: this.detailsMaxTravelTime,
-      mustVisitPlaces: this.detailsMustVisit
-        ? this.detailsMustVisit
-            .split(',')
-            .map((s) => s.trim())
-            .filter(Boolean)
-        : [],
-      avoidPlaces: this.detailsAvoid
-        ? this.detailsAvoid
-            .split(',')
-            .map((s) => s.trim())
-            .filter(Boolean)
-        : [],
+      mustVisitPlaces: parseList(this.detailsMustVisit),
+      avoidPlaces: parseList(this.detailsAvoid),
     };
 
-    this.chatService.updateTripRequest(this.conversationId, payload).subscribe({
+    this.chatService.updateTripRequest(this.conversationId, updatePayload).subscribe({
       next: () => {
-        this.mapService.clearCache(this.conversationId!);
         this.showDetailsModal.set(false);
         this.loadMessages();
         this.loadWallpaper();
@@ -510,14 +433,27 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
   }
 
   onDetailsLocationChange() {
-    this.detailsBudget = null;
-    this.detailsHeadcount = 1;
-    this.detailsAdults = 1;
-    this.detailsChildren = 0;
-    this.detailsMinHotelStars = 3;
-    this.detailsMaxHotelStars = 5;
-    this.detailsNotes = '';
+    if (!this.detailsBudget) {
+      this.detailsBudget = 100000;
+    }
   }
+
+  stopStreaming() {
+    if (this.activeStreamSubscription) {
+      this.activeStreamSubscription.unsubscribe();
+      this.activeStreamSubscription = undefined;
+    }
+    this.isStreaming.set(false);
+    this.streamStatus.set(null);
+
+    const msgs = this.messages();
+    const lastMsg = msgs[msgs.length - 1];
+    if (lastMsg && 'isStreaming' in lastMsg) {
+      lastMsg.isStreaming = false;
+    }
+    this.messages.set([...msgs]);
+  }
+
   sendMessage(event?: Event) {
     if (event) event.preventDefault();
 
@@ -541,250 +477,177 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
     this.isStreaming.set(true);
     this.streamStatus.set('Connecting to AI...');
 
-    this.chatService.getChatStream(this.conversationId!, content).subscribe({
-      next: ({ event, data }) => {
-        if (event === 'status') {
-          this.streamStatus.set(data);
-        } else if (event === 'text') {
-          assistantBuffer.content += data;
+    this.activeStreamSubscription = this.chatService
+      .getChatStream(this.conversationId!, content)
+      .subscribe({
+        next: ({ event, data }) => {
+          if (event === 'status') {
+            this.streamStatus.set(data);
+          } else if (event === 'text') {
+            assistantBuffer.content += data;
+            this.messages.update((msgs) => [...msgs]);
+            this.shouldScrollToBottom = true;
+          }
+        },
+        error: () => {
+          this.streamStatus.set(null);
+          this.isStreaming.set(false);
+          assistantBuffer.isStreaming = false;
+          this.messages.update((msgs) => [...msgs]);
+        },
+        complete: () => {
+          this.streamStatus.set(null);
+          this.isStreaming.set(false);
+          assistantBuffer.isStreaming = false;
           this.messages.update((msgs) => [...msgs]);
           this.shouldScrollToBottom = true;
+          if (this.conversationId) {
+            this.mapService.clearCache(this.conversationId);
+          }
+          this.chatService.conversationUpdated$.emit();
+          this.loadMessages();
+        },
+      });
+  }
+
+  get allMessages() {
+    return this.messages;
+  }
+
+  getMarkdownHtml(msg: ChatMessage | AssistantBuffer): SafeHtml {
+    const rawMarkdown = msg.content || '';
+    const parsedHtml = marked.parse(rawMarkdown, { async: false }) as string;
+    return this.sanitizer.bypassSecurityTrustHtml(parsedHtml);
+  }
+
+  hasPdfDownload(msg: ChatMessage | AssistantBuffer): boolean {
+    if (msg.role !== 'ASSISTANT') return false;
+    return (msg.content || '').includes('[PDF_READY_DOWNLOAD]');
+  }
+
+  downloadPdf() {
+    if (!this.conversationId) return;
+    this.isExporting.set(true);
+    this.chatService.getDownloadUrl(this.conversationId).subscribe({
+      next: (res) => {
+        this.isExporting.set(false);
+        if (res?.downloadUrl) {
+          window.open(res.downloadUrl, '_blank');
+          this.notificationService.success('PDF itinerary download started!');
+        } else {
+          this.notificationService.error('Download URL not available.');
         }
       },
       error: () => {
-        this.streamStatus.set(null);
-        this.isStreaming.set(false);
-        assistantBuffer.isStreaming = false;
-        this.messages.update((msgs) => [...msgs]);
-      },
-      complete: () => {
-        this.streamStatus.set(null);
-        this.isStreaming.set(false);
-        assistantBuffer.isStreaming = false;
-        this.messages.update((msgs) => [...msgs]);
-        this.shouldScrollToBottom = true;
-        if (this.conversationId) {
-          this.mapService.clearCache(this.conversationId);
-        }
-        this.chatService.conversationUpdated$.emit();
-        this.loadMessages();
+        this.isExporting.set(false);
+        this.notificationService.error('Failed to generate PDF download URL.');
       },
     });
   }
 
-  onFileSelected(event: Event) {
-    const input = event.target as HTMLInputElement;
-    if (!input.files || input.files.length === 0 || !this.conversationId) return;
-
-    const file = input.files[0];
-    this.isFileUploading.set(true);
-    this.uploadError.set(null);
-    this.uploadProgressText.set('Obtaining upload link...');
-
-    // 1. Fetch Presigned URL from Backend
-    this.chatService.getPresignedUploadUrl(this.conversationId, file.name, file.type).subscribe({
-      next: (res) => {
-        this.uploadProgressText.set('Uploading directly to Backblaze...');
-        // 2. Upload file directly to Backblaze B2 S3 bucket
-        this.chatService.uploadToPresignedUrl(res.uploadUrl, file).subscribe({
+  deleteConversation() {
+    if (!this.conversationId) return;
+    this.openConfirm(
+      'Delete Conversation',
+      'Are you sure you want to delete this conversation? All itinerary plans, PDF documents, and shared public links will be permanently deleted.',
+      () => {
+        this.chatService.deleteConversation(this.conversationId!).subscribe({
           next: () => {
-            this.uploadProgressText.set('Running document parsing & OCR extraction...');
-            // 3. Request backend to run parsing, OCR (Tess4J), check relevance and index context
-            this.chatService
-              .processUpload(this.conversationId!, res.fileKey, file.type, file.name)
-              .subscribe({
-                next: (processRes) => {
-                  this.isFileUploading.set(false);
-                  if (processRes.status === 'REJECTED') {
-                    this.uploadError.set(processRes.message);
-                  } else {
-                    this.loadMessages(); // Refresh messages to show the extracted document turn
-                  }
-                },
-                error: (err) => {
-                  this.isFileUploading.set(false);
-                  this.uploadError.set(
-                    err?.error?.message || 'Failed to process document content.',
-                  );
-                },
-              });
+            const deletedId = this.conversationId;
+            this.showHamburgerMenu.set(false);
+            this.chatService.conversationUpdated$.emit();
+            if (deletedId) {
+              this.chatService.conversationDeleted$.emit(deletedId);
+            }
+            this.notificationService.success('Conversation and associated itinerary deleted.');
           },
           error: () => {
-            this.isFileUploading.set(false);
-            this.uploadError.set('Failed to upload file to storage.');
+            this.notificationService.error('Failed to delete conversation.');
           },
         });
       },
-      error: () => {
-        this.isFileUploading.set(false);
-        this.uploadError.set('Failed to authorize file upload.');
-      },
-    });
+    );
   }
 
+  detailsShowOptional = false;
+
   generateItinerary() {
-    this.inputMessage = 'Generate Itinerary';
     this.sendMessage();
   }
 
-  hasPdfDownload(msg: any): boolean {
-    if (msg.messageType === 'PDF_DOWNLOAD') return true;
-    return msg.content && msg.content.includes('[PDF_DOWNLOAD_METADATA:');
+  deleteActiveConversation() {
+    this.deleteConversation();
+  }
+
+  downloadPdfFile(url?: string, dest?: string) {
+    this.downloadPdf();
   }
 
   getPdfUrl(msg: any): string {
-    if (msg.messageType === 'PDF_DOWNLOAD') {
-      try {
-        const meta = JSON.parse(msg.metadataJson);
-        return meta.url;
-      } catch (e) {
-        return '';
-      }
-    }
-    if (msg.content && msg.content.includes('[PDF_DOWNLOAD_METADATA:')) {
-      try {
-        const start = msg.content.indexOf('[PDF_DOWNLOAD_METADATA:');
-        const end = msg.content.indexOf(']', start);
-        const jsonStr = msg.content.substring(start + '[PDF_DOWNLOAD_METADATA:'.length, end);
-        const meta = JSON.parse(jsonStr);
-        return meta.url;
-      } catch (e) {
-        return '';
-      }
-    }
     return '';
   }
 
   getPdfDestination(msg: any): string {
-    if (msg.messageType === 'PDF_DOWNLOAD') {
-      try {
-        const meta = JSON.parse(msg.metadataJson);
-        return meta.destination || 'Trip';
-      } catch (e) {
-        return 'Trip';
-      }
-    }
-    if (msg.content && msg.content.includes('[PDF_DOWNLOAD_METADATA:')) {
-      try {
-        const start = msg.content.indexOf('[PDF_DOWNLOAD_METADATA:');
-        const end = msg.content.indexOf(']', start);
-        const jsonStr = msg.content.substring(start + '[PDF_DOWNLOAD_METADATA:'.length, end);
-        const meta = JSON.parse(jsonStr);
-        return meta.destination || 'Trip';
-      } catch (e) {
-        return 'Trip';
-      }
-    }
-    return 'Trip';
+    return '';
   }
 
-  getCleanContent(msg: any): string {
-    let content = msg.content || '';
-    if (content.includes('[PDF_DOWNLOAD_METADATA:')) {
-      const start = content.indexOf('[PDF_DOWNLOAD_METADATA:');
-      const end = content.indexOf(']', start);
-      content = content.replace(content.substring(start, end + 1), '').trim();
-    }
-    return content;
+  scrollToBottomSmooth() {
+    this.scrollToBottom();
   }
 
-  getMarkdownHtml(msg: any): SafeHtml {
-    const clean = this.getCleanContent(msg);
-    if (!clean) return '';
-    try {
-      let rawHtml = marked.parse(clean) as string;
-      rawHtml = rawHtml.replace(/href="([^"]+)"/g, (match, url) => {
-        let processedUrl = url;
-        if (url.includes('google.com/maps/')) {
-          let query = '';
-          if (url.includes('/place/')) {
-            const parts = url.split('/place/');
-            query = parts[1] ? parts[1].split('/')[0] : '';
-          } else if (url.includes('/search/')) {
-            const parts = url.split('/search/');
-            if (parts[1]) {
-              if (parts[1].startsWith('?')) {
-                try {
-                  const urlObj = new URL(url);
-                  query = urlObj.searchParams.get('query') || '';
-                } catch {
-                  const queryPart = parts[1].split('query=')[1];
-                  query = queryPart ? queryPart.split('&')[0] : '';
-                }
-              } else {
-                query = parts[1].split('/')[0];
-              }
-            }
-          }
-          if (query) {
-            query = query.replace(/[)/]+$/, '');
-            processedUrl = `https://www.google.com/maps/search/?api=1&query=${query}`;
-          }
-        }
-        return `href="${processedUrl}" target="_blank" rel="noopener noreferrer"`;
-      });
-      return this.sanitizer.bypassSecurityTrustHtml(rawHtml);
-    } catch (e) {
-      return clean;
-    }
-  }
-
-  downloadPdfFile(url: string, destination: string) {
-    if (!this.conversationId) {
-      if (url) {
-        window.open(`${BASE_URL}${url}`, '_blank');
-      }
-      return;
-    }
-    this.chatService.getDownloadUrl(this.conversationId).subscribe({
-      next: (res) => {
-        console.log('Frontend Direct B2 Download URL:', res.downloadUrl);
-        window.open(res.downloadUrl, '_blank');
+  onFileSelected(event: any) {
+    const file = event.target?.files?.[0];
+    if (!file || !this.conversationId) return;
+    this.isFileUploading.set(true);
+    this.uploadProgressText.set('Ingesting document...');
+    this.chatService.uploadPdf(this.conversationId, file).subscribe({
+      next: () => {
+        this.isFileUploading.set(false);
+        this.notificationService.success('PDF document ingested successfully!');
+        this.loadMessages();
       },
-      error: (err) => {
-        console.error('Failed to fetch direct download url, falling back to redirect:', err);
-        const token = this.authService.getAccessToken();
-        const downloadUrl =
-          `${BASE_URL}${url}` + (token ? `?token=${encodeURIComponent(token)}` : '');
-        window.open(downloadUrl, '_blank');
+      error: () => {
+        this.isFileUploading.set(false);
+        this.notificationService.error('Failed to ingest PDF document.');
       },
     });
   }
 
   onDetailsHeadcountChange() {
-    if (this.detailsHeadcount < 1) this.detailsHeadcount = 1;
-
-    // Suggest traveler type based on headcount
-    if (this.detailsHeadcount === 1) {
-      this.detailsTravelerType = 'SOLO';
-    } else if (this.detailsHeadcount === 2) {
-      if (this.detailsTravelerType !== 'COUPLE' && this.detailsTravelerType !== 'HONEYMOON') {
-        this.detailsTravelerType = 'COUPLE';
-      }
-    } else {
-      if (
-        this.detailsTravelerType !== 'FAMILY_WITH_KIDS' &&
-        this.detailsTravelerType !== 'GROUP_FRIENDS'
-      ) {
-        this.detailsTravelerType = 'FAMILY_WITH_KIDS';
-      }
-    }
-
-    // Set initial adults/children count to match headcount
-    this.detailsAdults = this.detailsHeadcount;
-    this.detailsChildren = 0;
+    this.detailsAdults = Math.max(1, this.detailsHeadcount - this.detailsChildren);
   }
 
   onDetailsAdultsChange() {
-    if (this.detailsAdults < 1) this.detailsAdults = 1;
-    if (this.detailsAdults > this.detailsHeadcount) this.detailsAdults = this.detailsHeadcount;
-    this.detailsChildren = this.detailsHeadcount - this.detailsAdults;
+    this.detailsHeadcount = this.detailsAdults + this.detailsChildren;
   }
 
   onDetailsChildrenChange() {
-    if (this.detailsChildren < 0) this.detailsChildren = 0;
-    if (this.detailsChildren >= this.detailsHeadcount)
-      this.detailsChildren = this.detailsHeadcount - 1;
-    this.detailsAdults = this.detailsHeadcount - this.detailsChildren;
+    this.detailsHeadcount = this.detailsAdults + this.detailsChildren;
+  }
+
+  openConfirm(title: string, message: string, action: () => void) {
+    this.confirmTitle.set(title);
+    this.confirmMessage.set(message);
+    this.confirmAction = action;
+    this.showConfirmModal.set(true);
+  }
+
+  confirmModalYes() {
+    if (this.confirmAction) {
+      this.confirmAction();
+    }
+    this.showConfirmModal.set(false);
+  }
+
+  confirmModalNo() {
+    this.showConfirmModal.set(false);
+  }
+
+  onConfirmAccept() {
+    this.confirmModalYes();
+  }
+
+  onConfirmCancel() {
+    this.confirmModalNo();
   }
 }

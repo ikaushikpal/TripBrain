@@ -424,8 +424,9 @@
         ></textarea>
 
         <button
+          *ngIf="!isStreaming()"
           (click)="sendMessage()"
-          [disabled]="isStreaming() || !inputMessage.trim()"
+          [disabled]="!inputMessage.trim()"
           class="px-4 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-white flex items-center gap-2 font-semibold text-sm shrink-0"
         >
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -436,6 +437,17 @@
               d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
             />
           </svg>
+        </button>
+
+        <button
+          *ngIf="isStreaming()"
+          (click)="stopStreaming()"
+          class="px-4 py-3 rounded-xl bg-red-600 hover:bg-red-500 transition-all text-white flex items-center gap-2 font-semibold text-sm shrink-0 shadow-lg shadow-red-900/30 animate-pulse"
+        >
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <rect x="6" y="6" width="12" height="12" rx="2" />
+          </svg>
+          <span>Stop</span>
         </button>
       </div>
     </div>

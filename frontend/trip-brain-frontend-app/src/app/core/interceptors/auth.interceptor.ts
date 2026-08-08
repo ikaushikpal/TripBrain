@@ -9,7 +9,7 @@ import {
 import { inject } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 import { Observable, throwError, BehaviorSubject, of } from 'rxjs';
-import { catchError, switchMap, filter, take } from 'rxjs/operators';
+import { catchError, switchMap, filter, take, timeout } from 'rxjs/operators';
 
 let isRefreshing = false;
 const refreshTokenSubject = new BehaviorSubject<string | null>(null);
@@ -60,6 +60,13 @@ function handle401Error(
     isRefreshing = true;
     refreshTokenSubject.next(null);
 
+    const refreshToken = authService.getRefreshToken();
+    if (!refreshToken) {
+      isRefreshing = false;
+      authService.logout();
+      return throwError(() => new Error('No refresh token available'));
+    }
+
     return authService.refreshAccessToken().pipe(
       switchMap((res) => {
         isRefreshing = false;
@@ -68,6 +75,7 @@ function handle401Error(
       }),
       catchError((err) => {
         isRefreshing = false;
+        refreshTokenSubject.next(null);
         authService.logout();
         return throwError(() => err);
       }),
@@ -76,7 +84,12 @@ function handle401Error(
     return refreshTokenSubject.pipe(
       filter((token) => token !== null),
       take(1),
+      timeout(10000),
       switchMap((token) => next(addTokenHeader(request, token!))),
+      catchError((err) => {
+        authService.logout();
+        return throwError(() => err);
+      }),
     );
   }
 }

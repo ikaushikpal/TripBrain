@@ -43,6 +43,7 @@ export class ChatService {
   private readonly authService = inject(AuthService);
   private readonly apiUrl = BASE_API_URL;
   public readonly conversationUpdated$ = new EventEmitter<void>();
+  public readonly conversationDeleted$ = new EventEmitter<string>();
 
   getUserConversations(): Observable<Conversation[]> {
     const cachedStr =

@@ -10,7 +10,9 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from deployer.config import DeploymentConfig
 from deployer.docker_manager import DockerManager
+from deployer.email_reporter import EmailReporter
 from deployer.health_checker import HealthChecker
+from deployer.log_manager import LogManager
 from deployer.nginx_manager import NginxManager
 from deployer.orchestrator import BlueGreenOrchestrator
 from deployer.state_manager import StateManager
@@ -26,6 +28,8 @@ def main() -> None:
     docker_manager = DockerManager(config, runner, logger)
     health_checker = HealthChecker(config, logger)
     nginx_manager = NginxManager(config, runner, logger)
+    log_manager = LogManager(config, logger)
+    email_reporter = EmailReporter(config, logger)
 
     orchestrator = BlueGreenOrchestrator(
         config=config,
@@ -36,13 +40,27 @@ def main() -> None:
         nginx_manager=nginx_manager,
     )
 
+    success = False
+    error_message = None
+
     try:
         orchestrator.execute()
+        success = True
     except Exception as error:
+        success = False
+        error_message = str(error)
         logger.header("DEPLOYMENT ERROR")
-        logger.log(str(error))
+        logger.log(error_message)
         logger.log("=" * 60)
-        sys.exit(1)
+    finally:
+        # 1. Save full execution logs to disk (/data/tripbrain/platform-deployer-logs/date-time.log)
+        log_manager.save_log_file()
+
+        # 2. Dispatch deployment status report and full logs via Gmail SMTP
+        email_reporter.send_report(success=success, error_message=error_message)
+
+        if not success:
+            sys.exit(1)
 
 
 if __name__ == "__main__":

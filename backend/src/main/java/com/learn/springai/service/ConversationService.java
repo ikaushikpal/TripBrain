@@ -179,7 +179,15 @@ public class ConversationService {
 
         if (conversation != null) {
             conversation.setDeleted(true);
+            conversation.setIsPublic(false);
             conversation.setLastUpdated(LocalDateTime.now());
+            
+            if (conversation.getTripPdf() != null) {
+                TripPdf pdf = conversation.getTripPdf();
+                pdf.setPublic(false);
+                tripPdfRepository.save(pdf);
+            }
+
             conversationRepository.save(conversation);
             databaseViewManager.refreshViewAsync();
         } else {

@@ -3,7 +3,9 @@ TripBrain Platform Blue-Green Deployer Package.
 """
 from deployer.config import DeploymentConfig
 from deployer.docker_manager import DockerManager
+from deployer.email_reporter import EmailReporter
 from deployer.health_checker import HealthChecker
+from deployer.log_manager import LogManager
 from deployer.nginx_manager import NginxManager
 from deployer.orchestrator import BlueGreenOrchestrator
 from deployer.state_manager import StateManager
@@ -17,5 +19,7 @@ __all__ = [
     "DockerManager",
     "HealthChecker",
     "NginxManager",
+    "LogManager",
+    "EmailReporter",
     "BlueGreenOrchestrator",
 ]

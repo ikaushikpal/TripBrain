@@ -239,6 +239,7 @@ export class SidebarComponent implements OnInit {
       () => {
         this.chatService.deleteConversation(id).subscribe({
           next: () => {
+            this.chatService.conversationDeleted$.emit(id);
             if (this.selectedId() === id) {
               this.selectedId.set(null);
               this.conversationSelected.emit('');

@@ -2,11 +2,13 @@
   class="fixed inset-0 z-[1000] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
 >
   <div
-    class="relative w-full max-w-4xl bg-gray-900 border border-gray-700 rounded-2xl overflow-hidden shadow-2xl shadow-blue-900/30"
+    [style.transform]="'translate(' + translateX + 'px, ' + translateY + 'px)'"
+    class="relative w-full max-w-4xl bg-gray-900 border border-gray-700 rounded-2xl overflow-hidden shadow-2xl shadow-blue-900/30 transition-transform duration-75"
   >
-    <!-- Header -->
+    <!-- Header (Draggable Handle) -->
     <div
-      class="flex items-center justify-between px-6 py-4 border-b border-gray-700 bg-gray-900/50 backdrop-blur-sm"
+      (mousedown)="onMouseDown($event)"
+      class="flex items-center justify-between px-6 py-4 border-b border-gray-700 bg-gray-900/80 backdrop-blur-sm cursor-move select-none"
     >
       <div class="flex items-center gap-3">
         <div
@@ -21,7 +23,10 @@
             />
           </svg>
         </div>
-        <h3 class="text-white font-bold text-lg">Route Map</h3>
+        <div>
+          <h3 class="text-white font-bold text-lg">Route Map</h3>
+          <p class="text-xs text-gray-400">Drag header to reposition map modal</p>
+        </div>
       </div>
       <button
         (click)="closeMap.emit()"
