@@ -1,19 +1,39 @@
-<div class="fixed inset-0 z-[1000] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-  <div class="relative w-full max-w-4xl bg-gray-900 border border-gray-700 rounded-2xl overflow-hidden shadow-2xl shadow-blue-900/30">
-
+<div
+  class="fixed inset-0 z-[1000] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+>
+  <div
+    class="relative w-full max-w-4xl bg-gray-900 border border-gray-700 rounded-2xl overflow-hidden shadow-2xl shadow-blue-900/30"
+  >
     <!-- Header -->
-    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-700 bg-gray-900/50 backdrop-blur-sm">
+    <div
+      class="flex items-center justify-between px-6 py-4 border-b border-gray-700 bg-gray-900/50 backdrop-blur-sm"
+    >
       <div class="flex items-center gap-3">
-        <div class="w-8 h-8 bg-blue-600/20 border border-blue-600/50 rounded-lg flex items-center justify-center">
+        <div
+          class="w-8 h-8 bg-blue-600/20 border border-blue-600/50 rounded-lg flex items-center justify-center"
+        >
           <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+            />
           </svg>
         </div>
         <h3 class="text-white font-bold text-lg">Route Map</h3>
       </div>
-      <button (click)="closeMap.emit()" class="text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg p-2 transition-colors">
+      <button
+        (click)="closeMap.emit()"
+        class="text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg p-2 transition-colors"
+      >
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          />
         </svg>
       </button>
     </div>
@@ -22,25 +42,39 @@
     <div #mapContainer id="trip-map" class="w-full h-[500px] bg-gray-800"></div>
 
     <!-- Loading State -->
-    <div *ngIf="isLoading" class="absolute inset-0 top-[73px] flex items-center justify-center bg-gray-900/80">
+    <div
+      *ngIf="isLoading"
+      class="absolute inset-0 top-[73px] flex items-center justify-center bg-gray-900/80"
+    >
       <div class="flex flex-col items-center gap-4">
-        <div class="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        <div
+          class="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"
+        ></div>
         <p class="text-gray-400 text-sm">Loading map route...</p>
       </div>
     </div>
 
     <!-- Error State -->
-    <div *ngIf="errorMsg" class="absolute inset-0 top-[73px] flex items-center justify-center bg-gray-900/80">
+    <div
+      *ngIf="errorMsg"
+      class="absolute inset-0 top-[73px] flex items-center justify-center bg-gray-900/80"
+    >
       <div class="flex flex-col items-center gap-3 p-6 text-center">
-        <div class="w-12 h-12 bg-red-500/20 border border-red-500/50 rounded-full flex items-center justify-center">
+        <div
+          class="w-12 h-12 bg-red-500/20 border border-red-500/50 rounded-full flex items-center justify-center"
+        >
           <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.966-.833-2.732 0L4.07 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.966-.833-2.732 0L4.07 16.5c-.77.833.192 2.5 1.732 2.5z"
+            />
           </svg>
         </div>
         <p class="text-red-400 font-semibold">No route data available</p>
         <p class="text-gray-500 text-sm">This conversation doesn't have geocoded locations yet.</p>
       </div>
     </div>
-
   </div>
 </div>

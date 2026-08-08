@@ -1,27 +1,36 @@
 <div class="flex flex-col h-full">
   <!-- Toolbar -->
-  <div class="px-4 sm:px-6 py-3 border-b border-gray-800 flex items-center justify-between relative z-30 transition-colors duration-300"
-       [class.bg-surface-900]="!wallpaperUrl()"
-       [class.bg-gray-900/40]="wallpaperUrl()">
-    
+  <div
+    class="px-4 sm:px-6 py-3 border-b border-gray-800 flex items-center justify-between relative z-30 transition-colors duration-300"
+    [class.bg-surface-900]="!wallpaperUrl()"
+    [class.bg-gray-900/40]="wallpaperUrl()"
+  >
     <!-- Left Section: Hamburger Menu & Title -->
     <div class="flex items-center gap-2 min-w-0">
       <!-- Toggle Sidebar Hamburger Button -->
-      <button 
-        (click)="toggleSidebar.emit()" 
+      <button
+        (click)="toggleSidebar.emit()"
         [class.md:hidden]="isSidebarOpen"
         class="text-gray-400 hover:text-white hover:bg-gray-800/60 p-1.5 rounded-lg border border-gray-800 hover:border-gray-700 transition-all flex items-center justify-center shrink-0"
         title="Toggle conversation list"
       >
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 6h16M4 12h16M4 18h16"
+          />
         </svg>
       </button>
 
       @if (conversationId) {
         <div class="flex items-center gap-2 min-w-0">
           <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></div>
-          <span class="text-sm font-semibold text-white truncate max-w-[100px] xs:max-w-[140px] sm:max-w-[200px]" [title]="currentConversation()?.title || 'Temporary Chat'">
+          <span
+            class="text-sm font-semibold text-white truncate max-w-[100px] xs:max-w-[140px] sm:max-w-[200px]"
+            [title]="currentConversation()?.title || 'Temporary Chat'"
+          >
             {{ currentConversation()?.title || 'Temporary Chat' }}
           </span>
         </div>
@@ -44,7 +53,12 @@
           title="View the interactive route map for this trip"
         >
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+            />
           </svg>
           <span class="hidden sm:inline">Route Map</span>
         </button>
@@ -55,7 +69,12 @@
           title="View and edit trip request preferences"
         >
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+            />
           </svg>
           <span class="hidden sm:inline">Details</span>
         </button>
@@ -67,7 +86,12 @@
           title="Ask the AI to generate a complete travel itinerary now"
         >
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M13 10V3L4 14h7v7l9-11h-7z"
+            />
           </svg>
           <span class="hidden sm:inline">Generate Itinerary</span>
         </button>
@@ -79,7 +103,9 @@
           title="More actions"
         >
           <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 12c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+            <path
+              d="M12 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 12c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+            />
           </svg>
         </button>
 
@@ -93,9 +119,24 @@
               (click)="togglePublicState()"
               class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-800 text-xs font-semibold flex items-center gap-2 transition-all"
             >
-              <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+              <svg
+                class="w-3.5 h-3.5 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                />
               </svg>
               {{ currentConversation()?.isPublic ? 'Make Private' : 'Make Public' }}
             </button>
@@ -105,8 +146,18 @@
               (click)="shareConversationLink()"
               class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-800 text-xs font-semibold flex items-center gap-2 transition-all"
             >
-              <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 10.742l4.636-2.318a3 3 0 100-3.848L8.684 6.892a3 3 0 100 3.85z"/>
+              <svg
+                class="w-3.5 h-3.5 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M8.684 10.742l4.636-2.318a3 3 0 100-3.848L8.684 6.892a3 3 0 100 3.85z"
+                />
               </svg>
               Share Read-only Link
             </button>
@@ -120,7 +171,12 @@
               class="w-full text-left px-3 py-2 rounded-lg hover:bg-red-950/40 hover:text-red-400 text-red-500 text-xs font-semibold flex items-center gap-2 transition-all"
             >
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                />
               </svg>
               Delete Conversation
             </button>
@@ -132,135 +188,203 @@
 
   <!-- SSE Status Banner -->
   @if (streamStatus()) {
-    <div class="mx-4 mt-3 px-4 py-2.5 rounded-xl bg-blue-950/40 border border-blue-700/50 flex items-center gap-3">
-      <div class="w-5 h-5 border-2 border-blue-400 border-t-transparent rounded-full animate-spin shrink-0"></div>
+    <div
+      class="mx-4 mt-3 px-4 py-2.5 rounded-xl bg-blue-950/40 border border-blue-700/50 flex items-center gap-3"
+    >
+      <div
+        class="w-5 h-5 border-2 border-blue-400 border-t-transparent rounded-full animate-spin shrink-0"
+      ></div>
       <span class="text-blue-300 text-sm font-medium">{{ streamStatus() }}</span>
     </div>
   }
 
   <!-- Upload Loading Status Banner -->
   @if (isFileUploading()) {
-    <div class="mx-4 mt-3 px-4 py-2.5 rounded-xl bg-amber-950/40 border border-amber-700/50 flex items-center gap-3">
-      <div class="w-5 h-5 border-2 border-amber-400 border-t-transparent rounded-full animate-spin shrink-0"></div>
+    <div
+      class="mx-4 mt-3 px-4 py-2.5 rounded-xl bg-amber-950/40 border border-amber-700/50 flex items-center gap-3"
+    >
+      <div
+        class="w-5 h-5 border-2 border-amber-400 border-t-transparent rounded-full animate-spin shrink-0"
+      ></div>
       <span class="text-amber-300 text-sm font-medium">{{ uploadProgressText() }}</span>
     </div>
   }
 
   <!-- Upload Error Status Banner -->
   @if (uploadError()) {
-    <div class="mx-4 mt-3 px-4 py-2.5 rounded-xl bg-red-950/40 border border-red-700/50 flex items-center justify-between gap-3">
+    <div
+      class="mx-4 mt-3 px-4 py-2.5 rounded-xl bg-red-950/40 border border-red-700/50 flex items-center justify-between gap-3"
+    >
       <div class="flex items-center gap-2 text-red-400">
         <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+          />
         </svg>
         <span class="text-xs font-semibold uppercase tracking-wider block">Scan Rejected</span>
         <span class="text-sm font-medium">{{ uploadError() }}</span>
       </div>
       <button (click)="uploadError.set(null)" class="text-red-400 hover:text-red-300 shrink-0">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          />
         </svg>
       </button>
     </div>
   }
 
   <!-- Messages Area Wrapper -->
-  <div class="flex-1 relative bg-cover bg-center overflow-hidden"
-       [style.backgroundImage]="wallpaperUrl() ? 'url(' + wallpaperUrl() + ')' : null">
-    
+  <div
+    class="flex-1 relative bg-cover bg-center overflow-hidden"
+    [style.backgroundImage]="wallpaperUrl() ? 'url(' + wallpaperUrl() + ')' : null"
+  >
     <!-- Dark overlay with high intensity -->
     <div class="absolute inset-0 bg-black/70 z-0 pointer-events-none"></div>
 
     <!-- Scrollable Messages Area -->
-    <div #messagesContainer (scroll)="onScroll($event)"
-         class="absolute inset-0 overflow-y-auto px-6 py-4 space-y-4 scroll-smooth z-10">
-      
+    <div
+      #messagesContainer
+      (scroll)="onScroll($event)"
+      class="absolute inset-0 overflow-y-auto px-6 py-4 space-y-4 scroll-smooth z-10"
+    >
       <!-- Messages Container -->
       <div class="space-y-4 min-h-full flex flex-col justify-between">
         <div>
-        <!-- Infinite Scroll Loading Spinner -->
-        @if (isLoadingMore()) {
-          <div class="flex items-center justify-center py-2">
-            <div class="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-          </div>
-        }
-
-        <!-- Empty State -->
-        @if (!conversationId) {
-          <div class="h-full py-20 flex flex-col items-center justify-center gap-4 text-center">
-            <div class="w-20 h-20 rounded-3xl bg-gradient-to-tr from-blue-600/20 to-amber-500/20 border border-gray-700 flex items-center justify-center">
-              <svg class="w-10 h-10 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-              </svg>
+          <!-- Infinite Scroll Loading Spinner -->
+          @if (isLoadingMore()) {
+            <div class="flex items-center justify-center py-2">
+              <div
+                class="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"
+              ></div>
             </div>
-            <div>
-              <p class="text-gray-300 font-semibold text-lg">Start a conversation</p>
-              <p class="text-gray-500 text-sm mt-1">Select or create a conversation from the sidebar</p>
-            </div>
-          </div>
-        }
+          }
 
-        <!-- Message Bubbles -->
-        @for (msg of allMessages(); track $index) {
-          <div class="mb-4">
-            <!-- USER message -->
-            @if (msg.role === 'USER') {
-              <div class="flex justify-end">
-                <div class="max-w-[85%] md:max-w-[70%] px-4 py-3 rounded-2xl rounded-tr-sm bg-blue-600 text-white text-sm leading-relaxed shadow-lg shadow-blue-900/30">
-                  {{ msg.content }}
-                </div>
+          <!-- Empty State -->
+          @if (!conversationId) {
+            <div class="h-full py-20 flex flex-col items-center justify-center gap-4 text-center">
+              <div
+                class="w-20 h-20 rounded-3xl bg-gradient-to-tr from-blue-600/20 to-amber-500/20 border border-gray-700 flex items-center justify-center"
+              >
+                <svg
+                  class="w-10 h-10 text-gray-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.5"
+                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                  />
+                </svg>
               </div>
-            }
+              <div>
+                <p class="text-gray-300 font-semibold text-lg">Start a conversation</p>
+                <p class="text-gray-500 text-sm mt-1">
+                  Select or create a conversation from the sidebar
+                </p>
+              </div>
+            </div>
+          }
 
-            <!-- ASSISTANT message -->
-            @if (msg.role === 'ASSISTANT') {
-              <div class="flex justify-start gap-3">
-                <div class="hidden md:flex w-8 h-8 rounded-xl shrink-0 bg-blue-600/10 border border-blue-500/20 items-center justify-center text-blue-400">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h.01M15 9h.01M8 13h8" />
-                  </svg>
-                </div>
-                <div class="max-w-[90%] md:max-w-[75%] flex flex-col gap-2">
-                  <div class="px-4 py-3 rounded-2xl rounded-tl-sm bg-gray-800/80 border border-gray-700 text-gray-100 text-sm leading-relaxed backdrop-blur-sm markdown-body">
-                    <div [class.streaming-cursor]="$any(msg).isStreaming" [innerHTML]="getMarkdownHtml(msg)"></div>
+          <!-- Message Bubbles -->
+          @for (msg of allMessages(); track $index) {
+            <div class="mb-4">
+              <!-- USER message -->
+              @if (msg.role === 'USER') {
+                <div class="flex justify-end">
+                  <div
+                    class="max-w-[85%] md:max-w-[70%] px-4 py-3 rounded-2xl rounded-tr-sm bg-blue-600 text-white text-sm leading-relaxed shadow-lg shadow-blue-900/30"
+                  >
+                    {{ msg.content }}
                   </div>
-                  
-                  <!-- PDF Download Button -->
-                  @if (hasPdfDownload(msg)) {
-                    <div class="flex mt-1">
-                      <button
-                        (click)="downloadPdfFile(getPdfUrl(msg), getPdfDestination(msg))"
-                        class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-md shadow-emerald-950/40 border border-emerald-500/30 hover:scale-[1.02] active:scale-95 transition-all duration-200"
-                      >
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                        </svg>
-                        Download Itinerary PDF
-                      </button>
-                    </div>
-                  }
                 </div>
-              </div>
-            }
-          </div>
-        }
+              }
+
+              <!-- ASSISTANT message -->
+              @if (msg.role === 'ASSISTANT') {
+                <div class="flex justify-start gap-3">
+                  <div
+                    class="hidden md:flex w-8 h-8 rounded-xl shrink-0 bg-blue-600/10 border border-blue-500/20 items-center justify-center text-blue-400"
+                  >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h.01M15 9h.01M8 13h8"
+                      />
+                    </svg>
+                  </div>
+                  <div class="max-w-[90%] md:max-w-[75%] flex flex-col gap-2">
+                    <div
+                      class="px-4 py-3 rounded-2xl rounded-tl-sm bg-gray-800/80 border border-gray-700 text-gray-100 text-sm leading-relaxed backdrop-blur-sm markdown-body"
+                    >
+                      <div
+                        [class.streaming-cursor]="$any(msg).isStreaming"
+                        [innerHTML]="getMarkdownHtml(msg)"
+                      ></div>
+                    </div>
+
+                    <!-- PDF Download Button -->
+                    @if (hasPdfDownload(msg)) {
+                      <div class="flex mt-1">
+                        <button
+                          (click)="downloadPdfFile(getPdfUrl(msg), getPdfDestination(msg))"
+                          class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-md shadow-emerald-950/40 border border-emerald-500/30 hover:scale-[1.02] active:scale-95 transition-all duration-200"
+                        >
+                          <svg
+                            class="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                            />
+                          </svg>
+                          Download Itinerary PDF
+                        </button>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
       </div>
     </div>
+
+    <!-- Floating Scroll to Bottom Button -->
+    @if (showScrollBottomButton()) {
+      <button
+        (click)="scrollToBottomSmooth()"
+        class="absolute bottom-6 right-6 z-20 w-11 h-11 rounded-full bg-slate-900/90 hover:bg-slate-800 text-slate-100 hover:text-white shadow-2xl shadow-black/40 border border-slate-750 flex items-center justify-center transition-all transform scale-100 active:scale-95 animate-scaleUp backdrop-blur-md"
+        title="Scroll to bottom"
+      >
+        <svg class="w-5 h-5 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2.5"
+            d="M19 13l-7 7-7-7m14-6l-7 7-7-7"
+          />
+        </svg>
+      </button>
+    }
   </div>
-  
-  <!-- Floating Scroll to Bottom Button -->
-  @if (showScrollBottomButton()) {
-    <button
-      (click)="scrollToBottomSmooth()"
-      class="absolute bottom-6 right-6 z-20 w-11 h-11 rounded-full bg-slate-900/90 hover:bg-slate-800 text-slate-100 hover:text-white shadow-2xl shadow-black/40 border border-slate-750 flex items-center justify-center transition-all transform scale-100 active:scale-95 animate-scaleUp backdrop-blur-md"
-      title="Scroll to bottom"
-    >
-      <svg class="w-5 h-5 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 13l-7 7-7-7m14-6l-7 7-7-7"/>
-      </svg>
-    </button>
-  }
-</div>
 
   <!-- Input Bar -->
   @if (conversationId) {
@@ -274,7 +398,12 @@
           title="Upload ticket / itinerary (PDF, PNG, JPG)"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
+            />
           </svg>
         </button>
         <input
@@ -293,14 +422,19 @@
           placeholder="Ask about your trip... (Enter to send)"
           class="flex-1 resize-none px-4 py-3 bg-gray-800 border border-gray-700 text-white rounded-xl placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm max-h-32 overflow-y-auto"
         ></textarea>
-        
+
         <button
           (click)="sendMessage()"
           [disabled]="isStreaming() || !inputMessage.trim()"
           class="px-4 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-white flex items-center gap-2 font-semibold text-sm shrink-0"
         >
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+            />
           </svg>
         </button>
       </div>
@@ -310,21 +444,31 @@
 
 <!-- Map Modal -->
 @if (showMap() && conversationId) {
-  <app-map-overlay
-    [conversationId]="conversationId!"
-    (closeMap)="showMap.set(false)"
-  />
+  <app-map-overlay [conversationId]="conversationId!" (closeMap)="showMap.set(false)" />
 }
 
 <!-- Details Form Modal -->
 @if (showDetailsModal() && conversationId) {
-  <div class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/80 backdrop-blur-md px-4">
-    <div class="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-4 animate-scaleUp text-slate-100 max-h-[90vh] overflow-y-auto scrollbar-thin">
+  <div
+    class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/80 backdrop-blur-md px-4"
+  >
+    <div
+      class="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-4 animate-scaleUp text-slate-100 max-h-[90vh] overflow-y-auto scrollbar-thin"
+    >
       <div class="flex items-center justify-between">
-        <h3 class="text-xl font-bold bg-gradient-to-r from-indigo-400 to-blue-500 bg-clip-text text-transparent">⚙️ Edit Travel Details</h3>
+        <h3
+          class="text-xl font-bold bg-gradient-to-r from-indigo-400 to-blue-500 bg-clip-text text-transparent"
+        >
+          ⚙️ Edit Travel Details
+        </h3>
         <button (click)="showDetailsModal.set(false)" class="text-gray-500 hover:text-gray-300">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
       </div>
@@ -334,27 +478,57 @@
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Source</label>
-            <input type="text" [(ngModel)]="detailsSource" (ngModelChange)="onDetailsLocationChange()" name="detailsSource" required placeholder="e.g. Mumbai"
-                   class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white" />
+            <input
+              type="text"
+              [(ngModel)]="detailsSource"
+              (ngModelChange)="onDetailsLocationChange()"
+              name="detailsSource"
+              required
+              placeholder="e.g. Mumbai"
+              class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white"
+            />
           </div>
           <div>
-            <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Destination</label>
-            <input type="text" [(ngModel)]="detailsDestination" (ngModelChange)="onDetailsLocationChange()" name="detailsDestination" required placeholder="e.g. Paris"
-                   class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white" />
+            <label class="block text-xs font-semibold uppercase text-gray-400 mb-1"
+              >Destination</label
+            >
+            <input
+              type="text"
+              [(ngModel)]="detailsDestination"
+              (ngModelChange)="onDetailsLocationChange()"
+              name="detailsDestination"
+              required
+              placeholder="e.g. Paris"
+              class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white"
+            />
           </div>
         </div>
 
         <!-- Dates -->
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Start Date</label>
-            <input type="date" [(ngModel)]="detailsStartDate" name="detailsStartDate" required
-                   class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white" />
+            <label class="block text-xs font-semibold uppercase text-gray-400 mb-1"
+              >Start Date</label
+            >
+            <input
+              type="date"
+              [(ngModel)]="detailsStartDate"
+              name="detailsStartDate"
+              required
+              class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white"
+            />
           </div>
           <div>
             <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">End Date</label>
-            <input type="date" [(ngModel)]="detailsEndDate" name="detailsEndDate" required [disabled]="!detailsStartDate" [min]="detailsStartDate"
-                   class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white disabled:opacity-50" />
+            <input
+              type="date"
+              [(ngModel)]="detailsEndDate"
+              name="detailsEndDate"
+              required
+              [disabled]="!detailsStartDate"
+              [min]="detailsStartDate"
+              class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white disabled:opacity-50"
+            />
           </div>
         </div>
 
@@ -362,13 +536,21 @@
         <div class="grid grid-cols-3 gap-4">
           <div>
             <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Budget</label>
-            <input type="number" [(ngModel)]="detailsBudget" name="detailsBudget" placeholder="N/A"
-                   class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white" />
+            <input
+              type="number"
+              [(ngModel)]="detailsBudget"
+              name="detailsBudget"
+              placeholder="N/A"
+              class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white"
+            />
           </div>
           <div>
             <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Currency</label>
-            <select [(ngModel)]="detailsCurrency" name="detailsCurrency"
-                    class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white">
+            <select
+              [(ngModel)]="detailsCurrency"
+              name="detailsCurrency"
+              class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white"
+            >
               <option value="INR">INR (₹)</option>
               <option value="USD">USD ($)</option>
               <option value="EUR">EUR (€)</option>
@@ -382,27 +564,45 @@
             </select>
           </div>
           <div>
-            <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Travelers Count</label>
-            <input type="number" [(ngModel)]="detailsHeadcount" (ngModelChange)="onDetailsHeadcountChange()" name="detailsHeadcount" required
-                   class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white" />
+            <label class="block text-xs font-semibold uppercase text-gray-400 mb-1"
+              >Travelers Count</label
+            >
+            <input
+              type="number"
+              [(ngModel)]="detailsHeadcount"
+              (ngModelChange)="onDetailsHeadcountChange()"
+              name="detailsHeadcount"
+              required
+              class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white"
+            />
           </div>
         </div>
 
         <!-- Select fields -->
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Budget Class</label>
-            <select [(ngModel)]="detailsBudgetClass" name="detailsBudgetClass"
-                    class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white">
+            <label class="block text-xs font-semibold uppercase text-gray-400 mb-1"
+              >Budget Class</label
+            >
+            <select
+              [(ngModel)]="detailsBudgetClass"
+              name="detailsBudgetClass"
+              class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white"
+            >
               <option value="BACKPACKER">Backpacker</option>
               <option value="MID">Mid-Range</option>
               <option value="LUXURY">Luxury</option>
             </select>
           </div>
           <div>
-            <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Traveler Type</label>
-            <select [(ngModel)]="detailsTravelerType" name="detailsTravelerType"
-                    class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white">
+            <label class="block text-xs font-semibold uppercase text-gray-400 mb-1"
+              >Traveler Type</label
+            >
+            <select
+              [(ngModel)]="detailsTravelerType"
+              name="detailsTravelerType"
+              class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white"
+            >
               <option value="SOLO">Solo Traveler</option>
               <option value="COUPLE">Couple</option>
               <option value="HONEYMOON">Honeymoon</option>
@@ -414,11 +614,28 @@
 
         <!-- Optional Settings Toggle -->
         <div class="pt-2">
-          <button type="button" (click)="detailsShowOptional = !detailsShowOptional" 
-                  class="flex items-center justify-between w-full px-4 py-2.5 bg-slate-800/50 hover:bg-slate-800 border border-slate-700/60 rounded-xl text-xs font-semibold text-slate-300 transition-all duration-200">
-            <span class="flex items-center gap-2">⚙️ {{ detailsShowOptional ? 'Hide Optional Settings' : 'Show Optional Settings' }}</span>
-            <svg class="w-4 h-4 transition-transform duration-200" [class.rotate-180]="detailsShowOptional" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          <button
+            type="button"
+            (click)="detailsShowOptional = !detailsShowOptional"
+            class="flex items-center justify-between w-full px-4 py-2.5 bg-slate-800/50 hover:bg-slate-800 border border-slate-700/60 rounded-xl text-xs font-semibold text-slate-300 transition-all duration-200"
+          >
+            <span class="flex items-center gap-2"
+              >⚙️
+              {{ detailsShowOptional ? 'Hide Optional Settings' : 'Show Optional Settings' }}</span
+            >
+            <svg
+              class="w-4 h-4 transition-transform duration-200"
+              [class.rotate-180]="detailsShowOptional"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 9l-7 7-7-7"
+              />
             </svg>
           </button>
         </div>
@@ -429,55 +646,105 @@
             <!-- Guest counts -->
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Adults Count</label>
-                <input type="number" [(ngModel)]="detailsAdults" (ngModelChange)="onDetailsAdultsChange()" name="detailsAdults" min="1"
-                       class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white" />
+                <label class="block text-xs font-semibold uppercase text-gray-400 mb-1"
+                  >Adults Count</label
+                >
+                <input
+                  type="number"
+                  [(ngModel)]="detailsAdults"
+                  (ngModelChange)="onDetailsAdultsChange()"
+                  name="detailsAdults"
+                  min="1"
+                  class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white"
+                />
               </div>
               <div>
-                <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Children Count</label>
-                <input type="number" [(ngModel)]="detailsChildren" (ngModelChange)="onDetailsChildrenChange()" name="detailsChildren" min="0"
-                       class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white" />
+                <label class="block text-xs font-semibold uppercase text-gray-400 mb-1"
+                  >Children Count</label
+                >
+                <input
+                  type="number"
+                  [(ngModel)]="detailsChildren"
+                  (ngModelChange)="onDetailsChildrenChange()"
+                  name="detailsChildren"
+                  min="0"
+                  class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white"
+                />
               </div>
             </div>
 
             <!-- Grouped Accordions -->
             <div class="space-y-3">
-              
               <!-- Group 1: Flights & Transport -->
               <div class="border border-slate-800 rounded-xl overflow-hidden bg-slate-900/40">
-                <button type="button" (click)="showDetailsTransportGroup.set(!showDetailsTransportGroup())"
-                  class="flex items-center justify-between w-full px-4 py-2.5 bg-slate-800/30 hover:bg-slate-800/50 text-xs font-semibold text-slate-300 transition-all">
+                <button
+                  type="button"
+                  (click)="showDetailsTransportGroup.set(!showDetailsTransportGroup())"
+                  class="flex items-center justify-between w-full px-4 py-2.5 bg-slate-800/30 hover:bg-slate-800/50 text-xs font-semibold text-slate-300 transition-all"
+                >
                   <span>✈️ Flights & Transport</span>
-                  <svg class="w-4 h-4 transition-transform duration-200" [class.rotate-180]="showDetailsTransportGroup()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  <svg
+                    class="w-4 h-4 transition-transform duration-200"
+                    [class.rotate-180]="showDetailsTransportGroup()"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </button>
                 @if (showDetailsTransportGroup()) {
                   <div class="p-4 space-y-3 border-t border-slate-800/60 bg-slate-950/20 text-sm">
                     <div class="grid grid-cols-2 gap-4">
                       <div>
-                        <label class="block text-xs font-semibold text-gray-400 mb-1">Cabin Class</label>
-                        <select [(ngModel)]="detailsCabinClass" name="detailsCabinClass"
-                          class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none">
+                        <label class="block text-xs font-semibold text-gray-400 mb-1"
+                          >Cabin Class</label
+                        >
+                        <select
+                          [(ngModel)]="detailsCabinClass"
+                          name="detailsCabinClass"
+                          class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none"
+                        >
                           <option value="ECONOMY">Economy</option>
                           <option value="BUSINESS">Business</option>
                         </select>
                       </div>
                       <div>
-                        <label class="block text-xs font-semibold text-gray-400 mb-1">Max Travel Hours/Day</label>
-                        <input type="number" [(ngModel)]="detailsMaxTravelTime" name="detailsMaxTravelTime" min="1" max="24"
-                          class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none" />
+                        <label class="block text-xs font-semibold text-gray-400 mb-1"
+                          >Max Travel Hours/Day</label
+                        >
+                        <input
+                          type="number"
+                          [(ngModel)]="detailsMaxTravelTime"
+                          name="detailsMaxTravelTime"
+                          min="1"
+                          max="24"
+                          class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none"
+                        />
                       </div>
                     </div>
                     <div class="flex flex-col gap-2 pt-1">
                       <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-300">
-                        <input type="checkbox" [(ngModel)]="detailsDirectFlightsOnly" name="detailsDirectFlightsOnly"
-                          class="rounded border-slate-700 bg-slate-850 text-blue-600 focus:ring-blue-500" />
+                        <input
+                          type="checkbox"
+                          [(ngModel)]="detailsDirectFlightsOnly"
+                          name="detailsDirectFlightsOnly"
+                          class="rounded border-slate-700 bg-slate-850 text-blue-600 focus:ring-blue-500"
+                        />
                         Direct Flights Only
                       </label>
                       <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-300">
-                        <input type="checkbox" [(ngModel)]="detailsPrivateTransfer" name="detailsPrivateTransfer"
-                          class="rounded border-slate-700 bg-slate-850 text-blue-600 focus:ring-blue-500" />
+                        <input
+                          type="checkbox"
+                          [(ngModel)]="detailsPrivateTransfer"
+                          name="detailsPrivateTransfer"
+                          class="rounded border-slate-700 bg-slate-850 text-blue-600 focus:ring-blue-500"
+                        />
                         Private Transfer Preferred
                       </label>
                     </div>
@@ -487,20 +754,39 @@
 
               <!-- Group 2: Hotel Star Ratings -->
               <div class="border border-slate-800 rounded-xl overflow-hidden bg-slate-900/40">
-                <button type="button" (click)="showDetailsHotelGroup.set(!showDetailsHotelGroup())"
-                  class="flex items-center justify-between w-full px-4 py-2.5 bg-slate-800/30 hover:bg-slate-800/50 text-xs font-semibold text-slate-300 transition-all">
+                <button
+                  type="button"
+                  (click)="showDetailsHotelGroup.set(!showDetailsHotelGroup())"
+                  class="flex items-center justify-between w-full px-4 py-2.5 bg-slate-800/30 hover:bg-slate-800/50 text-xs font-semibold text-slate-300 transition-all"
+                >
                   <span>🏨 Hotel Star Ratings</span>
-                  <svg class="w-4 h-4 transition-transform duration-200" [class.rotate-180]="showDetailsHotelGroup()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  <svg
+                    class="w-4 h-4 transition-transform duration-200"
+                    [class.rotate-180]="showDetailsHotelGroup()"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </button>
                 @if (showDetailsHotelGroup()) {
                   <div class="p-4 space-y-3 border-t border-slate-800/60 bg-slate-950/20 text-sm">
                     <div class="grid grid-cols-2 gap-4">
                       <div>
-                        <label class="block text-xs font-semibold text-gray-400 mb-1">Min Stars</label>
-                        <select [(ngModel)]="detailsMinHotelStars" name="detailsMinHotelStars"
-                          class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none">
+                        <label class="block text-xs font-semibold text-gray-400 mb-1"
+                          >Min Stars</label
+                        >
+                        <select
+                          [(ngModel)]="detailsMinHotelStars"
+                          name="detailsMinHotelStars"
+                          class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none"
+                        >
                           <option [ngValue]="1">1 Star</option>
                           <option [ngValue]="2">2 Stars</option>
                           <option [ngValue]="3">3 Stars</option>
@@ -509,9 +795,14 @@
                         </select>
                       </div>
                       <div>
-                        <label class="block text-xs font-semibold text-gray-400 mb-1">Max Stars</label>
-                        <select [(ngModel)]="detailsMaxHotelStars" name="detailsMaxHotelStars"
-                          class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none">
+                        <label class="block text-xs font-semibold text-gray-400 mb-1"
+                          >Max Stars</label
+                        >
+                        <select
+                          [(ngModel)]="detailsMaxHotelStars"
+                          name="detailsMaxHotelStars"
+                          class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none"
+                        >
                           <option [ngValue]="1">1 Star</option>
                           <option [ngValue]="2">2 Stars</option>
                           <option [ngValue]="3">3 Stars</option>
@@ -526,18 +817,36 @@
 
               <!-- Group 3: Dining Options -->
               <div class="border border-slate-800 rounded-xl overflow-hidden bg-slate-900/40">
-                <button type="button" (click)="showDetailsDiningGroup.set(!showDetailsDiningGroup())"
-                  class="flex items-center justify-between w-full px-4 py-2.5 bg-slate-800/30 hover:bg-slate-800/50 text-xs font-semibold text-slate-300 transition-all">
+                <button
+                  type="button"
+                  (click)="showDetailsDiningGroup.set(!showDetailsDiningGroup())"
+                  class="flex items-center justify-between w-full px-4 py-2.5 bg-slate-800/30 hover:bg-slate-800/50 text-xs font-semibold text-slate-300 transition-all"
+                >
                   <span>🍽️ Dining Options</span>
-                  <svg class="w-4 h-4 transition-transform duration-200" [class.rotate-180]="showDetailsDiningGroup()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  <svg
+                    class="w-4 h-4 transition-transform duration-200"
+                    [class.rotate-180]="showDetailsDiningGroup()"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </button>
                 @if (showDetailsDiningGroup()) {
                   <div class="p-4 space-y-3 border-t border-slate-800/60 bg-slate-950/20 text-sm">
                     <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-300">
-                      <input type="checkbox" [(ngModel)]="detailsIncludeFoodTour" name="detailsIncludeFoodTour"
-                        class="rounded border-slate-700 bg-slate-850 text-blue-600 focus:ring-blue-500" />
+                      <input
+                        type="checkbox"
+                        [(ngModel)]="detailsIncludeFoodTour"
+                        name="detailsIncludeFoodTour"
+                        class="rounded border-slate-700 bg-slate-850 text-blue-600 focus:ring-blue-500"
+                      />
                       Include Guided Food Tour
                     </label>
                   </div>
@@ -546,34 +855,66 @@
 
               <!-- Group 4: Profile & Accessibility -->
               <div class="border border-slate-800 rounded-xl overflow-hidden bg-slate-900/40">
-                <button type="button" (click)="showDetailsProfileGroup.set(!showDetailsProfileGroup())"
-                  class="flex items-center justify-between w-full px-4 py-2.5 bg-slate-800/30 hover:bg-slate-800/50 text-xs font-semibold text-slate-300 transition-all">
+                <button
+                  type="button"
+                  (click)="showDetailsProfileGroup.set(!showDetailsProfileGroup())"
+                  class="flex items-center justify-between w-full px-4 py-2.5 bg-slate-800/30 hover:bg-slate-800/50 text-xs font-semibold text-slate-300 transition-all"
+                >
                   <span>🌍 Profile & Accessibility</span>
-                  <svg class="w-4 h-4 transition-transform duration-200" [class.rotate-180]="showDetailsProfileGroup()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  <svg
+                    class="w-4 h-4 transition-transform duration-200"
+                    [class.rotate-180]="showDetailsProfileGroup()"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </button>
                 @if (showDetailsProfileGroup()) {
                   <div class="p-4 space-y-3 border-t border-slate-800/60 bg-slate-950/20 text-sm">
                     <div class="grid grid-cols-2 gap-4">
                       <div>
-                        <label class="block text-xs font-semibold text-gray-400 mb-1">Activity Level</label>
-                        <select [(ngModel)]="detailsActivityIntensity" name="detailsActivityIntensity"
-                          class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none">
+                        <label class="block text-xs font-semibold text-gray-400 mb-1"
+                          >Activity Level</label
+                        >
+                        <select
+                          [(ngModel)]="detailsActivityIntensity"
+                          name="detailsActivityIntensity"
+                          class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none"
+                        >
                           <option value="LIGHT">Light</option>
                           <option value="MODERATE">Moderate</option>
                           <option value="ACTIVE">Active</option>
                         </select>
                       </div>
                       <div>
-                        <label class="block text-xs font-semibold text-gray-400 mb-1">Nationality</label>
-                        <input type="text" [(ngModel)]="detailsNationality" name="detailsNationality" placeholder="e.g. Indian"
-                          class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none" />
+                        <label class="block text-xs font-semibold text-gray-400 mb-1"
+                          >Nationality</label
+                        >
+                        <input
+                          type="text"
+                          [(ngModel)]="detailsNationality"
+                          name="detailsNationality"
+                          placeholder="e.g. Indian"
+                          class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none"
+                        />
                       </div>
                     </div>
-                    <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-300 pt-1">
-                      <input type="checkbox" [(ngModel)]="detailsAccessibility" name="detailsAccessibility"
-                        class="rounded border-slate-700 bg-slate-850 text-blue-600 focus:ring-blue-500" />
+                    <label
+                      class="flex items-center gap-2 cursor-pointer text-xs text-slate-300 pt-1"
+                    >
+                      <input
+                        type="checkbox"
+                        [(ngModel)]="detailsAccessibility"
+                        name="detailsAccessibility"
+                        class="rounded border-slate-700 bg-slate-850 text-blue-600 focus:ring-blue-500"
+                      />
                       Accessibility / Wheelchair Required
                     </label>
                   </div>
@@ -582,42 +923,78 @@
 
               <!-- Group 5: Places & Attractions -->
               <div class="border border-slate-800 rounded-xl overflow-hidden bg-slate-900/40">
-                <button type="button" (click)="showDetailsPlacesGroup.set(!showDetailsPlacesGroup())"
-                  class="flex items-center justify-between w-full px-4 py-2.5 bg-slate-800/30 hover:bg-slate-800/50 text-xs font-semibold text-slate-300 transition-all">
+                <button
+                  type="button"
+                  (click)="showDetailsPlacesGroup.set(!showDetailsPlacesGroup())"
+                  class="flex items-center justify-between w-full px-4 py-2.5 bg-slate-800/30 hover:bg-slate-800/50 text-xs font-semibold text-slate-300 transition-all"
+                >
                   <span>📍 Places & Attractions</span>
-                  <svg class="w-4 h-4 transition-transform duration-200" [class.rotate-180]="showDetailsPlacesGroup()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  <svg
+                    class="w-4 h-4 transition-transform duration-200"
+                    [class.rotate-180]="showDetailsPlacesGroup()"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </button>
                 @if (showDetailsPlacesGroup()) {
                   <div class="p-4 space-y-3 border-t border-slate-800/60 bg-slate-950/20 text-sm">
                     <div>
-                      <label class="block text-xs font-semibold text-gray-400 mb-1">Must-Visit Places</label>
-                      <input type="text" [(ngModel)]="detailsMustVisit" name="detailsMustVisit" placeholder="e.g. Eiffel Tower, Louvre Museum (comma separated)"
-                        class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500" />
+                      <label class="block text-xs font-semibold text-gray-400 mb-1"
+                        >Must-Visit Places</label
+                      >
+                      <input
+                        type="text"
+                        [(ngModel)]="detailsMustVisit"
+                        name="detailsMustVisit"
+                        placeholder="e.g. Eiffel Tower, Louvre Museum (comma separated)"
+                        class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+                      />
                     </div>
                     <div>
-                      <label class="block text-xs font-semibold text-gray-400 mb-1">Places to Avoid</label>
-                      <input type="text" [(ngModel)]="detailsAvoid" name="detailsAvoid" placeholder="e.g. Crowded markets, noisy clubs (comma separated)"
-                        class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500" />
+                      <label class="block text-xs font-semibold text-gray-400 mb-1"
+                        >Places to Avoid</label
+                      >
+                      <input
+                        type="text"
+                        [(ngModel)]="detailsAvoid"
+                        name="detailsAvoid"
+                        placeholder="e.g. Crowded markets, noisy clubs (comma separated)"
+                        class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+                      />
                     </div>
                   </div>
                 }
               </div>
-
             </div>
 
             <div>
-              <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Additional Travel Notes</label>
-              <textarea [(ngModel)]="detailsNotes" name="detailsNotes" placeholder="e.g. Vegetarian food, focus on art galleries, preference for train transit..."
-                        rows="2" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white resize-none"></textarea>
+              <label class="block text-xs font-semibold uppercase text-gray-400 mb-1"
+                >Additional Travel Notes</label
+              >
+              <textarea
+                [(ngModel)]="detailsNotes"
+                name="detailsNotes"
+                placeholder="e.g. Vegetarian food, focus on art galleries, preference for train transit..."
+                rows="2"
+                class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white resize-none"
+              ></textarea>
             </div>
           </div>
         }
 
         <!-- Save Button -->
-        <button type="submit"
-                class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-2xl transition-all shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2">
+        <button
+          type="submit"
+          class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-2xl transition-all shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2"
+        >
           Save Travel Preferences
         </button>
       </form>
@@ -632,12 +1009,18 @@
       <h3 class="text-lg font-bold text-white mb-2">{{ confirmTitle() }}</h3>
       <p class="text-sm text-gray-400 mb-6 leading-relaxed">{{ confirmMessage() }}</p>
       <div class="flex justify-end gap-3">
-        <button type="button" (click)="onConfirmCancel()"
-                class="px-4 py-2 rounded-xl text-sm font-semibold border border-gray-700 bg-gray-800 hover:bg-gray-700 text-white transition-all">
+        <button
+          type="button"
+          (click)="onConfirmCancel()"
+          class="px-4 py-2 rounded-xl text-sm font-semibold border border-gray-700 bg-gray-800 hover:bg-gray-700 text-white transition-all"
+        >
           Cancel
         </button>
-        <button type="button" (click)="onConfirmAccept()"
-                class="px-4 py-2 rounded-xl text-sm font-semibold bg-blue-600 hover:bg-blue-500 text-white transition-all">
+        <button
+          type="button"
+          (click)="onConfirmAccept()"
+          class="px-4 py-2 rounded-xl text-sm font-semibold bg-blue-600 hover:bg-blue-500 text-white transition-all"
+        >
           Confirm
         </button>
       </div>

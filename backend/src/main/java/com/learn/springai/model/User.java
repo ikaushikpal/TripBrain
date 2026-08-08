@@ -2,9 +2,11 @@ package com.learn.springai.model;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.*;
@@ -15,7 +17,7 @@ import lombok.*;
         @Index(name = "idx_users_email", columnList = "email"),
         @Index(name = "idx_users_deleted", columnList = "deleted")
 })
-@EntityListeners(org.springframework.data.jpa.domain.support.AuditingEntityListener.class)
+@EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -50,11 +52,11 @@ public class User {
     @Builder.Default
     private Long apiCallCount = 0L;
 
-    @org.springframework.data.annotation.CreatedDate
+    @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @org.springframework.data.annotation.LastModifiedDate
+    @LastModifiedDate
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 

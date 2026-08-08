@@ -13,26 +13,42 @@
 }
 
 @keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
 }
 
-.markdown-body h1, .markdown-body h2, .markdown-body h3 {
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3 {
   color: #f3f4f6;
   font-weight: 700;
   margin-top: 1rem;
   margin-bottom: 0.5rem;
 }
-.markdown-body h1 { font-size: 1.5rem; }
-.markdown-body h2 { font-size: 1.25rem; border-bottom: 1px solid #374151; padding-bottom: 0.25rem; }
-.markdown-body h3 { font-size: 1.1rem; }
+.markdown-body h1 {
+  font-size: 1.5rem;
+}
+.markdown-body h2 {
+  font-size: 1.25rem;
+  border-bottom: 1px solid #374151;
+  padding-bottom: 0.25rem;
+}
+.markdown-body h3 {
+  font-size: 1.1rem;
+}
 
 .markdown-body p {
   margin-bottom: 0.75rem;
   line-height: 1.6;
 }
 
-.markdown-body ul, .markdown-body ol {
+.markdown-body ul,
+.markdown-body ol {
   margin-left: 1.25rem;
   margin-bottom: 0.75rem;
   list-style-position: outside;
@@ -54,7 +70,8 @@
   margin-bottom: 0.75rem;
   font-size: 0.875rem;
 }
-.markdown-body th, .markdown-body td {
+.markdown-body th,
+.markdown-body td {
   border: 1px solid #374151;
   padding: 0.5rem 0.75rem;
   text-align: left;

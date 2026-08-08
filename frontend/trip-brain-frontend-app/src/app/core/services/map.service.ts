@@ -6,7 +6,7 @@ import { tap } from 'rxjs/operators';
 import { BASE_API_URL } from '../constants';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class MapService {
   private readonly http = inject(HttpClient);
@@ -17,9 +17,9 @@ export class MapService {
     if (this.routeCache.has(conversationId)) {
       return of(this.routeCache.get(conversationId));
     }
-    return this.http.get<any>(`${this.apiUrl}/conversations/${conversationId}/map-route`).pipe(
-      tap(data => this.routeCache.set(conversationId, data))
-    );
+    return this.http
+      .get<any>(`${this.apiUrl}/conversations/${conversationId}/map-route`)
+      .pipe(tap((data) => this.routeCache.set(conversationId, data)));
   }
 
   clearCache(conversationId: string) {

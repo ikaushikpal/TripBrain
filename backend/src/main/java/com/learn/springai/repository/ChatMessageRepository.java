@@ -2,7 +2,9 @@ package com.learn.springai.repository;
 
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -20,9 +22,10 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, String
 
     List<String> findDistinctConversationIdsByDeletedFalse();
 
-    List<ChatMessage> findByConversationIdAndDeletedFalseOrderBySequenceNumberDesc(String conversationId, org.springframework.data.domain.Pageable pageable);
+    List<ChatMessage> findByConversationIdAndDeletedFalseOrderBySequenceNumberDesc(String conversationId, Pageable pageable);
 
-    List<ChatMessage> findByConversationIdAndDeletedFalseAndSequenceNumberLessThanOrderBySequenceNumberDesc(String conversationId, Integer sequenceNumber, org.springframework.data.domain.Pageable pageable);
+    List<ChatMessage> findByConversationIdAndDeletedFalseAndSequenceNumberLessThanOrderBySequenceNumberDesc(
+            String conversationId, Integer sequenceNumber, Pageable pageable);
 
     @Query("""
                 SELECT COALESCE(MAX(c.sequenceNumber), -1)
@@ -32,4 +35,7 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, String
             """)
     Integer findMaxSequenceByConversationId(String conversationId);
 
+    @Modifying
+    @Query("DELETE FROM ChatMessage c WHERE c.conversation.id = :conversationId")
+    void deleteByConversationId(String conversationId);
 }

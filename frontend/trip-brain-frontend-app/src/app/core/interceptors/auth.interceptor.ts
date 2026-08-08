@@ -1,4 +1,11 @@
-import { HttpInterceptorFn, HttpRequest, HttpHandlerFn, HttpEvent, HttpErrorResponse, HttpResponse } from '@angular/common/http';
+import {
+  HttpInterceptorFn,
+  HttpRequest,
+  HttpHandlerFn,
+  HttpEvent,
+  HttpErrorResponse,
+  HttpResponse,
+} from '@angular/common/http';
 import { inject } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 import { Observable, throwError, BehaviorSubject, of } from 'rxjs';
@@ -34,17 +41,21 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         return handle401Error(authReq, next, authService);
       }
       return throwError(() => error);
-    })
+    }),
   );
 };
 
 function addTokenHeader(request: HttpRequest<any>, token: string) {
   return request.clone({
-    headers: request.headers.set('Authorization', 'Bearer ' + token)
+    headers: request.headers.set('Authorization', 'Bearer ' + token),
   });
 }
 
-function handle401Error(request: HttpRequest<any>, next: HttpHandlerFn, authService: AuthService): Observable<HttpEvent<any>> {
+function handle401Error(
+  request: HttpRequest<any>,
+  next: HttpHandlerFn,
+  authService: AuthService,
+): Observable<HttpEvent<any>> {
   if (!isRefreshing) {
     isRefreshing = true;
     refreshTokenSubject.next(null);
@@ -59,13 +70,13 @@ function handle401Error(request: HttpRequest<any>, next: HttpHandlerFn, authServ
         isRefreshing = false;
         authService.logout();
         return throwError(() => err);
-      })
+      }),
     );
   } else {
     return refreshTokenSubject.pipe(
-      filter(token => token !== null),
+      filter((token) => token !== null),
       take(1),
-      switchMap((token) => next(addTokenHeader(request, token!)))
+      switchMap((token) => next(addTokenHeader(request, token!))),
     );
   }
 }

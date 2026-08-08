@@ -6,6 +6,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.learn.springai.dto.conversation.ConversationDTO;
 import com.learn.springai.dto.conversation.NewConversationDTO;
+import com.learn.springai.dto.tripRequest.TripRequestResponseDTO;
+import com.learn.springai.dto.tripRequest.TripRequestUpdateDTO;
 import com.learn.springai.model.Conversation;
 import com.learn.springai.service.ConversationService;
 import com.learn.springai.service.TripRequestService;
@@ -21,25 +23,29 @@ import java.util.Optional;
 
 import javax.validation.Valid;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.apache.http.HttpStatus;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
-import com.learn.springai.dto.tripRequest.TripRequestResponseDTO;
-import com.learn.springai.dto.tripRequest.TripRequestUpdateDTO;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/conversations")
+@RequiredArgsConstructor
+@PreAuthorize("hasAnyRole('USER', 'ADMIN')")
 public class ConversationController {
 
     private final ConversationService conversationService;
@@ -60,7 +66,7 @@ public class ConversationController {
 
     @GetMapping
     public ResponseEntity<List<ConversationDTO>> getUserConversations(
-            jakarta.servlet.http.HttpServletRequest request) {
+            HttpServletRequest request) {
         String userId = (String) request.getAttribute("userId");
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.SC_UNAUTHORIZED).build();
@@ -68,8 +74,23 @@ public class ConversationController {
         return ResponseEntity.ok(conversationService.getConversationsByUserId(userId));
     }
 
+    private String getCurrentUserId(HttpServletRequest request) {
+        String userId = (String) request.getAttribute("userId");
+        if (userId == null) {
+            org.springframework.security.core.Authentication auth =
+                org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.getPrincipal() instanceof String) {
+                userId = (String) auth.getPrincipal();
+            }
+        }
+        return userId;
+    }
+
     @GetMapping("/{conversationId}")
-    public ResponseEntity<ConversationDTO> getConversation(@PathVariable("conversationId") String conversationId) {
+    public ResponseEntity<ConversationDTO> getConversation(
+            @PathVariable("conversationId") String conversationId,
+            HttpServletRequest request) {
+        conversationService.verifyReadAccess(conversationId, getCurrentUserId(request));
         ConversationDTO conversation = conversationService.getConversationById(conversationId);
         if (conversation != null) {
             return ResponseEntity.ok(conversation);
@@ -81,12 +102,17 @@ public class ConversationController {
     public ResponseEntity<Map<String, Object>> getConversationMessages(
             @PathVariable("conversationId") String conversationId,
             @RequestParam(value = "cursor", required = false) Integer cursor,
-            @RequestParam(value = "limit", required = false, defaultValue = "15") Integer limit) {
+            @RequestParam(value = "limit", required = false, defaultValue = "15") Integer limit,
+            HttpServletRequest request) {
+        conversationService.verifyReadAccess(conversationId, getCurrentUserId(request));
         Map<String, Object> response = conversationService.getConversationMessagesPaginated(conversationId, cursor, limit);
         return ResponseEntity.ok(response);
     }
     @DeleteMapping("/{conversationId}")
-    public ResponseEntity<Void> deleteConversation(@PathVariable("conversationId") String conversationId) {
+    public ResponseEntity<Void> deleteConversation(
+            @PathVariable("conversationId") String conversationId,
+            HttpServletRequest request) {
+        conversationService.verifyWriteAccess(conversationId, getCurrentUserId(request));
         conversationService.deleteConversation(conversationId);
         return ResponseEntity.noContent().build();
     }

@@ -1,4 +1,15 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, ElementRef, ViewChild, inject, PLATFORM_ID } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnInit,
+  OnDestroy,
+  ElementRef,
+  ViewChild,
+  inject,
+  PLATFORM_ID,
+} from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { MapService } from '../../../core/services/map.service';
 
@@ -6,7 +17,7 @@ import { MapService } from '../../../core/services/map.service';
   selector: 'app-map-overlay',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './map-overlay.component.html'
+  templateUrl: './map-overlay.component.html',
 })
 export class MapOverlayComponent implements OnInit, OnDestroy {
   @Input({ required: true }) conversationId!: string;
@@ -32,12 +43,12 @@ export class MapOverlayComponent implements OnInit, OnDestroy {
     this.mapInstance = L.map(this.mapContainer.nativeElement, {
       zoom: 5,
       center: [20, 0],
-      zoomControl: true
+      zoomControl: true,
     });
 
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
       attribution: '© OpenStreetMap contributors, © CARTO',
-      maxZoom: 19
+      maxZoom: 19,
     }).addTo(this.mapInstance);
 
     this.mapService.getMapRoute(this.conversationId).subscribe({
@@ -69,12 +80,12 @@ export class MapOverlayComponent implements OnInit, OnDestroy {
                 font-size:16px;
               ">${isStart ? '🛫' : '🛬'}</div>`,
               iconSize: [36, 36],
-              iconAnchor: [18, 18]
+              iconAnchor: [18, 18],
             });
             return L.marker(latlng, { icon }).bindPopup(
-              `<b>${feature.properties?.title ?? ''}</b><br><small>${isStart ? 'Departure' : 'Destination'}</small>`
+              `<b>${feature.properties?.title ?? ''}</b><br><small>${isStart ? 'Departure' : 'Destination'}</small>`,
             );
-          }
+          },
         }).addTo(this.mapInstance);
 
         const bounds = layer.getBounds();
@@ -85,7 +96,7 @@ export class MapOverlayComponent implements OnInit, OnDestroy {
       error: () => {
         this.isLoading = false;
         this.errorMsg = true;
-      }
+      },
     });
   }
 

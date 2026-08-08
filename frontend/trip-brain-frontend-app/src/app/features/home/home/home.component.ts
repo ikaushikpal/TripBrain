@@ -11,7 +11,7 @@ import { BASE_URL } from '../../../core/constants';
   selector: 'app-home',
   standalone: true,
   imports: [CommonModule, RouterLink],
-  templateUrl: './home.component.html'
+  templateUrl: './home.component.html',
 })
 export class HomeComponent implements OnInit {
   readonly chatService = inject(ChatService);
@@ -22,7 +22,9 @@ export class HomeComponent implements OnInit {
   getAuthenticatedUrl(url: string | null | undefined): string {
     if (!url) return '';
     const token = this.authService.getAccessToken();
-    return token ? `${this.baseUrl}${url}?token=${encodeURIComponent(token)}` : `${this.baseUrl}${url}`;
+    return token
+      ? `${this.baseUrl}${url}?token=${encodeURIComponent(token)}`
+      : `${this.baseUrl}${url}`;
   }
 
   publicTrips = signal<PublicTrip[]>([]);
@@ -41,7 +43,7 @@ export class HomeComponent implements OnInit {
       },
       error: () => {
         this.isLoading.set(false);
-      }
+      },
     });
   }
 

@@ -1,17 +1,25 @@
-<div class="min-h-screen flex flex-col bg-surface-950 text-slate-100 font-sans relative overflow-hidden">
+<div
+  class="min-h-screen flex flex-col bg-surface-950 text-slate-100 font-sans relative overflow-hidden"
+>
   <!-- Glowing Background blobs -->
   <div class="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl -z-10"></div>
-  <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl -z-10"></div>
+  <div
+    class="absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl -z-10"
+  ></div>
 
   <!-- Main Background Wallpaper -->
   @if (wallpaperUrl()) {
-    <div class="absolute inset-0 bg-cover bg-center -z-20 transition-all duration-300"
-         [style.backgroundImage]="'url(' + wallpaperUrl() + ')'"></div>
+    <div
+      class="absolute inset-0 bg-cover bg-center -z-20 transition-all duration-300"
+      [style.backgroundImage]="'url(' + wallpaperUrl() + ')'"
+    ></div>
     <div class="absolute inset-0 bg-surface-950/80 pointer-events-none -z-20"></div>
   }
 
   <!-- Header -->
-  <header class="px-6 py-4 bg-surface-900 border-b border-slate-800 flex items-center justify-between sticky top-0 z-40">
+  <header
+    class="px-6 py-4 bg-surface-900 border-b border-slate-800 flex items-center justify-between sticky top-0 z-40"
+  >
     <div class="flex items-center gap-3">
       <div class="w-9 h-9 rounded-xl overflow-hidden shadow-lg shadow-blue-500/20">
         <img src="/images/logo.jpeg" class="w-full h-full object-cover" alt="Trip Brain Logo" />
@@ -23,7 +31,10 @@
     </div>
 
     <div class="flex items-center gap-3">
-      <a routerLink="/" class="px-4 py-2 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white transition-all shadow-md shadow-blue-500/10">
+      <a
+        routerLink="/"
+        class="px-4 py-2 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white transition-all shadow-md shadow-blue-500/10"
+      >
         Create My Own Trip
       </a>
     </div>
@@ -34,22 +45,36 @@
     <!-- Loading -->
     @if (isLoading()) {
       <div class="flex-1 flex flex-col items-center justify-center py-20 gap-4">
-        <div class="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        <div
+          class="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"
+        ></div>
         <p class="text-slate-400 text-sm">Retrieving shared trip plan...</p>
       </div>
     }
 
     <!-- Error -->
     @if (!isLoading() && error()) {
-      <div class="flex-1 flex flex-col items-center justify-center py-20 text-center max-w-md mx-auto gap-4">
-        <div class="w-16 h-16 rounded-full bg-red-950/40 border border-red-800/50 flex items-center justify-center text-red-400">
+      <div
+        class="flex-1 flex flex-col items-center justify-center py-20 text-center max-w-md mx-auto gap-4"
+      >
+        <div
+          class="w-16 h-16 rounded-full bg-red-950/40 border border-red-800/50 flex items-center justify-center text-red-400"
+        >
           <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+            />
           </svg>
         </div>
         <h2 class="text-lg font-bold text-white">Access Denied</h2>
         <p class="text-slate-400 text-sm leading-relaxed">{{ error() }}</p>
-        <a routerLink="/" class="mt-2 px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs rounded-xl border border-slate-700 transition-all">
+        <a
+          routerLink="/"
+          class="mt-2 px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs rounded-xl border border-slate-700 transition-all"
+        >
           Back to Safety
         </a>
       </div>
@@ -59,14 +84,18 @@
     @if (!isLoading() && !error()) {
       <div class="flex-1 flex flex-col space-y-6">
         <!-- Info Header -->
-        <div class="glass-card p-5 border border-slate-800 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div
+          class="glass-card p-5 border border-slate-800 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4"
+        >
           <div>
-            <span class="text-xs font-semibold text-blue-400 uppercase tracking-wider">Itinerary Details</span>
+            <span class="text-xs font-semibold text-blue-400 uppercase tracking-wider"
+              >Itinerary Details</span
+            >
             <h2 class="text-xl font-extrabold text-white mt-1">
               {{ conversation()?.title || 'Shared Trip Planner' }}
             </h2>
             <p class="text-slate-400 text-xs mt-1">
-              Created on {{ conversation()?.createdAt | date:'MMMM d, y, h:mm a' }}
+              Created on {{ conversation()?.createdAt | date: 'MMMM d, y, h:mm a' }}
             </p>
           </div>
         </div>
@@ -78,7 +107,9 @@
               <!-- USER Message -->
               @if (msg.role === 'USER') {
                 <div class="flex justify-end">
-                  <div class="max-w-[80%] px-4 py-3 rounded-2xl rounded-tr-sm bg-blue-600 text-white text-sm leading-relaxed shadow-lg shadow-blue-900/30">
+                  <div
+                    class="max-w-[80%] px-4 py-3 rounded-2xl rounded-tr-sm bg-blue-600 text-white text-sm leading-relaxed shadow-lg shadow-blue-900/30"
+                  >
                     {{ msg.content }}
                   </div>
                 </div>
@@ -87,16 +118,25 @@
               <!-- ASSISTANT Message -->
               @if (msg.role === 'ASSISTANT') {
                 <div class="flex justify-start gap-3">
-                  <div class="w-8 h-8 rounded-xl shrink-0 bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+                  <div
+                    class="w-8 h-8 rounded-xl shrink-0 bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400"
+                  >
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h.01M15 9h.01M8 13h8" />
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h.01M15 9h.01M8 13h8"
+                      />
                     </svg>
                   </div>
                   <div class="max-w-[85%] flex flex-col gap-2">
-                    <div class="px-5 py-4 rounded-2xl rounded-tl-sm bg-slate-900/80 border border-slate-800 text-slate-100 text-sm leading-relaxed shadow-md backdrop-blur-sm markdown-body">
+                    <div
+                      class="px-5 py-4 rounded-2xl rounded-tl-sm bg-slate-900/80 border border-slate-800 text-slate-100 text-sm leading-relaxed shadow-md backdrop-blur-sm markdown-body"
+                    >
                       <div [innerHTML]="getMarkdownHtml(msg)"></div>
                     </div>
-                    
+
                     <!-- PDF Download Button -->
                     @if (hasPdfDownload(msg)) {
                       <div class="flex mt-1">
@@ -104,8 +144,18 @@
                           (click)="downloadPdfFile(getPdfUrl(msg))"
                           class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-md shadow-emerald-950/40 border border-emerald-500/30 transition-all hover:scale-[1.02] active:scale-95"
                         >
-                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                          <svg
+                            class="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                            />
                           </svg>
                           Download Itinerary PDF
                         </button>
@@ -121,7 +171,9 @@
     }
   </main>
 
-  <footer class="py-6 border-t border-slate-900/80 bg-surface-950/40 text-center text-xs text-slate-600">
+  <footer
+    class="py-6 border-t border-slate-900/80 bg-surface-950/40 text-center text-xs text-slate-600"
+  >
     © {{ currentYear }} Trip Brain. Powered by Spring AI & DeepMind.
   </footer>
 </div>

@@ -9,7 +9,7 @@ import { NotificationService } from '../../../core/services/notification.service
   selector: 'app-sidebar',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './sidebar.component.html'
+  templateUrl: './sidebar.component.html',
 })
 export class SidebarComponent implements OnInit {
   @Input() isOpen = false;
@@ -69,7 +69,7 @@ export class SidebarComponent implements OnInit {
   prefMinHotelStars = 3;
   prefMaxHotelStars = 5;
   prefNotes = '';
-  
+
   // Advanced optional settings
   prefCabinClass = 'ECONOMY';
   prefDirectFlightsOnly = false;
@@ -113,7 +113,7 @@ export class SidebarComponent implements OnInit {
       },
       error: () => {
         this.isLoading.set(false);
-      }
+      },
     });
   }
 
@@ -129,26 +129,28 @@ export class SidebarComponent implements OnInit {
 
   startTripWithPreferences(event: Event) {
     event.preventDefault();
-    
+
     // Validations
     if (!this.prefSource || !this.prefDestination || !this.prefStartDate || !this.prefEndDate) {
-      this.notificationService.error("Please fill in all required fields (Source, Destination, Start Date, End Date).");
+      this.notificationService.error(
+        'Please fill in all required fields (Source, Destination, Start Date, End Date).',
+      );
       return;
     }
     if (new Date(this.prefEndDate) < new Date(this.prefStartDate)) {
-      this.notificationService.error("End date must be on or after the start date.");
+      this.notificationService.error('End date must be on or after the start date.');
       return;
     }
     if (this.prefBudget !== null && this.prefBudget <= 0) {
-      this.notificationService.error("Budget must be a positive number.");
+      this.notificationService.error('Budget must be a positive number.');
       return;
     }
     if (this.prefHeadcount <= 0) {
-      this.notificationService.error("Travelers count must be at least 1.");
+      this.notificationService.error('Travelers count must be at least 1.');
       return;
     }
     if (this.prefAdults < 1) {
-      this.notificationService.error("Adults count must be at least 1.");
+      this.notificationService.error('Adults count must be at least 1.');
       return;
     }
 
@@ -176,8 +178,18 @@ export class SidebarComponent implements OnInit {
           minHotelStars: this.prefMinHotelStars,
           maxHotelStars: this.prefMaxHotelStars,
           notes: this.prefNotes,
-          mustVisitPlaces: this.prefMustVisit ? this.prefMustVisit.split(',').map(s => s.trim()).filter(Boolean) : [],
-          avoidPlaces: this.prefAvoid ? this.prefAvoid.split(',').map(s => s.trim()).filter(Boolean) : [],
+          mustVisitPlaces: this.prefMustVisit
+            ? this.prefMustVisit
+                .split(',')
+                .map((s) => s.trim())
+                .filter(Boolean)
+            : [],
+          avoidPlaces: this.prefAvoid
+            ? this.prefAvoid
+                .split(',')
+                .map((s) => s.trim())
+                .filter(Boolean)
+            : [],
           vacationStyles: [],
           interests: [],
           preferredTransportModes: [],
@@ -193,7 +205,7 @@ export class SidebarComponent implements OnInit {
           activityIntensity: this.prefActivityIntensity,
           nationality: this.prefNationality,
           accessibilityRequired: this.prefAccessibility,
-          maxTravelTimePerDay: this.prefMaxTravelTime
+          maxTravelTimePerDay: this.prefMaxTravelTime,
         };
 
         this.chatService.uploadPreferences(conv.id, preferences).subscribe({
@@ -206,24 +218,24 @@ export class SidebarComponent implements OnInit {
           },
           error: () => {
             // Even if preferences call fails, show the conversation
-            this.conversations.update(list => [conv, ...list]);
+            this.conversations.update((list) => [conv, ...list]);
             this.isCreating.set(false);
             this.showPreferencesModal.set(false);
             this.selectConversation(conv.id);
-          }
+          },
         });
       },
       error: () => {
         this.isCreating.set(false);
-      }
+      },
     });
   }
 
   deleteConversation(id: string, event: Event) {
     event.stopPropagation();
     this.openConfirm(
-      "Delete Conversation",
-      "Are you sure you want to delete this conversation?",
+      'Delete Conversation',
+      'Are you sure you want to delete this conversation?',
       () => {
         this.chatService.deleteConversation(id).subscribe({
           next: () => {
@@ -234,11 +246,11 @@ export class SidebarComponent implements OnInit {
             this.loadConversations();
           },
           error: (err) => {
-            console.error("Failed to delete conversation", err);
-            this.notificationService.error("Could not delete conversation. Please try again.");
-          }
+            console.error('Failed to delete conversation', err);
+            this.notificationService.error('Could not delete conversation. Please try again.');
+          },
         });
-      }
+      },
     );
   }
 
@@ -250,8 +262,8 @@ export class SidebarComponent implements OnInit {
         this.loadConversations();
       },
       error: (err) => {
-        console.error("Failed to toggle pin", err);
-      }
+        console.error('Failed to toggle pin', err);
+      },
     });
   }
 
@@ -290,7 +302,7 @@ export class SidebarComponent implements OnInit {
 
   onHeadcountChange() {
     if (this.prefHeadcount < 1) this.prefHeadcount = 1;
-    
+
     // Suggest traveler type based on headcount
     if (this.prefHeadcount === 1) {
       this.prefTravelerType = 'SOLO';
@@ -299,7 +311,10 @@ export class SidebarComponent implements OnInit {
         this.prefTravelerType = 'COUPLE';
       }
     } else {
-      if (this.prefTravelerType !== 'FAMILY_WITH_KIDS' && this.prefTravelerType !== 'GROUP_FRIENDS') {
+      if (
+        this.prefTravelerType !== 'FAMILY_WITH_KIDS' &&
+        this.prefTravelerType !== 'GROUP_FRIENDS'
+      ) {
         this.prefTravelerType = 'FAMILY_WITH_KIDS';
       }
     }
