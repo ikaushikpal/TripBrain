@@ -73,21 +73,24 @@ public class SecurityConfig {
                                 "/api/conversations/*/destination-image")
                         .permitAll()
 
-                        // Actuator Endpoints - Restrict strictly to Localhost without reverse-proxy
-                        // headers
+                        // Public Actuator Health Check & Info Endpoints (for Blue-Green Deployer & Container Health Checks)
+                        .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info").permitAll()
+
+                        // Sensitive Actuator Endpoints - Restrict strictly to Localhost/Internal without reverse-proxy headers
                         .requestMatchers("/actuator/**").access((authentication, context) -> {
                             HttpServletRequest request = context.getRequest();
                             String remoteAddr = request.getRemoteAddr();
                             String forwardedFor = request.getHeader("X-Forwarded-For");
 
                             boolean isForwarded = forwardedFor != null && !forwardedFor.isBlank();
-                            boolean isLocalIp = "127.0.0.1".equals(remoteAddr)
+                            boolean isLocalOrDockerIp = "127.0.0.1".equals(remoteAddr)
                                     || "0:0:0:0:0:0:0:1".equals(remoteAddr)
                                     || "::1".equals(remoteAddr)
+                                    || (remoteAddr != null && (remoteAddr.startsWith("172.") || remoteAddr.startsWith("10.") || remoteAddr.startsWith("192.168.")))
                                     || "localhost".equalsIgnoreCase(request.getServerName());
 
                             return new org.springframework.security.authorization.AuthorizationDecision(
-                                    !isForwarded && isLocalIp);
+                                    !isForwarded && isLocalOrDockerIp);
                         })
 
                         // Admin-only Endpoints

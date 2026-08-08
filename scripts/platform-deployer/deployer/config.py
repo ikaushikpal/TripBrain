@@ -1,0 +1,33 @@
+"""
+Configuration models and constants for the Blue-Green Deployment System.
+"""
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Dict, Literal
+
+Environment = Literal["blue", "green"]
+
+
+@dataclass(frozen=True)
+class DeploymentConfig:
+    """Configuration settings for Blue-Green deployment."""
+    app_name: str = "tripbrain"
+    image_name: str = "ikaushikpal/tripbrain:latest"
+    state_file: Path = Path("/opt/platform/state/tripbrain-active")
+    env_file: Path = Path("/opt/platform/.env")
+    network_name: str = "platform-network"
+    nginx_upstream_file: Path = Path("/etc/nginx/conf.d/tripbrain-upstream.conf")
+    health_path: str = "/actuator/health"
+    health_timeout_seconds: int = 5
+    health_retries: int = 30
+    health_retry_delay_seconds: int = 5
+    blue_port: int = 8081
+    green_port: int = 8082
+
+    def get_deployment_info(self, environment: Environment) -> Dict[str, str | int]:
+        """Returns container name and port for the given environment."""
+        port = self.blue_port if environment == "blue" else self.green_port
+        return {
+            "name": f"{self.app_name}-{environment}",
+            "port": port,
+        }
