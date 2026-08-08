@@ -155,15 +155,30 @@ class CertificateManager:
         log.info("Certbot renewal operation completed.")
 
     def dry_run(self) -> None:
-        """Performs a Certbot renewal dry-run test."""
+        """Performs a Certbot dry-run test (renewal if cert exists, registration test if new domain)."""
         log.info("=" * 60)
-        log.info("Running Certbot renewal dry-run for %s", self.config.domain)
+        log.info("Running Certbot dry-run test for %s", self.config.domain)
         log.info("=" * 60)
 
-        self.run_certbot([
-            "renew",
-            "--standalone",
-            "--dry-run",
-        ])
+        if self.certificate_exists():
+            log.info("Certificate exists. Testing renewal dry-run...")
+            self.run_certbot([
+                "renew",
+                "--standalone",
+                "--dry-run",
+            ])
+        else:
+            log.info("Certificate does not exist. Testing initial registration dry-run...")
+            self.run_certbot([
+                "certonly",
+                "--standalone",
+                "--non-interactive",
+                "--agree-tos",
+                "--email",
+                self.config.email,
+                "-d",
+                self.config.domain,
+                "--dry-run",
+            ])
 
         log.info("Certbot dry-run completed successfully.")
