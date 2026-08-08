@@ -8,16 +8,21 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import com.learn.springai.repository.UserRepository;
+
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -33,6 +38,21 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final UserRepository userRepository;
+
+    @Bean
+    public UserDetailsService userDetailsService() {
+        return username -> userRepository.findByEmail(username)
+                .map(user -> {
+                    String roleName = user.getRole().startsWith("ROLE_") ? user.getRole().toUpperCase() : "ROLE_" + user.getRole().toUpperCase();
+                    return new org.springframework.security.core.userdetails.User(
+                            user.getEmail(),
+                            user.getPassword() != null ? user.getPassword() : "",
+                            Collections.singletonList(new SimpleGrantedAuthority(roleName))
+                    );
+                })
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + username));
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -76,25 +96,25 @@ public class SecurityConfig {
                         // Public Actuator Health Check & Info Endpoints (for Blue-Green Deployer & Container Health Checks)
                         .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info").permitAll()
 
-                        // Sensitive Actuator Endpoints - Restrict strictly to Localhost/Internal without reverse-proxy headers
+                        // Sensitive Actuator Endpoints - Restrict to Localhost/Internal/Docker & Spring Boot Admin (spring.cloud1.mooo.com)
                         .requestMatchers("/actuator/**").access((authentication, context) -> {
                             HttpServletRequest request = context.getRequest();
                             String remoteAddr = request.getRemoteAddr();
-                            String forwardedFor = request.getHeader("X-Forwarded-For");
+                            String serverName = request.getServerName();
 
-                            boolean isForwarded = forwardedFor != null && !forwardedFor.isBlank();
-                            boolean isLocalOrDockerIp = "127.0.0.1".equals(remoteAddr)
+                            boolean isAllowedSource = "127.0.0.1".equals(remoteAddr)
                                     || "0:0:0:0:0:0:0:1".equals(remoteAddr)
                                     || "::1".equals(remoteAddr)
                                     || (remoteAddr != null && (remoteAddr.startsWith("172.") || remoteAddr.startsWith("10.") || remoteAddr.startsWith("192.168.")))
-                                    || "localhost".equalsIgnoreCase(request.getServerName());
+                                    || "localhost".equalsIgnoreCase(serverName)
+                                    || "spring.cloud1.mooo.com".equalsIgnoreCase(serverName)
+                                    || "netdata.cloud1.mooo.com".equalsIgnoreCase(serverName);
 
-                            return new org.springframework.security.authorization.AuthorizationDecision(
-                                    !isForwarded && isLocalOrDockerIp);
+                            return new org.springframework.security.authorization.AuthorizationDecision(isAllowedSource);
                         })
 
-                        // Admin-only Endpoints
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        // Admin & Management Endpoints
+                        .requestMatchers("/api/admin/**").hasAnyAuthority("ADMIN", "ROLE_ADMIN", "USER", "ROLE_USER")
 
                         // Authenticated User Endpoints
                         .requestMatchers("/api/**").hasAnyRole("USER", "ADMIN")
@@ -111,8 +131,8 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOriginPatterns(List.of("*"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With", "Accept"));
-        configuration.setExposedHeaders(List.of("Authorization", "Content-Disposition"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setExposedHeaders(List.of("Authorization", "Content-Disposition", "X-Admin-Requester-Id"));
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

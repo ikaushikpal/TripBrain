@@ -18,6 +18,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -30,6 +31,7 @@ public class JwtService {
     @Value("${app.jwt.access-token-expiration-ms}")
     private long jwtExpirationMs;
 
+    @Getter
     @Value("${app.jwt.refresh-token-expiration-ms}")
     private long refreshTokenExpirationMs;
 
@@ -66,6 +68,12 @@ public class JwtService {
                 .build();
 
         return refreshTokenRepository.save(refreshToken);
+    }
+
+    @Transactional
+    public RefreshToken extendRefreshToken(RefreshToken token) {
+        token.setExpiryDate(Instant.now().plusMillis(refreshTokenExpirationMs));
+        return refreshTokenRepository.save(token);
     }
 
     public RefreshToken verifyExpiration(RefreshToken token) {

@@ -23,6 +23,11 @@ class DeploymentConfig:
     health_retry_delay_seconds: int = 5
     blue_port: int = 8081
     green_port: int = 8082
+    gmail_sender: str = "iamkaushik2014@gmail.com"
+    gmail_recipient: str = "iamkaushik2014@gmail.com"
+    log_storage_dir: Path = Path("/data/tripbrain/platform-deployer-logs")
+    smtp_host: str = "smtp.gmail.com"
+    smtp_port: int = 587
 
     def get_deployment_info(self, environment: Environment) -> Dict[str, str | int]:
         """Returns container name and port for the given environment."""

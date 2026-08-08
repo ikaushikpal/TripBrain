@@ -9,6 +9,7 @@ import {
   ViewChild,
   inject,
   PLATFORM_ID,
+  HostListener,
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { MapService } from '../../../core/services/map.service';
@@ -31,9 +32,44 @@ export class MapOverlayComponent implements OnInit, OnDestroy {
   errorMsg = false;
   private mapInstance: any;
 
+  // Dragging state
+  isDragging = false;
+  translateX = 0;
+  translateY = 0;
+  private startX = 0;
+  private startY = 0;
+
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
       this.initMap();
+    }
+  }
+
+  onMouseDown(event: MouseEvent) {
+    // Only trigger drag if clicked on header
+    const target = event.target as HTMLElement;
+    if (target.closest('button')) return; // Ignore close button click
+
+    this.isDragging = true;
+    this.startX = event.clientX - this.translateX;
+    this.startY = event.clientY - this.translateY;
+  }
+
+  @HostListener('window:mousemove', ['$event'])
+  onMouseMove(event: MouseEvent) {
+    if (!this.isDragging) return;
+    event.preventDefault();
+    this.translateX = event.clientX - this.startX;
+    this.translateY = event.clientY - this.startY;
+  }
+
+  @HostListener('window:mouseup')
+  onMouseUp() {
+    if (this.isDragging) {
+      this.isDragging = false;
+      if (this.mapInstance) {
+        this.mapInstance.invalidateSize();
+      }
     }
   }
 
@@ -61,8 +97,8 @@ export class MapOverlayComponent implements OnInit, OnDestroy {
 
         const layer = L.geoJSON(geojson, {
           style: (feature: any) => {
-            if (feature?.geometry.type === 'LineString') {
-              return { color: '#3b82f6', weight: 3, opacity: 0.9, dashArray: '6,4' };
+            if (feature?.geometry?.type === 'LineString') {
+              return { color: '#3b82f6', weight: 4, opacity: 0.9, dashArray: '6,4' };
             }
             return {};
           },
@@ -92,6 +128,12 @@ export class MapOverlayComponent implements OnInit, OnDestroy {
         if (bounds.isValid()) {
           this.mapInstance.fitBounds(bounds, { padding: [40, 40] });
         }
+
+        setTimeout(() => {
+          if (this.mapInstance) {
+            this.mapInstance.invalidateSize();
+          }
+        }, 250);
       },
       error: () => {
         this.isLoading = false;

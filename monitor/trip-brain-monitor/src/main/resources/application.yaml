@@ -1,0 +1,36 @@
+server:
+  port: ${PORT:8085}
+
+spring:
+  application:
+    name: trip-brain-monitor
+  security:
+    user:
+      name: ${SPRING_ADMIN_USERNAME:admin}
+      password: ${SPRING_ADMIN_PASSWORD:admin123}
+
+  boot:
+    admin:
+      context-path: /
+      client:
+        url: ${SPRING_BOOT_ADMIN_URL:http://localhost:8085}
+        username: ${SPRING_ADMIN_USERNAME:admin}
+        password: ${SPRING_ADMIN_PASSWORD:admin123}
+        auto-registration: true
+        instance:
+          service-url: ${SPRING_BOOT_ADMIN_SERVICE_URL:http://localhost:8085}
+          management-url: ${SPRING_BOOT_ADMIN_MANAGEMENT_URL:http://localhost:8085/actuator}
+          health-url: ${SPRING_BOOT_ADMIN_HEALTH_URL:http://localhost:8085/actuator/health}
+          prefer-ip: false
+      ui:
+        title: "TripBrain Platform Monitor"
+        brand: "<div style='font-weight:bold;font-size:18px;color:#3b82f6;'>✈️ TripBrain Admin</div>"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always

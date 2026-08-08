@@ -7,17 +7,30 @@ from typing import List
 
 
 class Logger:
-    """Timestamped logger utility."""
+    """Timestamped logger utility with in-memory log buffering."""
 
-    @staticmethod
-    def log(message: str) -> None:
-        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] {message}", flush=True)
+    def __init__(self):
+        self._logs: List[str] = []
 
-    @staticmethod
-    def header(title: str, char: str = "=", width: int = 60) -> None:
-        Logger.log(char * width)
-        Logger.log(title)
-        Logger.log(char * width)
+    def log(self, message: str) -> None:
+        """Logs a timestamped message to stdout and buffers it in memory."""
+        formatted = f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] {message}"
+        print(formatted, flush=True)
+        self._logs.append(formatted)
+
+    def header(self, title: str, char: str = "=", width: int = 60) -> None:
+        """Logs a formatted section header."""
+        self.log(char * width)
+        self.log(title)
+        self.log(char * width)
+
+    def get_full_log(self) -> str:
+        """Returns all captured logs as a newline-delimited string."""
+        return "\n".join(self._logs)
+
+    def get_logs(self) -> List[str]:
+        """Returns captured logs as a list of strings."""
+        return list(self._logs)
 
 
 class CommandRunner:

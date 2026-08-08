@@ -45,7 +45,6 @@ import org.springframework.web.server.ResponseStatusException;
 @RestController
 @RequestMapping("/api/conversations")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('USER', 'ADMIN')")
 public class ConversationController {
 
     private final ConversationService conversationService;
@@ -134,6 +133,7 @@ public class ConversationController {
     }
 
     @GetMapping("/trips/public")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<List<com.learn.springai.model.PublicTripGalleryItem>> getPublicTrips() {
         List<com.learn.springai.model.PublicTripGalleryItem> trips = conversationService.getPublicTrips();
         return ResponseEntity.ok(trips);
@@ -269,6 +269,7 @@ public class ConversationController {
     }
 
     @GetMapping("/trips/{pdfId}/download")
+    @PreAuthorize("permitAll()")
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public ResponseEntity<Void> downloadTripPdf(
             @PathVariable String pdfId,
@@ -376,6 +377,7 @@ public class ConversationController {
     }
 
     @GetMapping("/trips/{pdfId}/download-url")
+    @PreAuthorize("permitAll()")
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public ResponseEntity<Map<String, String>> getDownloadUrl(
             @PathVariable String pdfId,
@@ -424,6 +426,7 @@ public class ConversationController {
     }
 
     @GetMapping("/trips/{conversationId}/thumbnail")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<byte[]> getThumbnail(@PathVariable String conversationId) {
         try {
             byte[] bytes = backblazeStorageService.downloadFile("final_trip_pdfs/" + conversationId + "-thumbnail.svg");
@@ -450,6 +453,7 @@ public class ConversationController {
     }
 
     @GetMapping("/{conversationId}/destination-image")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<Map<String, String>> getDestinationImage(@PathVariable String conversationId) {
         String destination = "travel";
         TripRequest req = tripRequestService.findEntityByConversationId(conversationId).orElse(null);
@@ -476,6 +480,7 @@ public class ConversationController {
         return ResponseEntity.ok().build();
     }
     @GetMapping("/share/{conversationId}")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<Map<String, Object>> getSharedConversationMessages(
             @PathVariable("conversationId") String conversationId,
             @RequestParam(value = "cursor", required = false) Integer cursor,

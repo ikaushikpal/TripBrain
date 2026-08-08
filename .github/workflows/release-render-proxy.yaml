@@ -1,0 +1,56 @@
+# ==============================================================================
+# Workflow Name: Release Render Proxy Container
+# Purpose: Automatically builds and pushes the multi-architecture Docker image
+#          ('ikaushikpal/trip-brain-render-proxy:latest') for linux/amd64 and
+#          linux/arm64 whenever changes inside 'render-proxy/' are pushed to main.
+# ==============================================================================
+name: Release Render Proxy Container
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'render-proxy/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-render-proxy
+  cancel-in-progress: true
+
+jobs:
+  build-and-push-proxy:
+    name: Build & Push Multi-Arch Proxy Image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU (ARM64 Emulation)
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and Push Multi-Arch Image
+        uses: docker/build-push-action@v5
+        with:
+          context: render-proxy
+          file: render-proxy/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ikaushikpal/trip-brain-render-proxy:latest
+            ikaushikpal/trip-brain-render-proxy:${{ github.sha }}
+          cache-from: type=gha,scope=render-proxy
+          cache-to: type=gha,mode=max,scope=render-proxy

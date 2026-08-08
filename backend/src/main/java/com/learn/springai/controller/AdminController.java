@@ -16,7 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAnyAuthority('ADMIN', 'ROLE_ADMIN', 'USER', 'ROLE_USER')")
 public class AdminController {
 
     private final UserService userService;

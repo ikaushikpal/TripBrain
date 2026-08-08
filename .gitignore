@@ -18,7 +18,6 @@ Thumbs.db
 .springBeans
 .sts4-cache
 
-
 # Backend Build & Run
 backend/.gradle/
 backend/build/
@@ -41,3 +40,18 @@ frontend/trip-brain-frontend-app/.sass-cache/
 
 # Local logs
 *.log
+
+# ignore pycache of scripts
+**/__pycache__/**
+
+# monitor Build & Run
+monitor/trip-brain-monitor/.gradle/
+monitor/trip-brain-monitor/build/
+monitor/trip-brain-monitor/bin/
+monitor/trip-brain-monitor/out/
+monitor/trip-brain-monitor/uploads/
+monitor/trip-brain-monitor/db/
+monitor/trip-brain-monitor/.env
+monitor/trip-brain-monitor/db/**
+.env
+monitor/trip-brain-monitor/src/main/resources/static/**
