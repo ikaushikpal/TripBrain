@@ -146,7 +146,7 @@ jobs:
 
       # Step 4: Verify Gradle Wrapper checksum for security integrity
       - name: Validate Gradle Wrapper
-        uses: gradle/actions/wrapper-validation@v3
+        uses: gradle/actions/wrapper-validation@v4
 
       # Step 5: Ensure gradlew script has executable shell permissions
       - name: Ensure gradlew is executable

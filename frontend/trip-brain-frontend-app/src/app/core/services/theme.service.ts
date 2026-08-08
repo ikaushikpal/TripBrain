@@ -15,7 +15,11 @@ export class ThemeService {
       const htmlEl = document.documentElement;
       htmlEl.classList.add('dark');
       try {
-        if (typeof localStorage !== 'undefined' && localStorage && typeof localStorage.setItem === 'function') {
+        if (
+          typeof localStorage !== 'undefined' &&
+          localStorage &&
+          typeof localStorage.setItem === 'function'
+        ) {
           localStorage.setItem('theme', 'dark');
         }
       } catch (e) {
