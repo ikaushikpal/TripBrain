@@ -8,7 +8,7 @@ import { AuthService } from '../../../core/services/auth.service';
   selector: 'app-register',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
-  templateUrl: './register.component.html'
+  templateUrl: './register.component.html',
 })
 export class RegisterComponent {
   private readonly authService = inject(AuthService);
@@ -20,8 +20,8 @@ export class RegisterComponent {
     password: new FormControl('', [
       Validators.required,
       Validators.minLength(8),
-      Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/)
-    ])
+      Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/),
+    ]),
   });
 
   error = signal<string | null>(null);
@@ -37,19 +37,19 @@ export class RegisterComponent {
     const userDetails = {
       name: this.registerForm.value.name!,
       email: this.registerForm.value.email!,
-      password: this.registerForm.value.password!
+      password: this.registerForm.value.password!,
     };
 
     this.authService.register(userDetails).subscribe({
       next: () => {
         this.isLoading.set(false);
-        this.successMessage.set("Registration successful! Redirecting to login page...");
+        this.successMessage.set('Registration successful! Redirecting to login page...');
         setTimeout(() => this.router.navigate(['/auth/login']), 2000);
       },
       error: (err) => {
         this.isLoading.set(false);
         this.error.set(err?.error?.message || 'Registration failed. Please try again.');
-      }
+      },
     });
   }
 }

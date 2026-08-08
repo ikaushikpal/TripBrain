@@ -12,7 +12,7 @@ import { BASE_URL } from '../../../core/constants';
   selector: 'app-gallery',
   standalone: true,
   imports: [CommonModule, FormsModule, NavbarComponent],
-  templateUrl: './gallery.component.html'
+  templateUrl: './gallery.component.html',
 })
 export class GalleryComponent implements OnInit {
   private readonly chatService = inject(ChatService);
@@ -23,7 +23,9 @@ export class GalleryComponent implements OnInit {
   getAuthenticatedUrl(url: string | null | undefined): string {
     if (!url) return '';
     const token = this.authService.getAccessToken();
-    return token ? `${this.baseUrl}${url}?token=${encodeURIComponent(token)}` : `${this.baseUrl}${url}`;
+    return token
+      ? `${this.baseUrl}${url}?token=${encodeURIComponent(token)}`
+      : `${this.baseUrl}${url}`;
   }
 
   trips = signal<PublicTrip[]>([]);
@@ -34,9 +36,8 @@ export class GalleryComponent implements OnInit {
   filtered = computed(() => {
     const q = this.searchQuery().toLowerCase().trim();
     if (!q) return this.trips();
-    return this.trips().filter(t => 
-      t.destination?.toLowerCase().includes(q) || 
-      t.tags?.toLowerCase().includes(q)
+    return this.trips().filter(
+      (t) => t.destination?.toLowerCase().includes(q) || t.tags?.toLowerCase().includes(q),
     );
   });
 
@@ -55,7 +56,7 @@ export class GalleryComponent implements OnInit {
         this.trips.set(data);
         this.isLoading.set(false);
       },
-      error: () => this.isLoading.set(false)
+      error: () => this.isLoading.set(false),
     });
   }
 
@@ -69,7 +70,7 @@ export class GalleryComponent implements OnInit {
         this.forkingId.set(null);
         this.notificationService.success(`Trip "${trip.destination}" copied to your dashboard!`);
       },
-      error: () => this.forkingId.set(null)
+      error: () => this.forkingId.set(null),
     });
   }
 }

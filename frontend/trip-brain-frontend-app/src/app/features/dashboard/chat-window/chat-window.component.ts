@@ -1,4 +1,18 @@
-import { Component, signal, Input, Output, EventEmitter, OnChanges, SimpleChanges, inject, ViewChild, ElementRef, AfterViewChecked, OnInit, OnDestroy } from '@angular/core';
+import {
+  Component,
+  signal,
+  Input,
+  Output,
+  EventEmitter,
+  OnChanges,
+  SimpleChanges,
+  inject,
+  ViewChild,
+  ElementRef,
+  AfterViewChecked,
+  OnInit,
+  OnDestroy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
@@ -21,7 +35,7 @@ export interface AssistantBuffer {
   standalone: true,
   imports: [CommonModule, FormsModule, MapOverlayComponent],
   templateUrl: './chat-window.component.html',
-  styleUrl: './chat-window.component.css'
+  styleUrl: './chat-window.component.css',
 })
 export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked, OnDestroy {
   @Input() conversationId: string | null = null;
@@ -173,7 +187,7 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
     if (el.scrollTop < 50 && this.nextCursor !== null && !this.isLoadingMore()) {
       this.loadMoreMessages();
     }
-    
+
     // Show button if user scrolled up more than 150px from the bottom
     const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
     this.showScrollBottomButton.set(distanceFromBottom > 150);
@@ -185,7 +199,7 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
       if (el) {
         el.scrollTo({
           top: el.scrollHeight,
-          behavior: 'smooth'
+          behavior: 'smooth',
         });
       }
     } catch (e) {}
@@ -214,7 +228,7 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
       },
       error: () => {
         this.isLoadingMore.set(false);
-      }
+      },
     });
   }
 
@@ -246,7 +260,7 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
         this.shouldScrollToBottom = true;
         this.chatService.cacheMessages(this.conversationId!, data.messages || []);
       },
-      error: () => {}
+      error: () => {},
     });
   }
 
@@ -259,7 +273,7 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
         this.nextCursor = data.nextCursor ? parseInt(data.nextCursor) : null;
         this.chatService.cacheMessages(this.conversationId!, data.messages || []);
       },
-      error: () => {}
+      error: () => {},
     });
   }
 
@@ -274,7 +288,7 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
       },
       error: () => {
         this.wallpaperUrl.set(null);
-      }
+      },
     });
   }
 
@@ -286,9 +300,9 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
 
     if (nextState) {
       this.openConfirm(
-        "Make Conversation Public",
-        "Are you sure you want to make this conversation public? Anyone with the shareable link will be able to view its contents.",
-        () => this.executeTogglePublic(conv.id, nextState)
+        'Make Conversation Public',
+        'Are you sure you want to make this conversation public? Anyone with the shareable link will be able to view its contents.',
+        () => this.executeTogglePublic(conv.id, nextState),
       );
     } else {
       this.executeTogglePublic(conv.id, nextState);
@@ -304,11 +318,13 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
         this.currentConversation.set({ ...conv });
         this.showHamburgerMenu.set(false);
         this.chatService.conversationUpdated$.emit();
-        this.notificationService.success(`Conversation visibility updated to: ${nextState ? 'Public' : 'Private'}`);
+        this.notificationService.success(
+          `Conversation visibility updated to: ${nextState ? 'Public' : 'Private'}`,
+        );
       },
       error: () => {
-        this.notificationService.error("Failed to update conversation visibility.");
-      }
+        this.notificationService.error('Failed to update conversation visibility.');
+      },
     });
   }
 
@@ -318,8 +334,8 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
 
     if (!conv.isPublic) {
       this.openConfirm(
-        "Make Conversation Public",
-        "This conversation must be public in order to share it. Make it public now?",
+        'Make Conversation Public',
+        'This conversation must be public in order to share it. Make it public now?',
         () => {
           this.chatService.togglePublic(conv.id, true).subscribe({
             next: () => {
@@ -329,10 +345,10 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
               this.chatService.conversationUpdated$.emit();
             },
             error: () => {
-              this.notificationService.error("Failed to make conversation public.");
-            }
+              this.notificationService.error('Failed to make conversation public.');
+            },
           });
-        }
+        },
       );
     } else {
       this.copyShareLink(conv.id);
@@ -342,13 +358,16 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
   private copyShareLink(conversationId: string) {
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
     const shareUrl = `${origin}/share/${conversationId}`;
-    navigator.clipboard.writeText(shareUrl).then(() => {
-      this.notificationService.success("Read-only share link copied to clipboard!");
-      this.showHamburgerMenu.set(false);
-    }).catch(err => {
-      console.error("Failed to copy link", err);
-      this.notificationService.info(`Here is your share link: ${shareUrl}`);
-    });
+    navigator.clipboard
+      .writeText(shareUrl)
+      .then(() => {
+        this.notificationService.success('Read-only share link copied to clipboard!');
+        this.showHamburgerMenu.set(false);
+      })
+      .catch((err) => {
+        console.error('Failed to copy link', err);
+        this.notificationService.info(`Here is your share link: ${shareUrl}`);
+      });
   }
 
   deleteActiveConversation() {
@@ -356,8 +375,8 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
     if (!conv) return;
 
     this.openConfirm(
-      "Delete Conversation",
-      "Are you sure you want to delete this conversation?",
+      'Delete Conversation',
+      'Are you sure you want to delete this conversation?',
       () => {
         this.chatService.deleteConversation(conv.id).subscribe({
           next: () => {
@@ -368,10 +387,10 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
             this.messages.set([]);
           },
           error: () => {
-            this.notificationService.error("Failed to delete conversation.");
-          }
+            this.notificationService.error('Failed to delete conversation.');
+          },
         });
-      }
+      },
     );
   }
 
@@ -411,12 +430,12 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
         this.showDetailsDiningGroup.set(false);
         this.showDetailsProfileGroup.set(false);
         this.showDetailsPlacesGroup.set(false);
-        
+
         this.showDetailsModal.set(true);
       },
       error: () => {
-        this.notificationService.info("No travel preferences are configured for this chat.");
-      }
+        this.notificationService.info('No travel preferences are configured for this chat.');
+      },
     });
   }
 
@@ -424,12 +443,17 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
     event.preventDefault();
     if (!this.conversationId) return;
 
-    if (!this.detailsSource || !this.detailsDestination || !this.detailsStartDate || !this.detailsEndDate) {
-      this.notificationService.error("Source, Destination, Start Date and End Date are required.");
+    if (
+      !this.detailsSource ||
+      !this.detailsDestination ||
+      !this.detailsStartDate ||
+      !this.detailsEndDate
+    ) {
+      this.notificationService.error('Source, Destination, Start Date and End Date are required.');
       return;
     }
     if (new Date(this.detailsEndDate) < new Date(this.detailsStartDate)) {
-      this.notificationService.error("End date must be on or after the start date.");
+      this.notificationService.error('End date must be on or after the start date.');
       return;
     }
 
@@ -456,10 +480,19 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
       nationality: this.detailsNationality,
       accessibilityRequired: this.detailsAccessibility,
       maxTravelTimePerDay: this.detailsMaxTravelTime,
-      mustVisitPlaces: this.detailsMustVisit ? this.detailsMustVisit.split(',').map(s => s.trim()).filter(Boolean) : [],
-      avoidPlaces: this.detailsAvoid ? this.detailsAvoid.split(',').map(s => s.trim()).filter(Boolean) : []
+      mustVisitPlaces: this.detailsMustVisit
+        ? this.detailsMustVisit
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [],
+      avoidPlaces: this.detailsAvoid
+        ? this.detailsAvoid
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [],
     };
-
 
     this.chatService.updateTripRequest(this.conversationId, payload).subscribe({
       next: () => {
@@ -468,11 +501,11 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
         this.loadMessages();
         this.loadWallpaper();
         this.chatService.conversationUpdated$.emit();
-        this.notificationService.success("Travel preferences updated successfully!");
+        this.notificationService.success('Travel preferences updated successfully!');
       },
       error: () => {
-        this.notificationService.error("Failed to update travel preferences.");
-      }
+        this.notificationService.error('Failed to update travel preferences.');
+      },
     });
   }
 
@@ -494,13 +527,16 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
     this.inputMessage = '';
 
     // Append user message immediately
-    this.messages.update(msgs => [...msgs, { role: 'USER', content, timestamp: new Date().toISOString() }]);
+    this.messages.update((msgs) => [
+      ...msgs,
+      { role: 'USER', content, timestamp: new Date().toISOString() },
+    ]);
     this.shouldScrollToBottom = true;
     this.chatService.cacheMessages(this.conversationId!, this.messages());
 
     // Prepare assistant streaming buffer
     const assistantBuffer: AssistantBuffer = { role: 'ASSISTANT', content: '', isStreaming: true };
-    this.messages.update(msgs => [...msgs, assistantBuffer]);
+    this.messages.update((msgs) => [...msgs, assistantBuffer]);
 
     this.isStreaming.set(true);
     this.streamStatus.set('Connecting to AI...');
@@ -511,7 +547,7 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
           this.streamStatus.set(data);
         } else if (event === 'text') {
           assistantBuffer.content += data;
-          this.messages.update(msgs => [...msgs]);
+          this.messages.update((msgs) => [...msgs]);
           this.shouldScrollToBottom = true;
         }
       },
@@ -519,20 +555,20 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
         this.streamStatus.set(null);
         this.isStreaming.set(false);
         assistantBuffer.isStreaming = false;
-        this.messages.update(msgs => [...msgs]);
+        this.messages.update((msgs) => [...msgs]);
       },
       complete: () => {
         this.streamStatus.set(null);
         this.isStreaming.set(false);
         assistantBuffer.isStreaming = false;
-        this.messages.update(msgs => [...msgs]);
+        this.messages.update((msgs) => [...msgs]);
         this.shouldScrollToBottom = true;
         if (this.conversationId) {
           this.mapService.clearCache(this.conversationId);
         }
         this.chatService.conversationUpdated$.emit();
         this.loadMessages();
-      }
+      },
     });
   }
 
@@ -554,36 +590,40 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
           next: () => {
             this.uploadProgressText.set('Running document parsing & OCR extraction...');
             // 3. Request backend to run parsing, OCR (Tess4J), check relevance and index context
-            this.chatService.processUpload(this.conversationId!, res.fileKey, file.type, file.name).subscribe({
-              next: (processRes) => {
-                this.isFileUploading.set(false);
-                if (processRes.status === 'REJECTED') {
-                  this.uploadError.set(processRes.message);
-                } else {
-                  this.loadMessages(); // Refresh messages to show the extracted document turn
-                }
-              },
-              error: (err) => {
-                this.isFileUploading.set(false);
-                this.uploadError.set(err?.error?.message || 'Failed to process document content.');
-              }
-            });
+            this.chatService
+              .processUpload(this.conversationId!, res.fileKey, file.type, file.name)
+              .subscribe({
+                next: (processRes) => {
+                  this.isFileUploading.set(false);
+                  if (processRes.status === 'REJECTED') {
+                    this.uploadError.set(processRes.message);
+                  } else {
+                    this.loadMessages(); // Refresh messages to show the extracted document turn
+                  }
+                },
+                error: (err) => {
+                  this.isFileUploading.set(false);
+                  this.uploadError.set(
+                    err?.error?.message || 'Failed to process document content.',
+                  );
+                },
+              });
           },
           error: () => {
             this.isFileUploading.set(false);
             this.uploadError.set('Failed to upload file to storage.');
-          }
+          },
         });
       },
       error: () => {
         this.isFileUploading.set(false);
         this.uploadError.set('Failed to authorize file upload.');
-      }
+      },
     });
   }
 
   generateItinerary() {
-    this.inputMessage = "Generate Itinerary";
+    this.inputMessage = 'Generate Itinerary';
     this.sendMessage();
   }
 
@@ -698,21 +738,22 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
     }
     this.chatService.getDownloadUrl(this.conversationId).subscribe({
       next: (res) => {
-        console.log("Frontend Direct B2 Download URL:", res.downloadUrl);
+        console.log('Frontend Direct B2 Download URL:', res.downloadUrl);
         window.open(res.downloadUrl, '_blank');
       },
       error: (err) => {
-        console.error("Failed to fetch direct download url, falling back to redirect:", err);
+        console.error('Failed to fetch direct download url, falling back to redirect:', err);
         const token = this.authService.getAccessToken();
-        const downloadUrl = `${BASE_URL}${url}` + (token ? `?token=${encodeURIComponent(token)}` : '');
+        const downloadUrl =
+          `${BASE_URL}${url}` + (token ? `?token=${encodeURIComponent(token)}` : '');
         window.open(downloadUrl, '_blank');
-      }
+      },
     });
   }
 
   onDetailsHeadcountChange() {
     if (this.detailsHeadcount < 1) this.detailsHeadcount = 1;
-    
+
     // Suggest traveler type based on headcount
     if (this.detailsHeadcount === 1) {
       this.detailsTravelerType = 'SOLO';
@@ -721,7 +762,10 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
         this.detailsTravelerType = 'COUPLE';
       }
     } else {
-      if (this.detailsTravelerType !== 'FAMILY_WITH_KIDS' && this.detailsTravelerType !== 'GROUP_FRIENDS') {
+      if (
+        this.detailsTravelerType !== 'FAMILY_WITH_KIDS' &&
+        this.detailsTravelerType !== 'GROUP_FRIENDS'
+      ) {
         this.detailsTravelerType = 'FAMILY_WITH_KIDS';
       }
     }
@@ -739,7 +783,8 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
 
   onDetailsChildrenChange() {
     if (this.detailsChildren < 0) this.detailsChildren = 0;
-    if (this.detailsChildren >= this.detailsHeadcount) this.detailsChildren = this.detailsHeadcount - 1;
+    if (this.detailsChildren >= this.detailsHeadcount)
+      this.detailsChildren = this.detailsHeadcount - 1;
     this.detailsAdults = this.detailsHeadcount - this.detailsChildren;
   }
 }

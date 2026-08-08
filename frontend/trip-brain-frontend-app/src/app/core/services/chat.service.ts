@@ -16,7 +16,7 @@ export interface ChatMessage {
   content: string;
   timestamp: string;
   messageType?: string; // e.g. TEXT, WIDGET
-  metadata?: string;    // JSON string containing rich card structures
+  metadata?: string; // JSON string containing rich card structures
 }
 
 export interface ConversationHistory {
@@ -36,7 +36,7 @@ export interface PublicTrip {
 import { BASE_API_URL } from '../constants';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ChatService {
   private readonly http = inject(HttpClient);
@@ -45,24 +45,30 @@ export class ChatService {
   public readonly conversationUpdated$ = new EventEmitter<void>();
 
   getUserConversations(): Observable<Conversation[]> {
-    const cachedStr = typeof window !== 'undefined' ? localStorage.getItem('trip_brain_cached_conversations') : null;
+    const cachedStr =
+      typeof window !== 'undefined'
+        ? localStorage.getItem('trip_brain_cached_conversations')
+        : null;
     const cachedList: Conversation[] = cachedStr ? JSON.parse(cachedStr) : [];
-    
+
     const httpCall = this.http.get<Conversation[]>(`${this.apiUrl}/conversations`).pipe(
-      tap(list => {
+      tap((list) => {
         if (typeof window !== 'undefined' && list) {
-          localStorage.setItem('trip_brain_cached_conversations', JSON.stringify(list.slice(0, 10)));
+          localStorage.setItem(
+            'trip_brain_cached_conversations',
+            JSON.stringify(list.slice(0, 10)),
+          );
         }
-      })
+      }),
     );
 
     if (cachedList.length > 0) {
-      return new Observable<Conversation[]>(observer => {
+      return new Observable<Conversation[]>((observer) => {
         observer.next(cachedList);
         const sub = httpCall.subscribe({
           next: (list) => observer.next(list),
           error: (err) => observer.error(err),
-          complete: () => observer.complete()
+          complete: () => observer.complete(),
         });
         return () => sub.unsubscribe();
       });
@@ -75,7 +81,11 @@ export class ChatService {
     return this.http.post<Conversation>(`${this.apiUrl}/conversations/new`, { userId });
   }
 
-  getConversationMessages(conversationId: string, cursor?: number | null, limit?: number): Observable<ConversationHistory & { nextCursor?: string }> {
+  getConversationMessages(
+    conversationId: string,
+    cursor?: number | null,
+    limit?: number,
+  ): Observable<ConversationHistory & { nextCursor?: string }> {
     let url = `${this.apiUrl}/conversations/${conversationId}/messages?limit=${limit || 15}`;
     if (cursor !== undefined && cursor !== null) {
       url += `&cursor=${cursor}`;
@@ -102,11 +112,15 @@ export class ChatService {
   uploadPdf(conversationId: string, file: File): Observable<string> {
     const formData = new FormData();
     formData.append('file', file);
-    return this.http.post(`${this.apiUrl}/conversations/${conversationId}/upload`, formData, { responseType: 'text' });
+    return this.http.post(`${this.apiUrl}/conversations/${conversationId}/upload`, formData, {
+      responseType: 'text',
+    });
   }
 
   uploadPreferences(conversationId: string, preferences: any): Observable<string> {
-    return this.http.post(`${this.apiUrl}/chat/${conversationId}/uploadPreferences`, preferences, { responseType: 'text' });
+    return this.http.post(`${this.apiUrl}/chat/${conversationId}/uploadPreferences`, preferences, {
+      responseType: 'text',
+    });
   }
 
   exportPdf(conversationId: string): Observable<any> {
@@ -118,44 +132,73 @@ export class ChatService {
   }
 
   forkTrip(pdfId: string, targetUserId: string): Observable<Conversation> {
-    return this.http.post<Conversation>(`${this.apiUrl}/conversations/trips/${pdfId}/fork?targetUserId=${targetUserId}`, {});
+    return this.http.post<Conversation>(
+      `${this.apiUrl}/conversations/trips/${pdfId}/fork?targetUserId=${targetUserId}`,
+      {},
+    );
   }
 
   updateVisibility(pdfId: string, isPublic: boolean): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/conversations/trips/${pdfId}/visibility?isPublic=${isPublic}`, {});
+    return this.http.post<void>(
+      `${this.apiUrl}/conversations/trips/${pdfId}/visibility?isPublic=${isPublic}`,
+      {},
+    );
   }
 
-  getPresignedUploadUrl(conversationId: string, filename: string, contentType: string): Observable<{ uploadUrl: string, fileKey: string }> {
-    return this.http.get<{ uploadUrl: string, fileKey: string }>(`${this.apiUrl}/conversations/${conversationId}/upload-url?filename=${encodeURIComponent(filename)}&contentType=${encodeURIComponent(contentType)}`);
+  getPresignedUploadUrl(
+    conversationId: string,
+    filename: string,
+    contentType: string,
+  ): Observable<{ uploadUrl: string; fileKey: string }> {
+    return this.http.get<{ uploadUrl: string; fileKey: string }>(
+      `${this.apiUrl}/conversations/${conversationId}/upload-url?filename=${encodeURIComponent(filename)}&contentType=${encodeURIComponent(contentType)}`,
+    );
   }
 
   uploadToPresignedUrl(uploadUrl: string, file: File): Observable<any> {
     return this.http.put(uploadUrl, file, {
-      headers: { 'Content-Type': file.type }
+      headers: { 'Content-Type': file.type },
     });
   }
 
-  processUpload(conversationId: string, fileKey: string, contentType: string, filename: string): Observable<any> {
+  processUpload(
+    conversationId: string,
+    fileKey: string,
+    contentType: string,
+    filename: string,
+  ): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/conversations/${conversationId}/process-upload`, {
       fileKey,
       contentType,
-      filename
+      filename,
     });
   }
 
   getDestinationImage(conversationId: string): Observable<{ imageUrl: string }> {
-    return this.http.get<{ imageUrl: string }>(`${this.apiUrl}/conversations/${conversationId}/destination-image`);
+    return this.http.get<{ imageUrl: string }>(
+      `${this.apiUrl}/conversations/${conversationId}/destination-image`,
+    );
   }
 
   togglePin(conversationId: string, pinned: boolean): Observable<void> {
-    return this.http.put<void>(`${this.apiUrl}/conversations/${conversationId}/pin?pinned=${pinned}`, {});
+    return this.http.put<void>(
+      `${this.apiUrl}/conversations/${conversationId}/pin?pinned=${pinned}`,
+      {},
+    );
   }
 
   togglePublic(conversationId: string, isPublic: boolean): Observable<void> {
-    return this.http.put<void>(`${this.apiUrl}/conversations/${conversationId}/public?isPublic=${isPublic}`, {});
+    return this.http.put<void>(
+      `${this.apiUrl}/conversations/${conversationId}/public?isPublic=${isPublic}`,
+      {},
+    );
   }
 
-  getSharedConversationMessages(conversationId: string, cursor?: number | null, limit?: number): Observable<ConversationHistory & { nextCursor?: string }> {
+  getSharedConversationMessages(
+    conversationId: string,
+    cursor?: number | null,
+    limit?: number,
+  ): Observable<ConversationHistory & { nextCursor?: string }> {
     let url = `${this.apiUrl}/conversations/share/${conversationId}?limit=${limit || 15}`;
     if (cursor !== undefined && cursor !== null) {
       url += `&cursor=${cursor}`;
@@ -172,8 +215,11 @@ export class ChatService {
   }
 
   // Reactive Server-Sent Events (SSE) Stream Subscriber
-  getChatStream(conversationId: string, message: string): Observable<{ event: string; data: string }> {
-    return new Observable(observer => {
+  getChatStream(
+    conversationId: string,
+    message: string,
+  ): Observable<{ event: string; data: string }> {
+    return new Observable((observer) => {
       // In Server Side Rendering (SSR), EventSource doesn't exist, so execute client-side only
       if (typeof window === 'undefined') {
         observer.complete();
@@ -181,7 +227,9 @@ export class ChatService {
       }
 
       const token = this.authService.getAccessToken();
-      const url = `${this.apiUrl}/chat/${conversationId}/stream?message=${encodeURIComponent(message)}` + (token ? `&token=${encodeURIComponent(token)}` : '');
+      const url =
+        `${this.apiUrl}/chat/${conversationId}/stream?message=${encodeURIComponent(message)}` +
+        (token ? `&token=${encodeURIComponent(token)}` : '');
       const eventSource = new EventSource(url);
 
       eventSource.addEventListener('status', (e: MessageEvent) => {
@@ -191,7 +239,10 @@ export class ChatService {
       eventSource.addEventListener('text', (e: MessageEvent) => {
         try {
           const parsed = JSON.parse(e.data);
-          observer.next({ event: 'text', data: parsed.content !== undefined ? parsed.content : e.data });
+          observer.next({
+            event: 'text',
+            data: parsed.content !== undefined ? parsed.content : e.data,
+          });
         } catch {
           observer.next({ event: 'text', data: e.data });
         }
@@ -212,6 +263,8 @@ export class ChatService {
   }
 
   getDownloadUrl(conversationId: string): Observable<{ downloadUrl: string }> {
-    return this.http.get<{ downloadUrl: string }>(`${this.apiUrl}/conversations/trips/${conversationId}/download-url`);
+    return this.http.get<{ downloadUrl: string }>(
+      `${this.apiUrl}/conversations/trips/${conversationId}/download-url`,
+    );
   }
 }

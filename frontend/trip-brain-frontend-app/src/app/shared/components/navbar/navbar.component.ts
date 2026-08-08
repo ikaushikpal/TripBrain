@@ -8,7 +8,7 @@ import { ThemeService } from '../../../core/services/theme.service';
   selector: 'app-navbar',
   standalone: true,
   imports: [CommonModule, RouterLink, RouterLinkActive],
-  templateUrl: './navbar.component.html'
+  templateUrl: './navbar.component.html',
 })
 export class NavbarComponent {
   readonly authService = inject(AuthService);

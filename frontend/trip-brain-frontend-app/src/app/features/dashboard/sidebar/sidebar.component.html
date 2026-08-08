@@ -1,4 +1,4 @@
-<aside 
+<aside
   class="shrink-0 bg-gray-950/95 backdrop-blur-sm flex flex-col h-full transition-all duration-500 fixed md:static z-50 md:z-auto top-0 bottom-0 left-0"
   [class.w-72]="isOpen"
   [class.w-0]="!isOpen"
@@ -13,24 +13,39 @@
     <div class="flex items-center justify-between">
       <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-widest">Conversations</h2>
       <!-- Collapse Sidebar Button -->
-      <button 
-        (click)="closeSidebar.emit()" 
+      <button
+        (click)="closeSidebar.emit()"
         class="text-gray-400 hover:text-white hover:bg-gray-800/60 p-1.5 rounded-lg border border-gray-800 hover:border-gray-700 transition-all flex items-center justify-center shrink-0"
         title="Collapse conversation list"
       >
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 6h16M4 12h16M4 18h16"
+          />
         </svg>
       </button>
     </div>
-    <button (click)="newConversation()" [disabled]="isCreating()"
-      class="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600/20 border border-blue-600/50 hover:bg-blue-600/30 disabled:opacity-50 transition-all">
+    <button
+      (click)="newConversation()"
+      [disabled]="isCreating()"
+      class="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600/20 border border-blue-600/50 hover:bg-blue-600/30 disabled:opacity-50 transition-all"
+    >
       @if (isCreating()) {
-        <div class="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+        <div
+          class="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"
+        ></div>
       }
       @if (!isCreating()) {
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 4v16m8-8H4"
+          />
         </svg>
       }
       New Conversation
@@ -41,7 +56,9 @@
   <div class="flex-1 overflow-y-auto py-2 space-y-1 px-2">
     @if (isLoading()) {
       <div class="flex items-center justify-center py-12">
-        <div class="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        <div
+          class="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"
+        ></div>
       </div>
     }
 
@@ -49,62 +66,108 @@
       <div class="flex flex-col items-center justify-center py-12 gap-3 text-center px-4">
         <div class="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center">
           <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.5"
+              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+            />
           </svg>
         </div>
-        <p class="text-gray-500 text-sm">No conversations yet.<br>Click "+ New" to start!</p>
+        <p class="text-gray-500 text-sm">No conversations yet.<br />Click "+ New" to start!</p>
       </div>
     }
 
     @for (conv of conversations(); track conv.id) {
-      <button (click)="selectConversation(conv.id)"
+      <button
+        (click)="selectConversation(conv.id)"
         class="w-full text-left px-3 py-3 rounded-xl transition-all duration-150 animate-fadeIn group relative"
-        [class.bg-blue-600]="selectedId() === conv.id" [class.hover:bg-gray-800]="selectedId() !== conv.id">
+        [class.bg-blue-600]="selectedId() === conv.id"
+        [class.hover:bg-gray-800]="selectedId() !== conv.id"
+      >
         <div class="flex items-start gap-3 pr-14">
-          <div class="w-7 h-7 rounded-lg shrink-0 mt-0.5 flex items-center justify-center border"
-            [class.bg-white\/20]="selectedId() === conv.id" [class.border-transparent]="selectedId() === conv.id"
-            [class.bg-gray-700]="selectedId() !== conv.id" [class.border-gray-600]="selectedId() !== conv.id">
-            <svg class="w-3.5 h-3.5" [class.text-white]="selectedId() === conv.id"
-              [class.text-gray-400]="selectedId() !== conv.id" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          <div
+            class="w-7 h-7 rounded-lg shrink-0 mt-0.5 flex items-center justify-center border"
+            [class.bg-white\/20]="selectedId() === conv.id"
+            [class.border-transparent]="selectedId() === conv.id"
+            [class.bg-gray-700]="selectedId() !== conv.id"
+            [class.border-gray-600]="selectedId() !== conv.id"
+          >
+            <svg
+              class="w-3.5 h-3.5"
+              [class.text-white]="selectedId() === conv.id"
+              [class.text-gray-400]="selectedId() !== conv.id"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+              />
             </svg>
           </div>
           <div class="flex-1 min-w-0">
-            <p class="text-sm font-medium truncate flex items-center gap-1.5"
-               [class.text-white]="selectedId() === conv.id"
-               [class.text-gray-200]="selectedId() !== conv.id"
-               [title]="conv.title || 'Temporary Chat'">
+            <p
+              class="text-sm font-medium truncate flex items-center gap-1.5"
+              [class.text-white]="selectedId() === conv.id"
+              [class.text-gray-200]="selectedId() !== conv.id"
+              [title]="conv.title || 'Temporary Chat'"
+            >
               @if (conv.pinned) {
-                <svg class="w-3.5 h-3.5 text-amber-400 shrink-0" fill="currentColor"
-                  viewBox="0 0 24 24">
+                <svg
+                  class="w-3.5 h-3.5 text-amber-400 shrink-0"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path d="M16,12V4H17V2H7V4H8V12L6,14V16H11.2V22H12.8V16H18V14L16,12Z" />
                 </svg>
               }
               {{ conv.title || 'Temporary Chat' }}
             </p>
-            <p class="text-xs mt-0.5 truncate" [class.text-blue-200]="selectedId() === conv.id"
-              [class.text-gray-500]="selectedId() !== conv.id">
-              {{ conv.createdAt | date:'MMM d, y' }}
+            <p
+              class="text-xs mt-0.5 truncate"
+              [class.text-blue-200]="selectedId() === conv.id"
+              [class.text-gray-500]="selectedId() !== conv.id"
+            >
+              {{ conv.createdAt | date: 'MMM d, y' }}
             </p>
           </div>
         </div>
 
         <!-- Action Button Tray -->
-        <div class="absolute right-2 top-1/2 -translate-y-1/2 hidden group-hover:flex items-center gap-1">
-          <button (click)="togglePin(conv.id, conv.pinned, $event)" title="Pin conversation"
-            class="p-1 rounded bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-400 hover:text-white transition-all">
-            <svg class="w-3.5 h-3.5" [class.text-amber-400]="conv.pinned" fill="currentColor" viewBox="0 0 24 24">
+        <div
+          class="absolute right-2 top-1/2 -translate-y-1/2 hidden group-hover:flex items-center gap-1"
+        >
+          <button
+            (click)="togglePin(conv.id, conv.pinned, $event)"
+            title="Pin conversation"
+            class="p-1 rounded bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-400 hover:text-white transition-all"
+          >
+            <svg
+              class="w-3.5 h-3.5"
+              [class.text-amber-400]="conv.pinned"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path d="M16,12V4H17V2H7V4H8V12L6,14V16H11.2V22H12.8V16H18V14L16,12Z" />
             </svg>
           </button>
 
-          <button (click)="deleteConversation(conv.id, $event)" title="Delete conversation"
-            class="p-1 rounded bg-red-950/40 hover:bg-red-900 border border-red-900/50 text-red-400 hover:text-red-200 transition-all">
+          <button
+            (click)="deleteConversation(conv.id, $event)"
+            title="Delete conversation"
+            class="p-1 rounded bg-red-950/40 hover:bg-red-900 border border-red-900/50 text-red-400 hover:text-red-200 transition-all"
+          >
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              />
             </svg>
           </button>
         </div>
@@ -115,15 +178,24 @@
 
 <!-- Preferences Form Modal -->
 @if (showPreferencesModal()) {
-  <div class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/80 backdrop-blur-md px-4">
+  <div
+    class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/80 backdrop-blur-md px-4"
+  >
     <div
-      class="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-4 animate-scaleUp text-slate-100 max-h-[90vh] overflow-y-auto scrollbar-thin">
+      class="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-4 animate-scaleUp text-slate-100 max-h-[90vh] overflow-y-auto scrollbar-thin"
+    >
       <div class="flex items-center justify-between">
         <h3 class="text-xl font-bold text-white bg-clip-text text-transparent">
-          Initialize Trip Preferences</h3>
+          Initialize Trip Preferences
+        </h3>
         <button (click)="showPreferencesModal.set(false)" class="text-gray-500 hover:text-gray-300">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
       </div>
@@ -133,28 +205,56 @@
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Source</label>
-            <input type="text" [(ngModel)]="prefSource" name="prefSource" required placeholder="e.g. Mumbai"
-              class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white" />
+            <input
+              type="text"
+              [(ngModel)]="prefSource"
+              name="prefSource"
+              required
+              placeholder="e.g. Mumbai"
+              class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white"
+            />
           </div>
           <div>
-            <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Destination</label>
-            <input type="text" [(ngModel)]="prefDestination" name="prefDestination" required placeholder="e.g. Paris"
-              class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white" />
+            <label class="block text-xs font-semibold uppercase text-gray-400 mb-1"
+              >Destination</label
+            >
+            <input
+              type="text"
+              [(ngModel)]="prefDestination"
+              name="prefDestination"
+              required
+              placeholder="e.g. Paris"
+              class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white"
+            />
           </div>
         </div>
 
         <!-- Dates -->
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Start Date</label>
-            <input type="date" [(ngModel)]="prefStartDate" name="prefStartDate" required [min]="minStartDate"
-              class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white" />
+            <label class="block text-xs font-semibold uppercase text-gray-400 mb-1"
+              >Start Date</label
+            >
+            <input
+              type="date"
+              [(ngModel)]="prefStartDate"
+              name="prefStartDate"
+              required
+              [min]="minStartDate"
+              class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white"
+            />
           </div>
           <div>
             <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">End Date</label>
-            <input type="date" [(ngModel)]="prefEndDate" name="prefEndDate" required [disabled]="!prefStartDate"
+            <input
+              type="date"
+              [(ngModel)]="prefEndDate"
+              name="prefEndDate"
+              required
+              [disabled]="!prefStartDate"
               [min]="prefStartDate"
-              class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white disabled:opacity-50 disabled:cursor-not-allowed" />
+              class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+            />
           </div>
         </div>
 
@@ -162,13 +262,22 @@
         <div class="grid grid-cols-3 gap-4">
           <div>
             <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Budget</label>
-            <input type="number" [(ngModel)]="prefBudget" name="prefBudget" required placeholder="e.g. 150000"
-              class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white" />
+            <input
+              type="number"
+              [(ngModel)]="prefBudget"
+              name="prefBudget"
+              required
+              placeholder="e.g. 150000"
+              class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white"
+            />
           </div>
           <div>
             <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Currency</label>
-            <select [(ngModel)]="prefCurrency" name="prefCurrency"
-              class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white">
+            <select
+              [(ngModel)]="prefCurrency"
+              name="prefCurrency"
+              class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white"
+            >
               <option value="INR">INR (₹)</option>
               <option value="USD">USD ($)</option>
               <option value="EUR">EUR (€)</option>
@@ -182,27 +291,45 @@
             </select>
           </div>
           <div>
-            <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Travelers Count</label>
-            <input type="number" [(ngModel)]="prefHeadcount" (ngModelChange)="onHeadcountChange()" name="prefHeadcount" required
-              class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white" />
+            <label class="block text-xs font-semibold uppercase text-gray-400 mb-1"
+              >Travelers Count</label
+            >
+            <input
+              type="number"
+              [(ngModel)]="prefHeadcount"
+              (ngModelChange)="onHeadcountChange()"
+              name="prefHeadcount"
+              required
+              class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white"
+            />
           </div>
         </div>
 
         <!-- Select fields -->
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Budget Class</label>
-            <select [(ngModel)]="prefBudgetClass" name="prefBudgetClass"
-              class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white">
+            <label class="block text-xs font-semibold uppercase text-gray-400 mb-1"
+              >Budget Class</label
+            >
+            <select
+              [(ngModel)]="prefBudgetClass"
+              name="prefBudgetClass"
+              class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white"
+            >
               <option value="BACKPACKER">Backpacker</option>
               <option value="MID">Mid-Range</option>
               <option value="LUXURY">Luxury</option>
             </select>
           </div>
           <div>
-            <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Traveler Type</label>
-            <select [(ngModel)]="prefTravelerType" name="prefTravelerType"
-              class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white">
+            <label class="block text-xs font-semibold uppercase text-gray-400 mb-1"
+              >Traveler Type</label
+            >
+            <select
+              [(ngModel)]="prefTravelerType"
+              name="prefTravelerType"
+              class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white"
+            >
               <option value="SOLO">Solo Traveler</option>
               <option value="COUPLE">Couple</option>
               <option value="HONEYMOON">Honeymoon</option>
@@ -214,12 +341,27 @@
 
         <!-- Optional Settings Toggle -->
         <div class="pt-2">
-          <button type="button" (click)="showOptional = !showOptional"
-            class="flex items-center justify-between w-full px-4 py-2.5 bg-slate-800/50 hover:bg-slate-800 border border-slate-700/60 rounded-xl text-xs font-semibold text-slate-300 transition-all duration-200">
-            <span class="flex items-center gap-2">⚙️ {{ showOptional ? 'Hide Optional Settings' : 'Show Optional Settings' }}</span>
-            <svg class="w-4 h-4 transition-transform duration-200" [class.rotate-180]="showOptional" fill="none"
-              stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          <button
+            type="button"
+            (click)="showOptional = !showOptional"
+            class="flex items-center justify-between w-full px-4 py-2.5 bg-slate-800/50 hover:bg-slate-800 border border-slate-700/60 rounded-xl text-xs font-semibold text-slate-300 transition-all duration-200"
+          >
+            <span class="flex items-center gap-2"
+              >⚙️ {{ showOptional ? 'Hide Optional Settings' : 'Show Optional Settings' }}</span
+            >
+            <svg
+              class="w-4 h-4 transition-transform duration-200"
+              [class.rotate-180]="showOptional"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 9l-7 7-7-7"
+              />
             </svg>
           </button>
         </div>
@@ -230,55 +372,105 @@
             <!-- Guests counts -->
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Adults Count</label>
-                <input type="number" [(ngModel)]="prefAdults" (ngModelChange)="onAdultsChange()" name="prefAdults" min="1"
-                  class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white" />
+                <label class="block text-xs font-semibold uppercase text-gray-400 mb-1"
+                  >Adults Count</label
+                >
+                <input
+                  type="number"
+                  [(ngModel)]="prefAdults"
+                  (ngModelChange)="onAdultsChange()"
+                  name="prefAdults"
+                  min="1"
+                  class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white"
+                />
               </div>
               <div>
-                <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Children Count</label>
-                <input type="number" [(ngModel)]="prefChildren" (ngModelChange)="onChildrenChange()" name="prefChildren" min="0"
-                  class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white" />
+                <label class="block text-xs font-semibold uppercase text-gray-400 mb-1"
+                  >Children Count</label
+                >
+                <input
+                  type="number"
+                  [(ngModel)]="prefChildren"
+                  (ngModelChange)="onChildrenChange()"
+                  name="prefChildren"
+                  min="0"
+                  class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white"
+                />
               </div>
             </div>
 
             <!-- Grouped Accordions -->
             <div class="space-y-3">
-              
               <!-- Group 1: Flights & Transport -->
               <div class="border border-slate-800 rounded-xl overflow-hidden bg-slate-900/40">
-                <button type="button" (click)="showTransportGroup.set(!showTransportGroup())"
-                  class="flex items-center justify-between w-full px-4 py-2.5 bg-slate-800/30 hover:bg-slate-800/50 text-xs font-semibold text-slate-300 transition-all">
+                <button
+                  type="button"
+                  (click)="showTransportGroup.set(!showTransportGroup())"
+                  class="flex items-center justify-between w-full px-4 py-2.5 bg-slate-800/30 hover:bg-slate-800/50 text-xs font-semibold text-slate-300 transition-all"
+                >
                   <span>✈️ Flights & Transport</span>
-                  <svg class="w-4 h-4 transition-transform duration-200" [class.rotate-180]="showTransportGroup()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  <svg
+                    class="w-4 h-4 transition-transform duration-200"
+                    [class.rotate-180]="showTransportGroup()"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </button>
                 @if (showTransportGroup()) {
                   <div class="p-4 space-y-3 border-t border-slate-800/60 bg-slate-950/20 text-sm">
                     <div class="grid grid-cols-2 gap-4">
                       <div>
-                        <label class="block text-xs font-semibold text-gray-400 mb-1">Cabin Class</label>
-                        <select [(ngModel)]="prefCabinClass" name="prefCabinClass"
-                          class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none">
+                        <label class="block text-xs font-semibold text-gray-400 mb-1"
+                          >Cabin Class</label
+                        >
+                        <select
+                          [(ngModel)]="prefCabinClass"
+                          name="prefCabinClass"
+                          class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none"
+                        >
                           <option value="ECONOMY">Economy</option>
                           <option value="BUSINESS">Business</option>
                         </select>
                       </div>
                       <div>
-                        <label class="block text-xs font-semibold text-gray-400 mb-1">Max Travel Hours/Day</label>
-                        <input type="number" [(ngModel)]="prefMaxTravelTime" name="prefMaxTravelTime" min="1" max="24"
-                          class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none" />
+                        <label class="block text-xs font-semibold text-gray-400 mb-1"
+                          >Max Travel Hours/Day</label
+                        >
+                        <input
+                          type="number"
+                          [(ngModel)]="prefMaxTravelTime"
+                          name="prefMaxTravelTime"
+                          min="1"
+                          max="24"
+                          class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none"
+                        />
                       </div>
                     </div>
                     <div class="flex flex-col gap-2 pt-1">
                       <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-300">
-                        <input type="checkbox" [(ngModel)]="prefDirectFlightsOnly" name="prefDirectFlightsOnly"
-                          class="rounded border-slate-700 bg-slate-850 text-blue-600 focus:ring-blue-500" />
+                        <input
+                          type="checkbox"
+                          [(ngModel)]="prefDirectFlightsOnly"
+                          name="prefDirectFlightsOnly"
+                          class="rounded border-slate-700 bg-slate-850 text-blue-600 focus:ring-blue-500"
+                        />
                         Direct Flights Only
                       </label>
                       <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-300">
-                        <input type="checkbox" [(ngModel)]="prefPrivateTransfer" name="prefPrivateTransfer"
-                          class="rounded border-slate-700 bg-slate-850 text-blue-600 focus:ring-blue-500" />
+                        <input
+                          type="checkbox"
+                          [(ngModel)]="prefPrivateTransfer"
+                          name="prefPrivateTransfer"
+                          class="rounded border-slate-700 bg-slate-850 text-blue-600 focus:ring-blue-500"
+                        />
                         Private Transfer Preferred
                       </label>
                     </div>
@@ -288,20 +480,39 @@
 
               <!-- Group 2: Hotel Stars -->
               <div class="border border-slate-800 rounded-xl overflow-hidden bg-slate-900/40">
-                <button type="button" (click)="showHotelGroup.set(!showHotelGroup())"
-                  class="flex items-center justify-between w-full px-4 py-2.5 bg-slate-800/30 hover:bg-slate-800/50 text-xs font-semibold text-slate-300 transition-all">
+                <button
+                  type="button"
+                  (click)="showHotelGroup.set(!showHotelGroup())"
+                  class="flex items-center justify-between w-full px-4 py-2.5 bg-slate-800/30 hover:bg-slate-800/50 text-xs font-semibold text-slate-300 transition-all"
+                >
                   <span>🏨 Hotel Star Ratings</span>
-                  <svg class="w-4 h-4 transition-transform duration-200" [class.rotate-180]="showHotelGroup()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  <svg
+                    class="w-4 h-4 transition-transform duration-200"
+                    [class.rotate-180]="showHotelGroup()"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </button>
                 @if (showHotelGroup()) {
                   <div class="p-4 space-y-3 border-t border-slate-800/60 bg-slate-950/20 text-sm">
                     <div class="grid grid-cols-2 gap-4">
                       <div>
-                        <label class="block text-xs font-semibold text-gray-400 mb-1">Min Stars</label>
-                        <select [(ngModel)]="prefMinHotelStars" name="prefMinHotelStars"
-                          class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none">
+                        <label class="block text-xs font-semibold text-gray-400 mb-1"
+                          >Min Stars</label
+                        >
+                        <select
+                          [(ngModel)]="prefMinHotelStars"
+                          name="prefMinHotelStars"
+                          class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none"
+                        >
                           <option [ngValue]="1">1 Star</option>
                           <option [ngValue]="2">2 Stars</option>
                           <option [ngValue]="3">3 Stars</option>
@@ -310,9 +521,14 @@
                         </select>
                       </div>
                       <div>
-                        <label class="block text-xs font-semibold text-gray-400 mb-1">Max Stars</label>
-                        <select [(ngModel)]="prefMaxHotelStars" name="prefMaxHotelStars"
-                          class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none">
+                        <label class="block text-xs font-semibold text-gray-400 mb-1"
+                          >Max Stars</label
+                        >
+                        <select
+                          [(ngModel)]="prefMaxHotelStars"
+                          name="prefMaxHotelStars"
+                          class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none"
+                        >
                           <option [ngValue]="1">1 Star</option>
                           <option [ngValue]="2">2 Stars</option>
                           <option [ngValue]="3">3 Stars</option>
@@ -327,18 +543,36 @@
 
               <!-- Group 3: Dining -->
               <div class="border border-slate-800 rounded-xl overflow-hidden bg-slate-900/40">
-                <button type="button" (click)="showDiningGroup.set(!showDiningGroup())"
-                  class="flex items-center justify-between w-full px-4 py-2.5 bg-slate-800/30 hover:bg-slate-800/50 text-xs font-semibold text-slate-300 transition-all">
+                <button
+                  type="button"
+                  (click)="showDiningGroup.set(!showDiningGroup())"
+                  class="flex items-center justify-between w-full px-4 py-2.5 bg-slate-800/30 hover:bg-slate-800/50 text-xs font-semibold text-slate-300 transition-all"
+                >
                   <span>🍽️ Dining Options</span>
-                  <svg class="w-4 h-4 transition-transform duration-200" [class.rotate-180]="showDiningGroup()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  <svg
+                    class="w-4 h-4 transition-transform duration-200"
+                    [class.rotate-180]="showDiningGroup()"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </button>
                 @if (showDiningGroup()) {
                   <div class="p-4 space-y-3 border-t border-slate-800/60 bg-slate-950/20 text-sm">
                     <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-300">
-                      <input type="checkbox" [(ngModel)]="prefIncludeFoodTour" name="prefIncludeFoodTour"
-                        class="rounded border-slate-700 bg-slate-850 text-blue-600 focus:ring-blue-500" />
+                      <input
+                        type="checkbox"
+                        [(ngModel)]="prefIncludeFoodTour"
+                        name="prefIncludeFoodTour"
+                        class="rounded border-slate-700 bg-slate-850 text-blue-600 focus:ring-blue-500"
+                      />
                       Include Guided Food Tour
                     </label>
                   </div>
@@ -347,34 +581,66 @@
 
               <!-- Group 4: Profile -->
               <div class="border border-slate-800 rounded-xl overflow-hidden bg-slate-900/40">
-                <button type="button" (click)="showProfileGroup.set(!showProfileGroup())"
-                  class="flex items-center justify-between w-full px-4 py-2.5 bg-slate-800/30 hover:bg-slate-800/50 text-xs font-semibold text-slate-300 transition-all">
+                <button
+                  type="button"
+                  (click)="showProfileGroup.set(!showProfileGroup())"
+                  class="flex items-center justify-between w-full px-4 py-2.5 bg-slate-800/30 hover:bg-slate-800/50 text-xs font-semibold text-slate-300 transition-all"
+                >
                   <span>🌍 Profile & Accessibility</span>
-                  <svg class="w-4 h-4 transition-transform duration-200" [class.rotate-180]="showProfileGroup()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  <svg
+                    class="w-4 h-4 transition-transform duration-200"
+                    [class.rotate-180]="showProfileGroup()"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </button>
                 @if (showProfileGroup()) {
                   <div class="p-4 space-y-3 border-t border-slate-800/60 bg-slate-950/20 text-sm">
                     <div class="grid grid-cols-2 gap-4">
                       <div>
-                        <label class="block text-xs font-semibold text-gray-400 mb-1">Activity Level</label>
-                        <select [(ngModel)]="prefActivityIntensity" name="prefActivityIntensity"
-                          class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none">
+                        <label class="block text-xs font-semibold text-gray-400 mb-1"
+                          >Activity Level</label
+                        >
+                        <select
+                          [(ngModel)]="prefActivityIntensity"
+                          name="prefActivityIntensity"
+                          class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none"
+                        >
                           <option value="LIGHT">Light</option>
                           <option value="MODERATE">Moderate</option>
                           <option value="ACTIVE">Active</option>
                         </select>
                       </div>
                       <div>
-                        <label class="block text-xs font-semibold text-gray-400 mb-1">Nationality</label>
-                        <input type="text" [(ngModel)]="prefNationality" name="prefNationality" placeholder="e.g. Indian"
-                          class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none" />
+                        <label class="block text-xs font-semibold text-gray-400 mb-1"
+                          >Nationality</label
+                        >
+                        <input
+                          type="text"
+                          [(ngModel)]="prefNationality"
+                          name="prefNationality"
+                          placeholder="e.g. Indian"
+                          class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none"
+                        />
                       </div>
                     </div>
-                    <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-300 pt-1">
-                      <input type="checkbox" [(ngModel)]="prefAccessibility" name="prefAccessibility"
-                        class="rounded border-slate-700 bg-slate-850 text-blue-600 focus:ring-blue-500" />
+                    <label
+                      class="flex items-center gap-2 cursor-pointer text-xs text-slate-300 pt-1"
+                    >
+                      <input
+                        type="checkbox"
+                        [(ngModel)]="prefAccessibility"
+                        name="prefAccessibility"
+                        class="rounded border-slate-700 bg-slate-850 text-blue-600 focus:ring-blue-500"
+                      />
                       Accessibility / Wheelchair Required
                     </label>
                   </div>
@@ -383,45 +649,83 @@
 
               <!-- Group 5: Places & Attractions -->
               <div class="border border-slate-800 rounded-xl overflow-hidden bg-slate-900/40">
-                <button type="button" (click)="showPlacesGroup.set(!showPlacesGroup())"
-                  class="flex items-center justify-between w-full px-4 py-2.5 bg-slate-800/30 hover:bg-slate-800/50 text-xs font-semibold text-slate-300 transition-all">
+                <button
+                  type="button"
+                  (click)="showPlacesGroup.set(!showPlacesGroup())"
+                  class="flex items-center justify-between w-full px-4 py-2.5 bg-slate-800/30 hover:bg-slate-800/50 text-xs font-semibold text-slate-300 transition-all"
+                >
                   <span>📍 Places & Attractions</span>
-                  <svg class="w-4 h-4 transition-transform duration-200" [class.rotate-180]="showPlacesGroup()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  <svg
+                    class="w-4 h-4 transition-transform duration-200"
+                    [class.rotate-180]="showPlacesGroup()"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </button>
                 @if (showPlacesGroup()) {
                   <div class="p-4 space-y-3 border-t border-slate-800/60 bg-slate-950/20 text-sm">
                     <div>
-                      <label class="block text-xs font-semibold text-gray-400 mb-1">Must-Visit Places</label>
-                      <input type="text" [(ngModel)]="prefMustVisit" name="prefMustVisit" placeholder="e.g. Eiffel Tower, Louvre Museum (comma separated)"
-                        class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500" />
+                      <label class="block text-xs font-semibold text-gray-400 mb-1"
+                        >Must-Visit Places</label
+                      >
+                      <input
+                        type="text"
+                        [(ngModel)]="prefMustVisit"
+                        name="prefMustVisit"
+                        placeholder="e.g. Eiffel Tower, Louvre Museum (comma separated)"
+                        class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+                      />
                     </div>
                     <div>
-                      <label class="block text-xs font-semibold text-gray-400 mb-1">Places to Avoid</label>
-                      <input type="text" [(ngModel)]="prefAvoid" name="prefAvoid" placeholder="e.g. Crowded markets, noisy clubs (comma separated)"
-                        class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500" />
+                      <label class="block text-xs font-semibold text-gray-400 mb-1"
+                        >Places to Avoid</label
+                      >
+                      <input
+                        type="text"
+                        [(ngModel)]="prefAvoid"
+                        name="prefAvoid"
+                        placeholder="e.g. Crowded markets, noisy clubs (comma separated)"
+                        class="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+                      />
                     </div>
                   </div>
                 }
               </div>
-
             </div>
 
             <div>
-              <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Additional Travel Notes</label>
-              <textarea [(ngModel)]="prefNotes" name="prefNotes"
-                placeholder="e.g. Vegetarian food, focus on art galleries, preference for train transit..." rows="2"
-                class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white resize-none"></textarea>
+              <label class="block text-xs font-semibold uppercase text-gray-400 mb-1"
+                >Additional Travel Notes</label
+              >
+              <textarea
+                [(ngModel)]="prefNotes"
+                name="prefNotes"
+                placeholder="e.g. Vegetarian food, focus on art galleries, preference for train transit..."
+                rows="2"
+                class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white resize-none"
+              ></textarea>
             </div>
           </div>
         }
 
         <!-- Start Button -->
-        <button type="submit" [disabled]="isCreating()"
-          class="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold rounded-2xl transition-all shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2">
+        <button
+          type="submit"
+          [disabled]="isCreating()"
+          class="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold rounded-2xl transition-all shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2"
+        >
           @if (isCreating()) {
-            <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            <div
+              class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+            ></div>
           }
           Let's Plan My Trip!
         </button>
@@ -437,12 +741,18 @@
       <h3 class="text-lg font-bold text-white mb-2">{{ confirmTitle() }}</h3>
       <p class="text-sm text-gray-400 mb-6 leading-relaxed">{{ confirmMessage() }}</p>
       <div class="flex justify-end gap-3">
-        <button type="button" (click)="onConfirmCancel()"
-          class="px-4 py-2 rounded-xl text-sm font-semibold border border-gray-700 bg-gray-800 hover:bg-gray-700 text-white transition-all">
+        <button
+          type="button"
+          (click)="onConfirmCancel()"
+          class="px-4 py-2 rounded-xl text-sm font-semibold border border-gray-700 bg-gray-800 hover:bg-gray-700 text-white transition-all"
+        >
           Cancel
         </button>
-        <button type="button" (click)="onConfirmAccept()"
-          class="px-4 py-2 rounded-xl text-sm font-semibold bg-blue-600 hover:bg-blue-500 text-white transition-all">
+        <button
+          type="button"
+          (click)="onConfirmAccept()"
+          class="px-4 py-2 rounded-xl text-sm font-semibold bg-blue-600 hover:bg-blue-500 text-white transition-all"
+        >
           Confirm
         </button>
       </div>

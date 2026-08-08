@@ -1,17 +1,21 @@
 <div
   class="min-h-screen transition-colors duration-300 bg-surface-950 text-slate-100 dark:bg-surface-950 dark:text-slate-100 light:bg-slate-50 light:text-slate-900"
-  [class.dark]="isDark()" [class.bg-slate-50]="!isDark()" [class.text-slate-900]="!isDark()">
-
+  [class.dark]="isDark()"
+  [class.bg-slate-50]="!isDark()"
+  [class.text-slate-900]="!isDark()"
+>
   <!-- Sticky Navbar Header -->
-  <header class="sticky top-0 z-50 border-b backdrop-blur-md transition-all duration-300"
-    [class.bg-surface-900\/80]="isDark()" [class.border-slate-800]="isDark()" [class.bg-white\/80]="!isDark()"
-    [class.border-slate-200]="!isDark()">
+  <header
+    class="sticky top-0 z-50 border-b backdrop-blur-md transition-all duration-300"
+    [class.bg-surface-900\/80]="isDark()"
+    [class.border-slate-800]="isDark()"
+    [class.bg-white\/80]="!isDark()"
+    [class.border-slate-200]="!isDark()"
+  >
     <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
       <a routerLink="/" class="flex items-center gap-2">
         <img src="/images/logo.jpeg" class="w-8 h-8 rounded-lg object-cover" alt="Logo" />
-        <span class="text-xl font-extrabold tracking-tight text-white">
-          TripBrain
-        </span>
+        <span class="text-xl font-extrabold tracking-tight text-white"> TripBrain </span>
       </a>
 
       <!-- Navigation links -->
@@ -25,8 +29,10 @@
       <!-- Action items -->
       <div class="flex items-center gap-4">
         <!-- Get Started Button -->
-        <a [routerLink]="authService.isAuthenticated() ? '/dashboard' : '/auth/login'"
-          class="px-4 py-2 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-500/20 hover:scale-[1.02] active:scale-95 transition-all">
+        <a
+          [routerLink]="authService.isAuthenticated() ? '/dashboard' : '/auth/login'"
+          class="px-4 py-2 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-500/20 hover:scale-[1.02] active:scale-95 transition-all"
+        >
           {{ authService.isAuthenticated() ? 'Dashboard' : 'Get Started' }}
         </a>
       </div>
@@ -34,41 +40,52 @@
   </header>
 
   <!-- Hero Section -->
-  <section id="hero" class="relative overflow-hidden min-h-[calc(100vh-4rem)] flex items-center bg-cover bg-center"
-    style="background-image: url('images/home_page.jpg');">
+  <section
+    id="hero"
+    class="relative overflow-hidden min-h-[calc(100vh-4rem)] flex items-center bg-cover bg-center"
+    style="background-image: url('images/home_page.jpg')"
+  >
     <!-- Dark overlay removed -->
     <!-- Glowing background decorative circles -->
     <div
-      class="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-blue-600/10 blur-[100px] pointer-events-none z-0">
-    </div>
+      class="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-blue-600/10 blur-[100px] pointer-events-none z-0"
+    ></div>
     <div
-      class="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-96 h-96 rounded-full bg-amber-500/10 blur-[100px] pointer-events-none z-0">
-    </div>
+      class="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-96 h-96 rounded-full bg-amber-500/10 blur-[100px] pointer-events-none z-0"
+    ></div>
 
     <div class="max-w-5xl mx-auto px-6 py-12 text-center relative z-10 text-white w-full">
-      <p class="text-xs sm:text-sm uppercase tracking-widest text-blue-400 font-bold mb-3 z-10 animate-fade-in-up">Your
-        AI travel companion</p>
+      <p
+        class="text-xs sm:text-sm uppercase tracking-widest text-blue-400 font-bold mb-3 z-10 animate-fade-in-up"
+      >
+        Your AI travel companion
+      </p>
       <h1 class="text-4xl sm:text-6xl font-black tracking-tight leading-none mb-6 text-white">
-        The Future of Smart <br>
-        <span class="text-white">
-          Travel Planning
-        </span>
+        The Future of Smart <br />
+        <span class="text-white"> Travel Planning </span>
       </h1>
       <p class="text-lg sm:text-xl max-w-2xl mx-auto mb-10 text-white opacity-90">
-        TripBrain crafts custom, optimized travel itineraries in seconds using state-of-the-art AI. Input your
-        preferences or scan handwritten plans to start your journey.
+        TripBrain crafts custom, optimized travel itineraries in seconds using state-of-the-art AI.
+        Input your preferences or scan handwritten plans to start your journey.
       </p>
 
       <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-        <a [routerLink]="authService.isAuthenticated() ? '/dashboard' : '/auth/login'"
-          class="w-full sm:w-auto px-8 py-4 rounded-2xl text-base font-bold text-white bg-blue-600 hover:bg-blue-500 shadow-xl shadow-blue-500/30 hover:scale-[1.03] transition-all text-center">
+        <a
+          [routerLink]="authService.isAuthenticated() ? '/dashboard' : '/auth/login'"
+          class="w-full sm:w-auto px-8 py-4 rounded-2xl text-base font-bold text-white bg-blue-600 hover:bg-blue-500 shadow-xl shadow-blue-500/30 hover:scale-[1.03] transition-all text-center"
+        >
           Plan Your Next Adventure
         </a>
-        <a href="#gallery"
+        <a
+          href="#gallery"
           class="w-full sm:w-auto px-8 py-4 rounded-2xl text-base font-bold border transition-all text-center"
-          [class.border-slate-800]="isDark()" [class.bg-surface-900\/50]="isDark()"
-          [class.hover:bg-surface-900]="isDark()" [class.border-slate-200]="!isDark()"
-          [class.bg-slate-100\/50]="!isDark()" [class.hover:bg-slate-100]="!isDark()">
+          [class.border-slate-800]="isDark()"
+          [class.bg-surface-900\/50]="isDark()"
+          [class.hover:bg-surface-900]="isDark()"
+          [class.border-slate-200]="!isDark()"
+          [class.bg-slate-100\/50]="!isDark()"
+          [class.hover:bg-slate-100]="!isDark()"
+        >
           Explore Shared Plans
         </a>
       </div>
@@ -76,70 +93,117 @@
   </section>
 
   <!-- About Section -->
-  <section id="about" class="py-20 border-t transition-colors duration-300" [class.border-slate-900]="isDark()"
-    [class.bg-surface-800\/50]="isDark()" [class.border-slate-200]="!isDark()" [class.bg-slate-100\/20]="!isDark()">
+  <section
+    id="about"
+    class="py-20 border-t transition-colors duration-300"
+    [class.border-slate-900]="isDark()"
+    [class.bg-surface-800\/50]="isDark()"
+    [class.border-slate-200]="!isDark()"
+    [class.bg-slate-100\/20]="!isDark()"
+  >
     <div class="max-w-7xl mx-auto px-6">
       <div class="text-center mb-16">
         <h2 class="text-3xl font-extrabold tracking-tight">How TripBrain Works</h2>
-        <p class="mt-2 transition-colors duration-300" [class.text-slate-400]="isDark()"
-          [class.text-slate-600]="!isDark()">Explore the core capabilities of our travel orchestration platform.</p>
+        <p
+          class="mt-2 transition-colors duration-300"
+          [class.text-slate-400]="isDark()"
+          [class.text-slate-600]="!isDark()"
+        >
+          Explore the core capabilities of our travel orchestration platform.
+        </p>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
         <!-- Feature 1 -->
-        <div class="p-8 rounded-2xl border transition-all duration-300 hover:scale-[1.02]"
-          [class.bg-slate-900\/50]="isDark()" [class.border-slate-800]="isDark()" [class.bg-white]="!isDark()"
-          [class.border-slate-200]="!isDark()">
+        <div
+          class="p-8 rounded-2xl border transition-all duration-300 hover:scale-[1.02]"
+          [class.bg-slate-900\/50]="isDark()"
+          [class.border-slate-800]="isDark()"
+          [class.bg-white]="!isDark()"
+          [class.border-slate-200]="!isDark()"
+        >
           <div
-            class="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-500 mb-6">
+            class="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-500 mb-6"
+          >
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+              />
             </svg>
           </div>
           <h3 class="text-xl font-bold mb-3">AI Orchestration</h3>
-          <p class="text-sm leading-relaxed transition-colors duration-300" [class.text-slate-400]="isDark()"
-            [class.text-slate-600]="!isDark()">
-            Intelligent supervisor router classifies user requests and coordinates dedicated AI agents for routing, visa
-            parameters, and budget forecasting.
+          <p
+            class="text-sm leading-relaxed transition-colors duration-300"
+            [class.text-slate-400]="isDark()"
+            [class.text-slate-600]="!isDark()"
+          >
+            Intelligent supervisor router classifies user requests and coordinates dedicated AI
+            agents for routing, visa parameters, and budget forecasting.
           </p>
         </div>
 
         <!-- Feature 2 -->
-        <div class="p-8 rounded-2xl border transition-all duration-300 hover:scale-[1.02]"
-          [class.bg-slate-900\/50]="isDark()" [class.border-slate-800]="isDark()" [class.bg-white]="!isDark()"
-          [class.border-slate-200]="!isDark()">
+        <div
+          class="p-8 rounded-2xl border transition-all duration-300 hover:scale-[1.02]"
+          [class.bg-slate-900\/50]="isDark()"
+          [class.border-slate-800]="isDark()"
+          [class.bg-white]="!isDark()"
+          [class.border-slate-200]="!isDark()"
+        >
           <div
-            class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500 mb-6">
+            class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500 mb-6"
+          >
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
             </svg>
           </div>
           <h3 class="text-xl font-bold mb-3">OCR & PDF Parsing</h3>
-          <p class="text-sm leading-relaxed transition-colors duration-300" [class.text-slate-400]="isDark()"
-            [class.text-slate-600]="!isDark()">
-            Upload handwritten notes, travel receipts, or PDF ticket images. Supported by Apache PDFBox, Apache Tika,
-            and Tesseract OCR to scan documents automatically.
+          <p
+            class="text-sm leading-relaxed transition-colors duration-300"
+            [class.text-slate-400]="isDark()"
+            [class.text-slate-600]="!isDark()"
+          >
+            Upload handwritten notes, travel receipts, or PDF ticket images. Supported by Apache
+            PDFBox, Apache Tika, and Tesseract OCR to scan documents automatically.
           </p>
         </div>
 
         <!-- Feature 3 -->
-        <div class="p-8 rounded-2xl border transition-all duration-300 hover:scale-[1.02]"
-          [class.bg-slate-900\/50]="isDark()" [class.border-slate-800]="isDark()" [class.bg-white]="!isDark()"
-          [class.border-slate-200]="!isDark()">
+        <div
+          class="p-8 rounded-2xl border transition-all duration-300 hover:scale-[1.02]"
+          [class.bg-slate-900\/50]="isDark()"
+          [class.border-slate-800]="isDark()"
+          [class.bg-white]="!isDark()"
+          [class.border-slate-200]="!isDark()"
+        >
           <div
-            class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-500 mb-6">
+            class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-500 mb-6"
+          >
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"
+              />
             </svg>
           </div>
           <h3 class="text-xl font-bold mb-3">Secure Storage</h3>
-          <p class="text-sm leading-relaxed transition-colors duration-300" [class.text-slate-400]="isDark()"
-            [class.text-slate-600]="!isDark()">
-            Secure file integration via S3-compatible Backblaze B2 APIs. Private presigned links keep your
-            itineraries secured and accessible.
+          <p
+            class="text-sm leading-relaxed transition-colors duration-300"
+            [class.text-slate-400]="isDark()"
+            [class.text-slate-600]="!isDark()"
+          >
+            Secure file integration via S3-compatible Backblaze B2 APIs. Private presigned links
+            keep your itineraries secured and accessible.
           </p>
         </div>
       </div>
@@ -147,142 +211,192 @@
   </section>
 
   <!-- Gallery Section -->
-  <section id="gallery" class="py-20 bg-cover bg-center relative" style="background-image: url('images/gallary.jpg');">
+  <section
+    id="gallery"
+    class="py-20 bg-cover bg-center relative"
+    style="background-image: url('images/gallary.jpg')"
+  >
     <!-- Black overlay (60%) -->
     <div class="absolute inset-0 bg-black/60 z-0"></div>
 
     <div class="max-w-7xl mx-auto px-6 relative z-10 text-white">
       <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-12">
         <div>
-          <h2 class="text-4xl sm:text-5xl font-black tracking-tight text-white">Recent Public Itineraries</h2>
-          <p class="mt-3 text-slate-200 text-base sm:text-lg max-w-xl">Browse plans curated and generated by the
-            TripBrain community.</p>
+          <h2 class="text-4xl sm:text-5xl font-black tracking-tight text-white">
+            Recent Public Itineraries
+          </h2>
+          <p class="mt-3 text-slate-200 text-base sm:text-lg max-w-xl">
+            Browse plans curated and generated by the TripBrain community.
+          </p>
         </div>
-        <a routerLink="/gallery"
-          class="text-blue-400 hover:text-blue-300 font-semibold text-sm mt-3 sm:mt-0 flex items-center gap-1">
+        <a
+          routerLink="/gallery"
+          class="text-blue-400 hover:text-blue-300 font-semibold text-sm mt-3 sm:mt-0 flex items-center gap-1"
+        >
           Browse Full Gallery →
         </a>
       </div>
 
       <!-- Skeleton Loading -->
       @if (isLoading()) {
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        @for (i of [1,2,3,4]; track i) {
-        <div class="h-64 rounded-2xl animate-pulse bg-surface-900"></div>
-        }
-      </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          @for (i of [1, 2, 3, 4]; track i) {
+            <div class="h-64 rounded-2xl animate-pulse bg-surface-900"></div>
+          }
+        </div>
       }
 
       <!-- Empty State -->
       @if (!isLoading() && publicTrips().length === 0) {
-      <div class="text-center py-16 rounded-2xl border border-slate-800 bg-surface-900/20">
-        <p class="text-lg font-medium">No public itineraries found</p>
-        <p class="text-sm mt-1 text-slate-500">Be the first to share an itinerary with the community!</p>
-      </div>
+        <div class="text-center py-16 rounded-2xl border border-slate-800 bg-surface-900/20">
+          <p class="text-lg font-medium">No public itineraries found</p>
+          <p class="text-sm mt-1 text-slate-500">
+            Be the first to share an itinerary with the community!
+          </p>
+        </div>
       }
 
       <!-- Public Trips Grid -->
       @if (!isLoading() && publicTrips().length > 0) {
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        @for (trip of publicTrips(); track trip.id) {
-        <div
-          class="group rounded-2xl overflow-hidden border border-slate-800 bg-surface-900/60 backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-blue-500/5">
-
-          <!-- Thumbnail preview -->
-          <div
-            class="h-40 relative flex items-center justify-center bg-gradient-to-br from-blue-900/10 to-amber-900/10 overflow-hidden">
-            @if (trip.thumbnailUrl) {
-            <img [src]="getAuthenticatedUrl(trip.thumbnailUrl)" [alt]="trip.destination"
-              class="w-full h-full object-contain p-2" />
-            } @else {
-            <span class="text-5xl">🗺️</span>
-            }
-
-            <!-- Hover Overlay -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          @for (trip of publicTrips(); track trip.id) {
             <div
-              class="absolute inset-0 bg-surface-950/70 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
-              <a [href]="baseUrl + trip.publicUrl" target="_blank"
-                class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition-all shadow-lg flex items-center gap-1.5">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-                Download PDF
-              </a>
-            </div>
-          </div>
+              class="group rounded-2xl overflow-hidden border border-slate-800 bg-surface-900/60 backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-blue-500/5"
+            >
+              <!-- Thumbnail preview -->
+              <div
+                class="h-40 relative flex items-center justify-center bg-gradient-to-br from-blue-900/10 to-amber-900/10 overflow-hidden"
+              >
+                @if (trip.thumbnailUrl) {
+                  <img
+                    [src]="getAuthenticatedUrl(trip.thumbnailUrl)"
+                    [alt]="trip.destination"
+                    class="w-full h-full object-contain p-2"
+                  />
+                } @else {
+                  <span class="text-5xl">🗺️</span>
+                }
 
-          <div class="p-5">
-            <h3 class="font-bold text-lg truncate text-white">{{ trip.destination }}</h3>
-            <p class="text-xs mt-1 text-slate-400">
-              Generated: {{ trip.generatedAt | date:'mediumDate' }}
-            </p>
-            <!-- Tags List -->
-            @if (trip.tags) {
-            <div class="flex flex-wrap gap-1.5 mt-3">
-              @for (tag of trip.tags.split(','); track tag) {
-              <span
-                class="px-2 py-0.5 rounded-lg text-[10px] font-medium bg-slate-800/80 border border-slate-700/60 text-slate-300">
-                #{{ tag }}
-              </span>
-              }
+                <!-- Hover Overlay -->
+                <div
+                  class="absolute inset-0 bg-surface-950/70 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center"
+                >
+                  <a
+                    [href]="baseUrl + trip.publicUrl"
+                    target="_blank"
+                    class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition-all shadow-lg flex items-center gap-1.5"
+                  >
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                      />
+                    </svg>
+                    Download PDF
+                  </a>
+                </div>
+              </div>
+
+              <div class="p-5">
+                <h3 class="font-bold text-lg truncate text-white">{{ trip.destination }}</h3>
+                <p class="text-xs mt-1 text-slate-400">
+                  Generated: {{ trip.generatedAt | date: 'mediumDate' }}
+                </p>
+                <!-- Tags List -->
+                @if (trip.tags) {
+                  <div class="flex flex-wrap gap-1.5 mt-3">
+                    @for (tag of trip.tags.split(','); track tag) {
+                      <span
+                        class="px-2 py-0.5 rounded-lg text-[10px] font-medium bg-slate-800/80 border border-slate-700/60 text-slate-300"
+                      >
+                        #{{ tag }}
+                      </span>
+                    }
+                  </div>
+                }
+              </div>
             </div>
-            }
-          </div>
+          }
         </div>
-        }
-      </div>
       }
     </div>
   </section>
 
   <!-- Details Section (About) -->
-  <section id="contact" class="py-20 bg-cover bg-center relative" style="background-image: url('images/about.jpg');">
+  <section
+    id="contact"
+    class="py-20 bg-cover bg-center relative"
+    style="background-image: url('images/about.jpg')"
+  >
     <!-- Translucent dark overlay to boost readability -->
     <div class="absolute inset-0 bg-black/55 z-0"></div>
 
     <div class="max-w-3xl mx-auto px-6 text-center relative z-10 text-white">
       <h2 class="text-3xl font-extrabold tracking-tight text-white">About the Creator</h2>
-      <p class="mt-2 mb-8 text-slate-300">Need help or have suggestions? Get in touch with me directly.</p>
+      <p class="mt-2 mb-8 text-slate-300">
+        Need help or have suggestions? Get in touch with me directly.
+      </p>
 
       <div
-        class="w-full max-w-2xl mx-auto p-8 rounded-2xl border border-slate-800 bg-black/40 backdrop-blur-md flex flex-col items-center gap-4 shadow-2xl">
+        class="w-full max-w-2xl mx-auto p-8 rounded-2xl border border-slate-800 bg-black/40 backdrop-blur-md flex flex-col items-center gap-4 shadow-2xl"
+      >
         <p class="font-bold text-2xl text-white">Kaushik Pal</p>
-        <p class="text-sm text-blue-400 font-semibold tracking-wider uppercase">Lead Software Developer</p>
+        <p class="text-sm text-blue-400 font-semibold tracking-wider uppercase">
+          Lead Software Developer
+        </p>
 
         <p class="text-sm sm:text-base leading-relaxed text-slate-300 text-center max-w-md my-3">
-          Hi, I'm Kaushik Pal, a Lead Software Developer passionate about building innovative and reliable software
-          solutions. I specialize in Java, Spring Boot, Angular, Microservices, and AI-powered applications, with a
-          focus on creating scalable, secure, and user-friendly products. I enjoy solving complex challenges, writing
-          clean code, and continuously learning new technologies to deliver impactful digital experiences.
+          Hi, I'm Kaushik Pal, a Lead Software Developer passionate about building innovative and
+          reliable software solutions. I specialize in Java, Spring Boot, Angular, Microservices,
+          and AI-powered applications, with a focus on creating scalable, secure, and user-friendly
+          products. I enjoy solving complex challenges, writing clean code, and continuously
+          learning new technologies to deliver impactful digital experiences.
         </p>
 
         <div class="flex items-center justify-center gap-6 mt-1">
           <!-- LinkedIn -->
-          <a href="https://www.linkedin.com/in/ikaushikpal/" target="_blank"
+          <a
+            href="https://www.linkedin.com/in/ikaushikpal/"
+            target="_blank"
             class="p-3 rounded-xl bg-surface-800/80 border border-slate-700 hover:border-blue-500 hover:text-blue-400 hover:scale-110 shadow-lg text-slate-300 transition-all"
-            title="LinkedIn">
+            title="LinkedIn"
+          >
             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
               <path
-                d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.779-1.75-1.75s.784-1.75 1.75-1.75 1.75.779 1.75 1.75-.784 1.75-1.75 1.75zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+                d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.779-1.75-1.75s.784-1.75 1.75-1.75 1.75.779 1.75 1.75-.784 1.75-1.75 1.75zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"
+              />
             </svg>
           </a>
           <!-- GitHub -->
-          <a href="https://github.com/ikaushikpal" target="_blank"
+          <a
+            href="https://github.com/ikaushikpal"
+            target="_blank"
             class="p-3 rounded-xl bg-surface-800/80 border border-slate-700 hover:border-white hover:text-white hover:scale-110 shadow-lg text-slate-300 transition-all"
-            title="GitHub">
+            title="GitHub"
+          >
             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-              <path fill-rule="evenodd" clip-rule="evenodd"
-                d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.579.688.481C19.137 20.167 22 16.418 22 12c0-5.523-4.478-10-10-10z" />
+              <path
+                fill-rule="evenodd"
+                clip-rule="evenodd"
+                d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.579.688.481C19.137 20.167 22 16.418 22 12c0-5.523-4.478-10-10-10z"
+              />
             </svg>
           </a>
           <!-- Email -->
-          <a href="mailto:iamkaushik2014@gmail.com"
+          <a
+            href="mailto:iamkaushik2014@gmail.com"
             class="p-3 rounded-xl bg-surface-800/80 border border-slate-700 hover:border-amber-500 hover:text-amber-400 hover:scale-110 shadow-lg text-slate-300 transition-all"
-            title="Email">
+            title="Email"
+          >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+              />
             </svg>
           </a>
         </div>
@@ -291,9 +405,13 @@
   </section>
 
   <!-- Footer -->
-  <footer class="py-8 border-t text-center text-xs transition-colors duration-300" [class.border-slate-900]="isDark()"
-    [class.text-slate-600]="isDark()" [class.border-slate-200]="!isDark()" [class.text-slate-400]="!isDark()">
+  <footer
+    class="py-8 border-t text-center text-xs transition-colors duration-300"
+    [class.border-slate-900]="isDark()"
+    [class.text-slate-600]="isDark()"
+    [class.border-slate-200]="!isDark()"
+    [class.text-slate-400]="!isDark()"
+  >
     &copy; 2026 TripBrain. All rights reserved.
   </footer>
-
 </div>

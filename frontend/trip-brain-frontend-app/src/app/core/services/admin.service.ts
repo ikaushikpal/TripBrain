@@ -6,7 +6,7 @@ import { User, AuthService } from './auth.service';
 import { BASE_API_URL } from '../constants';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AdminService {
   private readonly http = inject(HttpClient);
@@ -23,16 +23,20 @@ export class AdminService {
   }
 
   toggleBlock(userId: string, block: boolean): Observable<string> {
-    return this.http.post(`${this.apiUrl}/users/${userId}/block?block=${block}`, {}, {
-      headers: this.getHeaders(),
-      responseType: 'text'
-    });
+    return this.http.post(
+      `${this.apiUrl}/users/${userId}/block?block=${block}`,
+      {},
+      {
+        headers: this.getHeaders(),
+        responseType: 'text',
+      },
+    );
   }
 
   deleteUser(userId: string): Observable<string> {
     return this.http.delete(`${this.apiUrl}/users/${userId}`, {
       headers: this.getHeaders(),
-      responseType: 'text'
+      responseType: 'text',
     });
   }
 }

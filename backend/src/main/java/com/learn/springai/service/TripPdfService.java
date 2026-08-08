@@ -11,6 +11,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import java.io.InputStream;
 import com.itextpdf.io.font.PdfEncodings;
@@ -104,7 +105,7 @@ public class TripPdfService {
     // PUBLIC API
     // ────────────────────────────────────────────────────────────────────────
 
-    @org.springframework.transaction.annotation.Transactional
+    @Transactional
     public TripPdf generateAndSave(String conversationId,
             TripPlanDTO plan,
             boolean isPublic) throws IOException {
@@ -172,7 +173,7 @@ public class TripPdfService {
      * Markdown-first path: converts a structured Markdown string to PDF
      * deterministically via MarkdownToPdfRenderer, bypassing all JSON/DTO deserialization.
      */
-    @org.springframework.transaction.annotation.Transactional
+    @Transactional
     public TripPdf generateAndSaveFromMarkdown(String conversationId,
                                                String markdown,
                                                String destination,

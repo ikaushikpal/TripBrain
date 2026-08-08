@@ -8,7 +8,7 @@ import { ChatWindowComponent } from '../chat-window/chat-window.component';
   selector: 'app-dashboard',
   standalone: true,
   imports: [CommonModule, NavbarComponent, SidebarComponent, ChatWindowComponent],
-  templateUrl: './dashboard.component.html'
+  templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent {
   activeConversationId = signal<string | null>(null);

@@ -7,6 +7,8 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "lint": "prettier --check . && tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.spec.json",
+    "format": "prettier --write .",
     "serve:ssr:trip-brain-frontend-app": "node dist/trip-brain-frontend-app/server/server.mjs"
   },
   "private": true,

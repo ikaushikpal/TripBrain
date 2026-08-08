@@ -20,7 +20,7 @@ export interface LoginResponse {
 import { BASE_API_URL } from '../constants';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
   private readonly http = inject(HttpClient);
@@ -60,9 +60,9 @@ export class AuthService {
 
   login(credentials: { email: string; password: string }): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.apiUrl}/auth/login`, credentials).pipe(
-      tap(res => {
+      tap((res) => {
         this.saveSession(res);
-      })
+      }),
     );
   }
 
@@ -73,9 +73,9 @@ export class AuthService {
       return throwError(() => new Error('No refresh token available'));
     }
     return this.http.post<LoginResponse>(`${this.apiUrl}/auth/refresh`, { refreshToken }).pipe(
-      tap(res => {
+      tap((res) => {
         this.saveSession(res);
-      })
+      }),
     );
   }
 

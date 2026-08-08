@@ -38,11 +38,13 @@ import com.learn.springai.tool.RetrievalHelper;
 import com.learn.springai.service.UserRateLimiterService;
 import com.learn.springai.service.UserService;
 import com.learn.springai.model.Conversation;
+import org.springframework.security.access.prepost.PreAuthorize;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
 @RequestMapping("/api/chat")
+@PreAuthorize("hasAnyRole('USER', 'ADMIN')")
 public class ChatController {
 
     private Resource enricherTemplate;

@@ -7,8 +7,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.learn.springai.dto.conversation.ConversationDTO;
 import com.learn.springai.model.ChatMessage;
@@ -26,13 +29,13 @@ import com.learn.springai.repository.TripRequestRepository;
 import com.learn.springai.repository.PublicTripGalleryRepository;
 import com.learn.springai.util.ChecksumUtils;
 import com.learn.springai.config.DatabaseViewManager;
-import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
-@lombok.extern.slf4j.Slf4j
+@Slf4j
 public class ConversationService {
     private final UserRepository userRepository;
     private final VectorDBRepository vectorDBRepository;
@@ -42,6 +45,29 @@ public class ConversationService {
     private final TripRequestRepository tripRequestRepository;
     private final PublicTripGalleryRepository publicTripGalleryRepository;
     private final DatabaseViewManager databaseViewManager;
+
+    public void verifyReadAccess(String conversationId, String userId) {
+        Conversation conversation = getConversation(conversationId);
+        boolean isOwner = userId != null && conversation.getUser() != null && userId.equals(conversation.getUser().getId());
+        boolean isPublic = conversation.getTripPdf() != null && conversation.getTripPdf().isPublic();
+
+        if (!isOwner && !isPublic) {
+            throw new ResponseStatusException(
+                HttpStatus.FORBIDDEN, "Access Denied: You do not have permission to view this conversation"
+            );
+        }
+    }
+
+    public void verifyWriteAccess(String conversationId, String userId) {
+        Conversation conversation = getConversation(conversationId);
+        boolean isOwner = userId != null && conversation.getUser() != null && userId.equals(conversation.getUser().getId());
+
+        if (!isOwner) {
+            throw new ResponseStatusException(
+                HttpStatus.FORBIDDEN, "Access Denied: Only the conversation owner can modify this conversation"
+            );
+        }
+    }
 
     public ConversationDTO startNewConversation(String userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));

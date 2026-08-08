@@ -11,7 +11,7 @@ import { BASE_URL } from '../../../core/constants';
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './share-chat.component.html',
-  styleUrls: ['./share-chat.component.css']
+  styleUrls: ['./share-chat.component.css'],
 })
 export class ShareChatComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
@@ -28,14 +28,14 @@ export class ShareChatComponent implements OnInit {
   wallpaperUrl = signal<string | null>(null);
 
   ngOnInit() {
-    this.route.paramMap.subscribe(params => {
+    this.route.paramMap.subscribe((params) => {
       const id = params.get('id');
       if (id) {
         this.conversationId.set(id);
         this.loadSharedChat(id);
         this.loadWallpaper(id);
       } else {
-        this.error.set("Invalid conversation link.");
+        this.error.set('Invalid conversation link.');
         this.isLoading.set(false);
       }
     });
@@ -52,9 +52,11 @@ export class ShareChatComponent implements OnInit {
       },
       error: (err) => {
         console.error(err);
-        this.error.set("Failed to load conversation. Make sure it is public and the link is correct.");
+        this.error.set(
+          'Failed to load conversation. Make sure it is public and the link is correct.',
+        );
         this.isLoading.set(false);
-      }
+      },
     });
   }
 
@@ -65,7 +67,7 @@ export class ShareChatComponent implements OnInit {
       },
       error: () => {
         this.wallpaperUrl.set(null);
-      }
+      },
     });
   }
 
@@ -181,14 +183,14 @@ export class ShareChatComponent implements OnInit {
     }
     this.chatService.getDownloadUrl(convId).subscribe({
       next: (res) => {
-        console.log("Frontend Direct B2 Download URL (Shared):", res.downloadUrl);
+        console.log('Frontend Direct B2 Download URL (Shared):', res.downloadUrl);
         window.open(res.downloadUrl, '_blank');
       },
       error: (err) => {
-        console.error("Failed to fetch direct download url, falling back to redirect:", err);
+        console.error('Failed to fetch direct download url, falling back to redirect:', err);
         const downloadUrl = `${BASE_URL}${url}`;
         window.open(downloadUrl, '_blank');
-      }
+      },
     });
   }
 }

@@ -11,9 +11,13 @@ import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Condition;
+import org.springframework.context.annotation.ConditionContext;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.io.Resource;
+import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.scheduling.annotation.EnableAsync;
 
 import com.learn.springai.advisor.ConversationPersistenceAdvisor;
@@ -278,15 +282,15 @@ public class ClientClientConfig {
 
         @Bean
         @Primary
-        @org.springframework.context.annotation.Conditional(UseLocalEmbeddingCondition.class)
+        @Conditional(UseLocalEmbeddingCondition.class)
         public org.springframework.ai.embedding.EmbeddingModel primaryEmbeddingModel() {
                 return new org.springframework.ai.transformers.TransformersEmbeddingModel();
         }
 
-        public static class UseLocalEmbeddingCondition implements org.springframework.context.annotation.Condition {
+        public static class UseLocalEmbeddingCondition implements Condition {
                 @Override
-                public boolean matches(org.springframework.context.annotation.ConditionContext context,
-                                org.springframework.core.type.AnnotatedTypeMetadata metadata) {
+                public boolean matches(ConditionContext context,
+                                AnnotatedTypeMetadata metadata) {
                         String apiKey = context.getEnvironment().getProperty("spring.ai.google.genai.api-key");
                         String geminiKey = context.getEnvironment().getProperty("GEMINI_KEY");
 

@@ -8,7 +8,7 @@ import { AuthService } from '../../../core/services/auth.service';
   selector: 'app-login',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
-  templateUrl: './login.component.html'
+  templateUrl: './login.component.html',
 })
 export class LoginComponent implements OnInit {
   private readonly authService = inject(AuthService);
@@ -16,7 +16,7 @@ export class LoginComponent implements OnInit {
 
   loginForm = new FormGroup({
     email: new FormControl('', [Validators.required, Validators.email]),
-    password: new FormControl('', [Validators.required])
+    password: new FormControl('', [Validators.required]),
   });
 
   error = signal<string | null>(null);
@@ -36,7 +36,7 @@ export class LoginComponent implements OnInit {
 
     const credentials = {
       email: this.loginForm.value.email!,
-      password: this.loginForm.value.password!
+      password: this.loginForm.value.password!,
     };
 
     this.authService.login(credentials).subscribe({
@@ -48,7 +48,7 @@ export class LoginComponent implements OnInit {
         this.isLoading.set(false);
         this.error.set(err?.error?.message || 'Invalid credentials. Please try again.');
         this.loginForm.patchValue({ password: '' });
-      }
+      },
     });
   }
 }
