@@ -14,8 +14,13 @@ export class ThemeService {
     if (typeof document !== 'undefined') {
       const htmlEl = document.documentElement;
       htmlEl.classList.add('dark');
-      htmlEl.style.colorScheme = 'dark';
-      localStorage.setItem('theme', 'dark');
+      try {
+        if (typeof localStorage !== 'undefined' && localStorage && typeof localStorage.setItem === 'function') {
+          localStorage.setItem('theme', 'dark');
+        }
+      } catch (e) {
+        // Ignore storage errors in SSR or test runner environment
+      }
     }
   }
 

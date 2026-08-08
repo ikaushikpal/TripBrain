@@ -101,9 +101,9 @@ jobs:
       - name: Build frontend
         run: npm run build
 
-      # Step 8: Execute Angular Karma unit tests in headless Chrome
+      # Step 8: Execute Angular Vitest unit tests in non-watch mode
       - name: Run frontend tests
-        run: npm test -- --watch=false --browsers=ChromeHeadless
+        run: npm test -- --watch=false
 
       # Step 9: Save code coverage and test report artifacts (runs even if tests fail)
       - name: Upload frontend reports

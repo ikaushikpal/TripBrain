@@ -15,13 +15,13 @@ spring:
     import: optional:file:.env[.properties]
   data:
     redis:
-      url: ${REDIS_URL}
+      url: ${REDIS_URL:redis://localhost:6379}
   application:
     name: spring-ai-pdf-qa
   ai:
     google:
       genai:
-        api-key: ${GEMINI_KEY}
+        api-key: ${GEMINI_KEY:placeholder_gemini_key}
         embedding:
           options:
             model: models/gemini-embedding-2
@@ -38,7 +38,7 @@ spring:
                 threshold: BLOCK_LOW_AND_ABOVE
 
     openai:
-      api-key: ${GROQ_KEY}
+      api-key: ${GROQ_KEY:placeholder_groq_key}
       base-url: https://api.groq.com/openai
       embedding:
         enabled: false
@@ -93,10 +93,10 @@ logging:
     "[org.springframework.ai.chat.client.advisor]": DEBUG
 
 qdrant:
-  host: ${QDRANT_HOST}
-  api-key: ${QDRANT_KEY}
+  host: ${QDRANT_HOST:http://localhost:6333}
+  api-key: ${QDRANT_KEY:}
 tavily:
-  api-key: ${TAVILY_KEY}
+  api-key: ${TAVILY_KEY:placeholder_tavily_key}
 
 admin:
   username: admin
