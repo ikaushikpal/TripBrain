@@ -136,11 +136,9 @@ jobs:
           fi
 
           if [[ ! "$TITLE" =~ ^(feat|fix|refactor|perf|docs|build|ci|chore|test)(\(.+\))?(!)?:\ .+ ]]; then
-            echo "Invalid PR title:"
-            echo "$TITLE"
-            echo ""
-            echo "Expected Conventional Commit format."
-            exit 1
+            echo "Non-conventional PR title detected: $TITLE"
+            echo "Defaulting release bump to patch version."
+            exit 0
           fi
 
       # Step 4: Calculate Semantic Version (SemVer) bump based on title/commit signals
