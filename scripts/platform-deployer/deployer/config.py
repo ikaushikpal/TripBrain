@@ -3,7 +3,7 @@ Configuration models and constants for the Blue-Green Deployment System.
 """
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Literal
+from typing import Dict, Literal, Union
 
 Environment = Literal["blue", "green"]
 
@@ -29,7 +29,7 @@ class DeploymentConfig:
     smtp_host: str = "smtp.gmail.com"
     smtp_port: int = 587
 
-    def get_deployment_info(self, environment: Environment) -> Dict[str, str | int]:
+    def get_deployment_info(self, environment: Environment) -> Dict[str, Union[str, int]]:
         """Returns container name and port for the given environment."""
         port = self.blue_port if environment == "blue" else self.green_port
         return {
