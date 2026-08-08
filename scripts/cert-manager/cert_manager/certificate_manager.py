@@ -113,7 +113,10 @@ class CertificateManager:
             CERTBOT_IMAGE,
         ]
         command.extend(arguments)
-        return CommandRunner.run(command)
+        try:
+            return CommandRunner.run(command)
+        finally:
+            self.restore_selinux_context()
 
     def register_certificate(self) -> None:
         """Registers a new Let's Encrypt certificate via standalone HTTP-01 challenge."""
@@ -132,11 +135,6 @@ class CertificateManager:
             self.config.domain,
         ])
 
-        # Docker Certbot uses :Z on the mounted Let's Encrypt
-        # directory. Force the persistent SELinux httpd_config_t
-        # context back so Nginx can read the certificates.
-        self.restore_selinux_context()
-
         if not self.certificate_exists():
             raise RuntimeError("Certbot reported success but certificate files were not found.")
 
@@ -154,9 +152,6 @@ class CertificateManager:
             "--non-interactive",
         ])
 
-        # Restore SELinux labels after Docker Certbot exits.
-        self.restore_selinux_context()
-
         log.info("Certbot renewal operation completed.")
 
     def dry_run(self) -> None:
@@ -170,8 +165,5 @@ class CertificateManager:
             "--standalone",
             "--dry-run",
         ])
-
-        # Keep SELinux labeling correct even after a dry-run.
-        self.restore_selinux_context()
 
         log.info("Certbot dry-run completed successfully.")

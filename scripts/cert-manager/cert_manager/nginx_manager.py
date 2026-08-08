@@ -31,6 +31,9 @@ class NginxManager:
     @staticmethod
     def start() -> None:
         """Validates Nginx config syntax and starts Nginx service."""
+        log.info("Restoring SELinux context for /etc/letsencrypt before starting Nginx...")
+        CommandRunner.run(["restorecon", "-RFv", "/etc/letsencrypt"], check=False)
+
         log.info("Validating Nginx configuration before start...")
         NginxManager.validate()
 
