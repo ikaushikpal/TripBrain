@@ -1,16 +1,42 @@
 #!/usr/bin/env python3
 """
 TripBrain SSL Certificate Manager CLI Entry Point.
+Fault-tolerant with signal handling and automatic SELinux/Nginx state recovery.
 """
+import signal
 import sys
 from pathlib import Path
 
 # Add script directory to PYTHONPATH for package imports
 sys.path.insert(0, str(Path(__file__).parent))
 
+from cert_manager.certificate_manager import CertificateManager
 from cert_manager.config import CERTIFICATES
+from cert_manager.nginx_manager import NginxManager
 from cert_manager.utils import log
 from cert_manager.workflow import CertificateWorkflow
+
+
+def setup_signal_handlers() -> None:
+    """Configures SIGINT and SIGTERM handlers for emergency Nginx & SELinux restoration."""
+    def handle_signal(sig, frame):
+        log.warning("Interrupt signal received (%s). Restoring platform state...", sig)
+        try:
+            CertificateManager.restore_selinux_context()
+        except Exception as e:
+            log.error("SELinux context restoration error during cleanup: %s", e)
+
+        try:
+            if not NginxManager.is_running():
+                log.info("Restarting Nginx service...")
+                NginxManager.start()
+        except Exception as e:
+            log.error("Nginx startup error during cleanup: %s", e)
+
+        sys.exit(130)
+
+    signal.signal(signal.SIGINT, handle_signal)
+    signal.signal(signal.SIGTERM, handle_signal)
 
 
 def print_usage() -> None:
@@ -36,6 +62,8 @@ Usage:
 
 def main() -> None:
     """CLI Main Entry Point."""
+    setup_signal_handlers()
+
     if len(sys.argv) < 2:
         print_usage()
         sys.exit(1)
