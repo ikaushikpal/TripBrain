@@ -52,6 +52,8 @@ services:
       - backend/.env
     volumes:
       - uploads_data:/app/uploads
+    networks:
+      - platform-network
     restart: always
 
   # =========================================================================
@@ -67,7 +69,14 @@ services:
     environment:
       - SPRING_ADMIN_USERNAME=${SPRING_ADMIN_USERNAME:-admin}
       - SPRING_ADMIN_PASSWORD=${SPRING_ADMIN_PASSWORD:-admin123}
+    networks:
+      - platform-network
     restart: always
 
 volumes:
   uploads_data:
+
+networks:
+  platform-network:
+    name: platform-network
+    external: true
