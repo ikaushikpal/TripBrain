@@ -11,25 +11,23 @@ management:
       show-details: always
 
 spring:
-  boot:
-    admin:
-      client:
-        url: ${SPRING_BOOT_ADMIN_URL:http://localhost:8085}
-        username: ${SPRING_BOOT_ADMIN_USERNAME:admin}
-        password: ${SPRING_BOOT_ADMIN_PASSWORD:admin123}
-        auto-registration: true
-        instance:
-          service-url: ${SPRING_BOOT_SERVICE_URL:http://localhost:8080}
-          management-url: ${SPRING_BOOT_MANAGEMENT_URL:http://localhost:8080/actuator}
-          health-url: ${SPRING_BOOT_HEALTH_URL:http://localhost:8080/actuator/health}
-          prefer-ip: false
+  application:
+    name: tripbrain
   config:
     import: optional:file:.env[.properties]
   data:
     redis:
       url: ${REDIS_URL:redis://localhost:6379}
-  application:
-    name: spring-ai-pdf-qa
+  boot:
+    admin:
+      client:
+        url: ${SPRING_BOOT_ADMIN_URL:https://spring.cloud1.mooo.com}
+        auto-registration: true
+        instance:
+          service-url: ${SPRING_BOOT_SERVICE_URL:https://tripbrain.mooo.com}
+          management-url: ${SPRING_BOOT_MANAGEMENT_URL:https://tripbrain.mooo.com/actuator}
+          health-url: ${SPRING_BOOT_HEALTH_URL:https://tripbrain.mooo.com/actuator/health}
+          prefer-ip: false
   ai:
     google:
       genai:
