@@ -2,6 +2,7 @@
 Nginx manager for updating upstream configuration and executing zero-downtime reloads.
 """
 import os
+import shutil
 from pathlib import Path
 from deployer.config import DeploymentConfig
 from deployer.utils import CommandRunner, Logger
@@ -31,8 +32,9 @@ class NginxManager:
 
         os.replace(temp_file, self.config.nginx_upstream_file)
 
+        nginx_bin = shutil.which("nginx") or "/usr/sbin/nginx"
         self.logger.log("Testing Nginx configuration")
-        self.runner.run(["nginx", "-t"])
+        self.runner.run([nginx_bin, "-t"])
 
         self.logger.log("Reloading Nginx service")
         self.runner.run(["systemctl", "reload", "nginx"])
