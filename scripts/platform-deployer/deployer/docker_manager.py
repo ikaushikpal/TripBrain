@@ -58,13 +58,13 @@ class DockerManager:
             "--restart",
             "unless-stopped",
             "-e",
-            f"SPRING_BOOT_MANAGEMENT_URL=http://127.0.0.1:{port}/actuator",
+            f"SPRING_BOOT_MANAGEMENT_URL=http://{container_name}:8080/actuator",
             "-e",
-            f"SPRING_BOOT_HEALTH_URL=http://127.0.0.1:{port}/actuator/health",
+            f"SPRING_BOOT_HEALTH_URL=http://{container_name}:8080/actuator/health",
             "-e",
-            "SPRING_BOOT_ADMIN_URL=https://spring.cloud1.mooo.com",
+            "SPRING_BOOT_ADMIN_URL=http://trip-brain-monitor-app:8085",
             "-e",
-            "SPRING_BOOT_SERVICE_URL=https://tripbrain.mooo.com",
+            f"SPRING_BOOT_SERVICE_URL=http://{container_name}:8080",
         ]
 
         if self.config.env_file.exists():
