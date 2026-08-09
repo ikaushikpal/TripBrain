@@ -113,7 +113,10 @@ class CertificateManager:
             CERTBOT_IMAGE,
         ]
         command.extend(arguments)
-        return CommandRunner.run(command)
+        try:
+            return CommandRunner.run(command)
+        finally:
+            self.restore_selinux_context()
 
     def register_certificate(self) -> None:
         """Registers a new Let's Encrypt certificate via standalone HTTP-01 challenge."""
@@ -132,11 +135,6 @@ class CertificateManager:
             self.config.domain,
         ])
 
-        # Docker Certbot uses :Z on the mounted Let's Encrypt
-        # directory. Force the persistent SELinux httpd_config_t
-        # context back so Nginx can read the certificates.
-        self.restore_selinux_context()
-
         if not self.certificate_exists():
             raise RuntimeError("Certbot reported success but certificate files were not found.")
 
@@ -154,24 +152,33 @@ class CertificateManager:
             "--non-interactive",
         ])
 
-        # Restore SELinux labels after Docker Certbot exits.
-        self.restore_selinux_context()
-
         log.info("Certbot renewal operation completed.")
 
     def dry_run(self) -> None:
-        """Performs a Certbot renewal dry-run test."""
+        """Performs a Certbot dry-run test (renewal if cert exists, registration test if new domain)."""
         log.info("=" * 60)
-        log.info("Running Certbot renewal dry-run for %s", self.config.domain)
+        log.info("Running Certbot dry-run test for %s", self.config.domain)
         log.info("=" * 60)
 
-        self.run_certbot([
-            "renew",
-            "--standalone",
-            "--dry-run",
-        ])
-
-        # Keep SELinux labeling correct even after a dry-run.
-        self.restore_selinux_context()
+        if self.certificate_exists():
+            log.info("Certificate exists. Testing renewal dry-run...")
+            self.run_certbot([
+                "renew",
+                "--standalone",
+                "--dry-run",
+            ])
+        else:
+            log.info("Certificate does not exist. Testing initial registration dry-run...")
+            self.run_certbot([
+                "certonly",
+                "--standalone",
+                "--non-interactive",
+                "--agree-tos",
+                "--email",
+                self.config.email,
+                "-d",
+                self.config.domain,
+                "--dry-run",
+            ])
 
         log.info("Certbot dry-run completed successfully.")

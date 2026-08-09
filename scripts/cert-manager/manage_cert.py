@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 TripBrain SSL Certificate Manager CLI Entry Point.
-Fault-tolerant Let's Encrypt certificate issuer & renewal manager.
+Fault-tolerant Let's Encrypt certificate issuer & renewal manager with automatic SELinux/Nginx state recovery.
 """
 import argparse
 import signal

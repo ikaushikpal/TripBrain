@@ -123,10 +123,12 @@ jobs:
       # Step 3: Verify PR title adheres to Conventional Commit format
       - name: Validate Conventional Commit
         shell: bash
+        env:
+          PR_TITLE: ${{ steps.pr.outputs.pr_title }}
         run: |
           set -euo pipefail
 
-          TITLE="${{ steps.pr.outputs.pr_title }}"
+          TITLE="$PR_TITLE"
 
           if [ -z "$TITLE" ]; then
             echo "No PR title detected. Continuing."
@@ -134,17 +136,19 @@ jobs:
           fi
 
           if [[ ! "$TITLE" =~ ^(feat|fix|refactor|perf|docs|build|ci|chore|test)(\(.+\))?(!)?:\ .+ ]]; then
-            echo "Invalid PR title:"
-            echo "$TITLE"
-            echo ""
-            echo "Expected Conventional Commit format."
-            exit 1
+            echo "Non-conventional PR title detected: $TITLE"
+            echo "Defaulting release bump to patch version."
+            exit 0
           fi
 
       # Step 4: Calculate Semantic Version (SemVer) bump based on title/commit signals
       - name: Compute semantic version bump
         id: bump
         shell: bash
+        env:
+          PR_TITLE: ${{ steps.pr.outputs.pr_title }}
+          PR_BRANCH: ${{ steps.pr.outputs.pr_branch }}
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
         run: |
           set -euo pipefail
 
@@ -161,9 +165,9 @@ jobs:
 
           PREV_TAG=${PREV_TAG:-0.0.0}
 
-          TITLE="${{ steps.pr.outputs.pr_title }}"
-          BRANCH="${{ steps.pr.outputs.pr_branch }}"
-          COMMIT="${{ github.event.head_commit.message }}"
+          TITLE="$PR_TITLE"
+          BRANCH="$PR_BRANCH"
+          COMMIT="$COMMIT_MSG"
 
           SIGNAL=$(
             printf '%s %s %s' \
@@ -209,10 +213,12 @@ jobs:
       # Step 5: Create and push new version tag & update 'latest' tag on GitHub
       - name: Create version tag
         shell: bash
+        env:
+          NEW_VERSION: ${{ steps.bump.outputs.version }}
         run: |
           set -euo pipefail
 
-          VERSION="${{ steps.bump.outputs.version }}"
+          VERSION="$NEW_VERSION"
 
           git config user.name "github-actions[bot]"
           git config user.email \
