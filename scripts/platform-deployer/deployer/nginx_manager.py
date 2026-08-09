@@ -33,8 +33,10 @@ class NginxManager:
         os.replace(temp_file, self.config.nginx_upstream_file)
 
         nginx_bin = shutil.which("nginx") or "/usr/sbin/nginx"
+        systemctl_bin = shutil.which("systemctl") or "/usr/bin/systemctl"
+
         self.logger.log("Testing Nginx configuration")
         self.runner.run([nginx_bin, "-t"])
 
         self.logger.log("Reloading Nginx service")
-        self.runner.run(["systemctl", "reload", "nginx"])
+        self.runner.run([systemctl_bin, "reload", "nginx"])

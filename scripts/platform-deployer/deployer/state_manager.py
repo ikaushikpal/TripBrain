@@ -37,3 +37,21 @@ class StateManager:
 
         os.replace(temp_file, self.config.state_file)
         self.logger.log(f"Deployment state atomically updated to: {environment}")
+
+    def read_active_digest(self) -> str:
+        """Reads currently deployed image digest/ID from state file."""
+        if not self.config.digest_file.exists():
+            return ""
+        with open(self.config.digest_file, "r") as file:
+            return file.read().strip()
+
+    def write_active_digest(self, digest: str) -> None:
+        """Atomically updates state file with new active image digest/ID."""
+        self.config.digest_file.parent.mkdir(parents=True, exist_ok=True)
+        temp_file = Path(str(self.config.digest_file) + ".tmp")
+
+        with open(temp_file, "w") as file:
+            file.write(digest.strip() + "\n")
+
+        os.replace(temp_file, self.config.digest_file)
+        self.logger.log(f"Deployed image digest updated to: {digest[:12]}")

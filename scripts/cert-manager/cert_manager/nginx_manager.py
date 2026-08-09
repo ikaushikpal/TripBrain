@@ -1,6 +1,4 @@
-"""
-Nginx service manager for controlling Nginx state during standalone HTTP-01 certbot challenges.
-"""
+import shutil
 from cert_manager.utils import CommandRunner, log
 
 
@@ -8,10 +6,18 @@ class NginxManager:
     """Manages Nginx system service state and configuration validation."""
 
     @staticmethod
+    def _nginx_bin() -> str:
+        return shutil.which("nginx") or "/usr/sbin/nginx"
+
+    @staticmethod
+    def _systemctl_bin() -> str:
+        return shutil.which("systemctl") or "/usr/bin/systemctl"
+
+    @staticmethod
     def is_running() -> bool:
         """Checks if Nginx system service is currently active."""
         result = CommandRunner.run(
-            ["systemctl", "is-active", "--quiet", "nginx"],
+            [NginxManager._systemctl_bin(), "is-active", "--quiet", "nginx"],
             check=False,
         )
         return result.returncode == 0
@@ -20,13 +26,13 @@ class NginxManager:
     def stop() -> None:
         """Stops Nginx system service."""
         log.info("Stopping Nginx...")
-        CommandRunner.run(["systemctl", "stop", "nginx"])
+        CommandRunner.run([NginxManager._systemctl_bin(), "stop", "nginx"])
 
     @staticmethod
     def validate() -> None:
         """Validates Nginx configuration syntax."""
         log.info("Testing Nginx configuration...")
-        CommandRunner.run(["nginx", "-t"])
+        CommandRunner.run([NginxManager._nginx_bin(), "-t"])
 
     @staticmethod
     def start() -> None:
@@ -38,7 +44,7 @@ class NginxManager:
         NginxManager.validate()
 
         log.info("Starting Nginx...")
-        CommandRunner.run(["systemctl", "start", "nginx"])
+        CommandRunner.run([NginxManager._systemctl_bin(), "start", "nginx"])
 
     @staticmethod
     def reload() -> None:
@@ -46,4 +52,4 @@ class NginxManager:
         NginxManager.validate()
 
         log.info("Reloading Nginx...")
-        CommandRunner.run(["systemctl", "reload", "nginx"])
+        CommandRunner.run([NginxManager._systemctl_bin(), "reload", "nginx"])

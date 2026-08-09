@@ -30,6 +30,13 @@ class DockerManager:
         self.logger.log(f"Pulling image: {self.config.image_name}")
         self.docker("pull", self.config.image_name)
 
+    def get_image_id(self) -> str:
+        """Inspects and returns the unique local image ID/digest for the target image."""
+        result = self.docker("inspect", "--format", "{{.Id}}", self.config.image_name, check=False)
+        if result.returncode == 0:
+            return result.stdout.strip()
+        return ""
+
     def remove_container(self, container_name: str) -> None:
         """Removes a container if it exists."""
         self.logger.log(f"Removing container if present: {container_name}")
@@ -50,6 +57,14 @@ class DockerManager:
             f"{port}:8080",
             "--restart",
             "unless-stopped",
+            "-e",
+            f"SPRING_BOOT_MANAGEMENT_URL=http://127.0.0.1:{port}/actuator",
+            "-e",
+            f"SPRING_BOOT_HEALTH_URL=http://127.0.0.1:{port}/actuator/health",
+            "-e",
+            "SPRING_BOOT_ADMIN_URL=https://spring.cloud1.mooo.com",
+            "-e",
+            "SPRING_BOOT_SERVICE_URL=https://tripbrain.mooo.com",
         ]
 
         if self.config.env_file.exists():

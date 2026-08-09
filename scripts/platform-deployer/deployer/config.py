@@ -15,6 +15,7 @@ class DeploymentConfig:
     app_name: str = "tripbrain"
     image_name: str = field(default_factory=lambda: os.environ.get("IMAGE_NAME", "ikaushikpal/trip-brain:latest"))
     state_file: Path = Path("/opt/platform/state/tripbrain-active")
+    digest_file: Path = Path("/opt/platform/state/tripbrain-digest")
     env_file: Path = Path("/opt/platform/.env")
     network_name: str = "platform-network"
     nginx_upstream_file: Path = Path("/etc/nginx/conf.d/tripbrain-upstream.conf")
