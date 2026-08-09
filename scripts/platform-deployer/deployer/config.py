@@ -1,7 +1,8 @@
 """
 Configuration models and constants for the Blue-Green Deployment System.
 """
-from dataclasses import dataclass
+import os
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, Literal, Union
 
@@ -12,7 +13,7 @@ Environment = Literal["blue", "green"]
 class DeploymentConfig:
     """Configuration settings for Blue-Green deployment."""
     app_name: str = "tripbrain"
-    image_name: str = "ikaushikpal/tripbrain:latest"
+    image_name: str = field(default_factory=lambda: os.environ.get("IMAGE_NAME", "ikaushikpal/trip-brain:latest"))
     state_file: Path = Path("/opt/platform/state/tripbrain-active")
     env_file: Path = Path("/opt/platform/.env")
     network_name: str = "platform-network"

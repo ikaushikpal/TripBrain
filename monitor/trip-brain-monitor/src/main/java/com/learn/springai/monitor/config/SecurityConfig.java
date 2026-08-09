@@ -14,6 +14,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import org.springframework.web.filter.ForwardedHeaderFilter;
+
 import java.util.List;
 
 @Configuration
@@ -24,6 +26,11 @@ public class SecurityConfig {
 
     public SecurityConfig(AdminServerProperties adminServerProperties) {
         this.adminServerProperties = adminServerProperties;
+    }
+
+    @Bean
+    public ForwardedHeaderFilter forwardedHeaderFilter() {
+        return new ForwardedHeaderFilter();
     }
 
     @Bean

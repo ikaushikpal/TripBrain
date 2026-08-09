@@ -2,8 +2,12 @@
 """
 TripBrain Production Blue-Green Deployment CLI Entry Point.
 """
+import os
 import sys
 from pathlib import Path
+
+# Ensure system binary paths (such as /usr/sbin for nginx) are in PATH
+os.environ["PATH"] = f"/usr/sbin:/sbin:/usr/local/sbin:{os.environ.get('PATH', '')}"
 
 # Add script directory to PYTHONPATH for package imports
 sys.path.insert(0, str(Path(__file__).parent))
