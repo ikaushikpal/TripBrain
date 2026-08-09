@@ -45,8 +45,8 @@ services:
 
       # Spring Boot Admin Monitoring Client Integration
       - SPRING_BOOT_ADMIN_URL=${SPRING_BOOT_ADMIN_URL:-http://monitor:8085}
-      - SPRING_BOOT_ADMIN_USERNAME=${SPRING_ADMIN_USERNAME:-admin}
-      - SPRING_BOOT_ADMIN_PASSWORD=${SPRING_ADMIN_PASSWORD:-admin123}
+      - SPRING_ADMIN_USERNAME=${SPRING_ADMIN_USERNAME:-admin}
+      - SPRING_ADMIN_PASSWORD=${SPRING_ADMIN_PASSWORD:-admin123}
       - SPRING_BOOT_SERVICE_URL=${SPRING_BOOT_SERVICE_URL:-http://app:8080}
     env_file:
       - backend/.env

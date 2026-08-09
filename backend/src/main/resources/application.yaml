@@ -22,6 +22,8 @@ spring:
     admin:
       client:
         url: ${SPRING_BOOT_ADMIN_URL:https://spring.cloud1.mooo.com}
+        username: ${SPRING_ADMIN_USERNAME:admin}
+        password: ${SPRING_ADMIN_PASSWORD:admin123}
         auto-registration: true
         instance:
           service-url: ${SPRING_BOOT_SERVICE_URL:https://tripbrain.mooo.com}
