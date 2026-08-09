@@ -29,6 +29,22 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch latest main semver release tag
+        id: release_tag
+        shell: bash
+        run: |
+          git fetch --tags --force
+          LATEST_TAG=$(
+            git tag --list \
+              --sort=-version:refname \
+              | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' \
+              | head -n 1
+          )
+          LATEST_TAG=${LATEST_TAG:-0.0.1}
+          echo "tag=$LATEST_TAG" >> "$GITHUB_OUTPUT"
 
       - name: Set up QEMU (ARM64 Emulation)
         uses: docker/setup-qemu-action@v3
@@ -51,6 +67,7 @@ jobs:
           push: true
           tags: |
             ikaushikpal/trip-brain-render-proxy:latest
-            ikaushikpal/trip-brain-render-proxy:${{ github.sha }}
+            ikaushikpal/trip-brain-render-proxy:${{ steps.release_tag.outputs.tag }}
+            ikaushikpal/trip-brain-render-proxy:v${{ steps.release_tag.outputs.tag }}
           cache-from: type=gha,scope=render-proxy
           cache-to: type=gha,mode=max,scope=render-proxy

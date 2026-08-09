@@ -24,10 +24,14 @@ class EmailReporter:
         error_message: Optional[str] = None,
     ) -> bool:
         """Constructs and sends deployment email report via Gmail SMTP."""
-        app_password = os.environ.get("GMAIL_APP_PASSWORD")
+        app_password = (
+            os.environ.get("GMAIL_APP_PASSWORD")
+            or os.environ.get("GMAIL_PASSWORD_TOKEN")
+            or os.environ.get("GMAIL_PASSWORD")
+        )
         if not app_password:
             self.logger.log(
-                "WARNING: Environment variable 'GMAIL_APP_PASSWORD' not set. "
+                "WARNING: Environment variable 'GMAIL_APP_PASSWORD' or 'GMAIL_PASSWORD_TOKEN' not set. "
                 "Skipping Gmail notification."
             )
             return False
@@ -84,6 +88,7 @@ class EmailReporter:
 """
 
         # Plain Text Fallback
+        err_section = f"ERROR TRACE:\n{error_message}\n\n" if error_message else ""
         text_body = f"""
 TripBrain Deployment Report
 ============================================================
@@ -93,8 +98,7 @@ Docker Image : {self.config.image_name}
 Timestamp    : {timestamp}
 ============================================================
 
-{"ERROR TRACE:\n" + str(error_message) + "\n\n" if error_message else ""}
-EXECUTION LOGS:
+{err_section}EXECUTION LOGS:
 {full_logs}
 """
 
