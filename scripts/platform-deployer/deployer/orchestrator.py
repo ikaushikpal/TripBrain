@@ -45,6 +45,16 @@ class BlueGreenOrchestrator:
         # Step 1: Pull latest image
         self.docker_manager.pull_image()
 
+        latest_image_id = self.docker_manager.get_image_id()
+        active_image_id = self.state_manager.read_active_digest()
+        active_container_running = self.docker_manager.is_container_running(str(active_info["name"]))
+
+        if latest_image_id and latest_image_id == active_image_id and active_container_running:
+            self.logger.log(
+                f"No new image updates detected (Image ID {latest_image_id[:12]} is already active and healthy). Skipping deployment."
+            )
+            return
+
         # Step 2: Ensure Docker network
         self.docker_manager.ensure_network()
 
@@ -72,8 +82,10 @@ class BlueGreenOrchestrator:
             self.docker_manager.stop_and_remove(str(target_info["name"]))
             raise
 
-        # Step 7: Update deployment state
+        # Step 7: Update deployment state & active image digest
         self.state_manager.write_active_environment(target_env)
+        if latest_image_id:
+            self.state_manager.write_active_digest(latest_image_id)
 
         # Step 8: Decommission old active container
         self.docker_manager.stop_and_remove(str(active_info["name"]))
