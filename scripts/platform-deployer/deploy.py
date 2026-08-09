@@ -44,12 +44,14 @@ def main() -> None:
         nginx_manager=nginx_manager,
     )
 
+    executed = False
     success = False
     error_message = None
 
     try:
-        orchestrator.execute()
-        success = True
+        executed = orchestrator.execute()
+        if executed:
+            success = True
     except Exception as error:
         success = False
         error_message = str(error)
@@ -57,14 +59,16 @@ def main() -> None:
         logger.log(error_message)
         logger.log("=" * 60)
     finally:
-        # 1. Save full execution logs to disk (/data/tripbrain/platform-deployer-logs/date-time.log)
-        log_manager.save_log_file()
+        # Only save log files and dispatch emails if a real deployment occurred or an error was raised
+        if executed or error_message is not None:
+            # 1. Save full execution logs to disk (/data/tripbrain/platform-deployer-logs/date-time.log)
+            log_manager.save_log_file()
 
-        # 2. Dispatch deployment status report and full logs via Gmail SMTP
-        email_reporter.send_report(success=success, error_message=error_message)
+            # 2. Dispatch deployment status report and full logs via Gmail SMTP
+            email_reporter.send_report(success=success, error_message=error_message)
 
-        if not success:
-            sys.exit(1)
+            if not success:
+                sys.exit(1)
 
 
 if __name__ == "__main__":

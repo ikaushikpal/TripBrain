@@ -28,8 +28,8 @@ class BlueGreenOrchestrator:
         self.health_checker = health_checker
         self.nginx_manager = nginx_manager
 
-    def execute(self) -> None:
-        """Executes the full Blue-Green deployment pipeline."""
+    def execute(self) -> bool:
+        """Executes the full Blue-Green deployment pipeline. Returns True if deployed, False if skipped."""
         active_env: Environment = self.state_manager.read_active_environment()
         target_env: Environment = "green" if active_env == "blue" else "blue"
 
@@ -53,7 +53,7 @@ class BlueGreenOrchestrator:
             self.logger.log(
                 f"No new image updates detected (Image ID {latest_image_id[:12]} is already active and healthy). Skipping deployment."
             )
-            return
+            return False
 
         # Step 2: Ensure Docker network
         self.docker_manager.ensure_network()
@@ -99,3 +99,4 @@ class BlueGreenOrchestrator:
         self.logger.log(f"Active container   : {target_info['name']}")
         self.logger.log(f"Active port        : {target_info['port']}")
         self.logger.log("=" * 60)
+        return True
