@@ -1,5 +1,10 @@
 server:
   port: ${PORT:8085}
+  forward-headers-strategy: framework
+  tomcat:
+    remoteip:
+      remote-ip-header: x-forwarded-for
+      protocol-header: x-forwarded-proto
 
 spring:
   application:
@@ -23,6 +28,7 @@ spring:
           health-url: ${SPRING_BOOT_ADMIN_HEALTH_URL:http://localhost:8085/actuator/health}
           prefer-ip: false
       ui:
+        public-url: ${SPRING_BOOT_ADMIN_PUBLIC_URL:https://spring.cloud1.mooo.com}
         title: "TripBrain Platform Monitor"
         brand: "<div style='font-weight:bold;font-size:18px;color:#3b82f6;'>✈️ TripBrain Admin</div>"
 

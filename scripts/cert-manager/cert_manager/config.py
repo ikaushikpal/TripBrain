@@ -39,4 +39,9 @@ CERTIFICATES: Dict[str, CertificateConfig] = {
         domain="netdata.cloud1.mooo.com",
         email="iamkaushik2014@gmail.com",
     ),
+    "spring": CertificateConfig(
+        name="spring",
+        domain="spring.cloud1.mooo.com",
+        email="iamkaushik2014@gmail.com",
+    ),
 }
