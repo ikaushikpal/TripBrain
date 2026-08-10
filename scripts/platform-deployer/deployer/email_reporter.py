@@ -106,6 +106,10 @@ Timestamp    : {timestamp}
         msg["Subject"] = subject
         msg["From"] = self.config.gmail_sender
         msg["To"] = self.config.gmail_recipient
+        # Mark email as high-priority / important
+        msg["X-Priority"] = "1"
+        msg["X-MSMail-Priority"] = "High"
+        msg["Importance"] = "High"
 
         msg.attach(MIMEText(text_body, "plain", "utf-8"))
         msg.attach(MIMEText(html_body, "html", "utf-8"))

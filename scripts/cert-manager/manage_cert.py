@@ -4,9 +4,20 @@ TripBrain SSL Certificate Manager CLI Entry Point.
 Fault-tolerant Let's Encrypt certificate issuer & renewal manager with automatic SELinux/Nginx state recovery.
 """
 import argparse
+import os
 import signal
 import sys
 from pathlib import Path
+
+# Load /opt/platform/.env so GMAIL_PASSWORD_TOKEN etc. are available from crontab
+_env_file = Path("/opt/platform/.env")
+if _env_file.exists():
+    with _env_file.open() as _f:
+        for _line in _f:
+            _line = _line.strip()
+            if _line and not _line.startswith("#") and "=" in _line:
+                _key, _, _value = _line.partition("=")
+                os.environ.setdefault(_key.strip(), _value.strip())
 
 # Add script directory to PYTHONPATH for package imports
 sys.path.insert(0, str(Path(__file__).parent))

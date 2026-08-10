@@ -1,5 +1,5 @@
 server:
-  port: ${PORT:8085}
+  port: ${ADMIN_DASHBOARD_PORT:8085}
   forward-headers-strategy: framework
   tomcat:
     remoteip:
@@ -23,9 +23,9 @@ spring:
         password: ${SPRING_ADMIN_PASSWORD:admin123}
         auto-registration: true
         instance:
-          service-url: ${SPRING_BOOT_ADMIN_SERVICE_URL:http://trip-brain-monitor-app:8085}
-          management-url: ${SPRING_BOOT_ADMIN_MANAGEMENT_URL:http://trip-brain-monitor-app:8085/actuator}
-          health-url: ${SPRING_BOOT_ADMIN_HEALTH_URL:http://trip-brain-monitor-app:8085/actuator/health}
+          service-url: ${SPRING_BOOT_ADMIN_SERVICE_URL:http://trip-brain-monitor:8085}
+          management-url: ${SPRING_BOOT_ADMIN_MANAGEMENT_URL:http://trip-brain-monitor:8085/actuator}
+          health-url: ${SPRING_BOOT_ADMIN_HEALTH_URL:http://trip-brain-monitor:8085/actuator/health}
           prefer-ip: false
       ui:
         public-url: ${SPRING_BOOT_ADMIN_PUBLIC_URL:https://spring.cloud1.mooo.com}

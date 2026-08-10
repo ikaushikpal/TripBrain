@@ -9,6 +9,18 @@ from pathlib import Path
 # Ensure system binary paths (such as /usr/sbin for nginx) are in PATH
 os.environ["PATH"] = f"/usr/sbin:/sbin:/usr/local/sbin:{os.environ.get('PATH', '')}"
 
+# Load /opt/platform/.env into the environment before anything else.
+# This allows crontab to run the script without needing to manually export vars.
+_env_file = Path("/opt/platform/.env")
+if _env_file.exists():
+    with _env_file.open() as _f:
+        for _line in _f:
+            _line = _line.strip()
+            if _line and not _line.startswith("#") and "=" in _line:
+                _key, _, _value = _line.partition("=")
+                # Don't override vars already set in the environment (e.g. via crontab)
+                os.environ.setdefault(_key.strip(), _value.strip())
+
 # Add script directory to PYTHONPATH for package imports
 sys.path.insert(0, str(Path(__file__).parent))
 

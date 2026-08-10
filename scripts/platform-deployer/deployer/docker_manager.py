@@ -62,7 +62,7 @@ class DockerManager:
             "-e",
             f"SPRING_BOOT_HEALTH_URL=http://{container_name}:8080/actuator/health",
             "-e",
-            "SPRING_BOOT_ADMIN_URL=http://trip-brain-monitor-app:8085",
+            "SPRING_BOOT_ADMIN_URL=http://trip-brain-monitor:8085",
             "-e",
             f"SPRING_BOOT_SERVICE_URL=http://{container_name}:8080",
         ]
