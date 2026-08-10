@@ -8,9 +8,8 @@ group = 'com.learn.springai'
 version = '0.0.1-SNAPSHOT'
 
 java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(25)
-	}
+	sourceCompatibility = '21'
+	targetCompatibility = '21'
 }
 
 repositories {
