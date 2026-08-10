@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   # =========================================================================
@@ -43,6 +43,9 @@ services:
       - B2_REGION=${B2_REGION}
       - B2_BUCKET_NAME=${B2_BUCKET_NAME}
 
+      # Logging Directory Override
+      - LOG_PATH=${LOG_PATH:-/data/tripbrain}
+
       # Spring Boot Admin Monitoring Client Integration
       - SPRING_BOOT_ADMIN_URL=${SPRING_BOOT_ADMIN_URL:-http://monitor:8085}
       - SPRING_ADMIN_USERNAME=${SPRING_ADMIN_USERNAME:-admin}
@@ -52,6 +55,7 @@ services:
       - backend/.env
     volumes:
       - uploads_data:/app/uploads
+      - ${LOG_PATH:-/data/tripbrain}:${LOG_PATH:-/data/tripbrain}
     networks:
       - platform-network
     restart: always

@@ -4,6 +4,7 @@ Docker manager for managing containers, images, and networks.
 from typing import List
 from deployer.config import DeploymentConfig
 from deployer.utils import CommandRunner, Logger
+import os
 
 
 class DockerManager:
@@ -62,6 +63,13 @@ class DockerManager:
         # Add .env file first so explicit -e overrides take precedence
         if self.config.env_file.exists():
             command.extend(["--env-file", str(self.config.env_file)])
+
+        # Persistent volume mount for application logs
+        log_path = os.environ.get("LOG_PATH", "/data/tripbrain")
+        command.extend([
+            "-v", f"{log_path}:{log_path}",
+            "-e", f"LOG_PATH={log_path}",
+        ])
 
         # Internal bridge network URLs for container-to-container communication
         command.extend([
