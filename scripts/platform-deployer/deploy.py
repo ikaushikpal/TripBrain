@@ -2,6 +2,7 @@
 """
 TripBrain Production Blue-Green Deployment CLI Entry Point.
 """
+import fcntl
 import os
 import sys
 from pathlib import Path
@@ -34,9 +35,30 @@ from deployer.orchestrator import BlueGreenOrchestrator
 from deployer.state_manager import StateManager
 from deployer.utils import CommandRunner, Logger
 
+# Lock file path — only one deployer instance may run at a time.
+# If a previous cron run is still in progress (health-checking, rolling Nginx, etc.)
+# a new cron trigger will fail to acquire the lock and exit silently.
+_LOCK_FILE = "/var/lock/tripbrain-deploy.lock"
+
 
 def main() -> None:
     """CLI Entry Point."""
+    # ── Exclusive file lock ───────────────────────────────────────────────────
+    # Prevents concurrent cron invocations from killing each other's containers.
+    # fcntl.LOCK_EX | fcntl.LOCK_NB raises BlockingIOError if already locked.
+    try:
+        lock_fd = open(_LOCK_FILE, "w")
+        fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        # Another instance is already running — exit silently, no email.
+        print(
+            f"[deploy] Another deployment is already in progress "
+            f"(lock held: {_LOCK_FILE}). Skipping this run.",
+            flush=True,
+        )
+        sys.exit(0)
+    # ─────────────────────────────────────────────────────────────────────────
+
     config = DeploymentConfig()
     logger = Logger()
     runner = CommandRunner(logger)
@@ -71,6 +93,10 @@ def main() -> None:
         logger.log(error_message)
         logger.log("=" * 60)
     finally:
+        # Release the exclusive lock so the next cron run can proceed
+        fcntl.flock(lock_fd, fcntl.LOCK_UN)
+        lock_fd.close()
+
         # Only save log files and dispatch emails if a real deployment occurred or an error was raised
         if executed or error_message is not None:
             # 1. Save full execution logs to disk (/data/tripbrain/platform-deployer-logs/date-time.log)
