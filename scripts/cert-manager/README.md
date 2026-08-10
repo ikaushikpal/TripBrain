@@ -228,7 +228,7 @@ Emails are sent **only when an operation is actually triggered** (renewal or reg
 
 All emails are marked **high-priority** (`X-Priority: 1`) and show the domain, operation type, new expiry date and error details if applicable.
 
-Set `GMAIL_PASSWORD_TOKEN` in `/opt/platform/.env`. Generate one at [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords).
+Set `GMAIL_PASSWORD_TOKEN` in `/opt/platform/.env`. Generate one at <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer">myaccount.google.com/apppasswords</a>.
 
 ---
 
@@ -300,7 +300,7 @@ Let's Encrypt enforces **5 failed validation attempts per hour** and **50 certif
 sudo python3 /opt/platform/cert-manager/manage_cert.py tripbrain dry-run
 ```
 
-Check current rate limit status at: [crt.sh/?q=tripbrain.mooo.com](https://crt.sh/?q=tripbrain.mooo.com)
+Check current rate limit status at: <a href="https://crt.sh/?q=tripbrain.mooo.com" target="_blank" rel="noopener noreferrer">crt.sh/?q=tripbrain.mooo.com</a>
 
 ---
 

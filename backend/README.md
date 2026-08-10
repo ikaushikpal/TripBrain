@@ -67,7 +67,7 @@ Nginx (OCI)  →  Spring Boot container (port 8080)
 ## Environment Variables
 
 All variables are loaded from `/opt/platform/.env` (production) or `backend/.env` (local).  
-See [`.env.example`](../.env.example) at the project root for all required keys.
+See <a href="../.env.example" target="_blank" rel="noopener noreferrer">`.env.example`</a> at the project root for all required keys.
 
 ### Required Variables
 

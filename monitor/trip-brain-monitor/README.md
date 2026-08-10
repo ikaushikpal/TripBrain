@@ -28,12 +28,12 @@ There are **5 GitHub Actions workflows**. Each has a specific trigger condition 
 
 **Jobs:**
 
-| Job                | What it does                                                                                                           |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------- |
-| `validate-title`   | Enforces [Conventional Commits](https://www.conventionalcommits.org/) PR title format (`feat:`, `fix:`, `chore:` etc.) |
-| `frontend-quality` | `npm ci` → Prettier → ESLint → TypeScript type-check → `ng build` → Vitest tests                                       |
-| `backend-quality`  | Gradle `check` (compile + unit tests, skips frontend build)                                                            |
-| `approval-gate`    | Blocks merge unless at least 1 non-author approval exists and no `CHANGES_REQUESTED` review is active                  |
+| Job                | What it does                                                                                                                                                                |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `validate-title`   | Enforces <a href="https://www.conventionalcommits.org/" target="_blank" rel="noopener noreferrer">Conventional Commits</a> PR title format (`feat:`, `fix:`, `chore:` etc.) |
+| `frontend-quality` | `npm ci` → Prettier → ESLint → TypeScript type-check → `ng build` → Vitest tests                                                                                            |
+| `backend-quality`  | Gradle `check` (compile + unit tests, skips frontend build)                                                                                                                 |
+| `approval-gate`    | Blocks merge unless at least 1 non-author approval exists and no `CHANGES_REQUESTED` review is active                                                                       |
 
 > **Must pass before merging.** If any job fails, GitHub branch protection prevents the merge.
 
@@ -210,7 +210,7 @@ server {
 
 ## Environment Variables
 
-All variables are loaded from `/opt/platform/.env`. See [`.env.example`](../../.env.example) at the project root.
+All variables are loaded from `/opt/platform/.env`. See <a href="../../.env.example" target="_blank" rel="noopener noreferrer">`.env.example`</a> at the project root.
 
 | Variable                       | Default                          | Description                            |
 | ------------------------------ | -------------------------------- | -------------------------------------- |
@@ -262,7 +262,7 @@ docker push ikaushikpal/trip-brain-monitor-app:latest
 
 ### 1. SSL Certificate for `spring.cloud1.mooo.com` Expires
 
-The certificate is managed by the cert-manager cron job (see [`scripts/cert-manager/README.md`](../../scripts/cert-manager/README.md)).
+The certificate is managed by the cert-manager cron job (see <a href="../../scripts/cert-manager/README.md" target="_blank" rel="noopener noreferrer">`scripts/cert-manager/README.md`</a>).
 
 | Layer                    | What breaks                                                                                                |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------- |

@@ -3,12 +3,12 @@
 > **TripBrain** is a production-grade, open-source AI travel planner built with Spring AI and Angular.  
 > It orchestrates multiple LLMs (Gemini + Groq/LLaMA), generates beautifully formatted PDF itineraries, caches results in Redis, stores files on Backblaze B2, and deploys itself via a fully automated zero-downtime blue-green pipeline — **all running on Oracle Cloud Free Tier. No cloud bill. Zero cost.**
 
-[![PR Quality Gate](https://github.com/ikaushikpal/TripBrain/actions/workflows/pr-quality-check.yaml/badge.svg)](https://github.com/ikaushikpal/TripBrain/actions/workflows/pr-quality-check.yaml)
-[![Release Docker](https://github.com/ikaushikpal/TripBrain/actions/workflows/release-docker-on-main.yaml/badge.svg)](https://github.com/ikaushikpal/TripBrain/actions/workflows/release-docker-on-main.yaml)
+<a href="https://github.com/ikaushikpal/TripBrain/actions/workflows/pr-quality-check.yaml" target="_blank" rel="noopener noreferrer"><img src="https://github.com/ikaushikpal/TripBrain/actions/workflows/pr-quality-check.yaml/badge.svg" alt="PR Quality Gate" /></a>
+<a href="https://github.com/ikaushikpal/TripBrain/actions/workflows/release-docker-on-main.yaml" target="_blank" rel="noopener noreferrer"><img src="https://github.com/ikaushikpal/TripBrain/actions/workflows/release-docker-on-main.yaml/badge.svg" alt="Release Docker" /></a>
 
-🌐 **Live:** [https://tripbrain.mooo.com](https://tripbrain.mooo.com)  
-🔁 **Blocked by corporate VPN/firewall?** Use the Render proxy: [https://tripbrain-11du.onrender.com](https://tripbrain-11du.onrender.com)  
-📊 **Monitor:** [https://spring.cloud1.mooo.com](https://spring.cloud1.mooo.com)
+🌐 **Live:** <a href="https://tripbrain.mooo.com" target="_blank" rel="noopener noreferrer">https://tripbrain.mooo.com</a>  
+🔁 **Blocked by corporate VPN/firewall?** Use the Render proxy: <a href="https://tripbrain-11du.onrender.com" target="_blank" rel="noopener noreferrer">https://tripbrain-11du.onrender.com</a>  
+📊 **Monitor:** <a href="https://spring.cloud1.mooo.com" target="_blank" rel="noopener noreferrer">https://spring.cloud1.mooo.com</a>
 
 ---
 
@@ -16,7 +16,7 @@
 
 Hi! I'm **Kaushik**, the developer behind TripBrain. I built this project to explore Spring AI, multi-agent LLM orchestration, and production-grade infrastructure — all on a zero-cost cloud setup.
 
-🔍 **I'm currently looking for new opportunities.** If you find this project interesting and your company is hiring (or you can refer me), I'd genuinely appreciate it. Feel free to reach out via GitHub or [LinkedIn](https://www.linkedin.com/in/ikaushikpal).
+🔍 **I'm currently looking for new opportunities.** If you find this project interesting and your company is hiring (or you can refer me), I'd genuinely appreciate it. Feel free to reach out via GitHub or <a href="https://www.linkedin.com/in/ikaushikpal" target="_blank" rel="noopener noreferrer">LinkedIn</a>.
 
 Every star ⭐, issue, PR, or referral means a lot — thank you for being here.
 
@@ -117,16 +117,16 @@ trip-brain/
 
 Each module has its own detailed README:
 
-| Module            | README                                                                                     | Description                                                      |
-| ----------------- | ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------- |
-| Backend           | [backend/README.md](./backend/README.md)                                                   | Spring Boot API, B2 presigned URL config, security, AI/LLM setup |
-| Frontend          | [frontend/trip-brain-frontend-app/README.md](./frontend/trip-brain-frontend-app/README.md) | Angular dev setup, routes, troubleshooting                       |
-| Monitor           | [monitor/trip-brain-monitor/README.md](./monitor/trip-brain-monitor/README.md)             | Spring Boot Admin, Nginx config, CI/CD workflows explained       |
-| Render Proxy      | [render-proxy/README.md](./render-proxy/README.md)                                         | Corporate firewall bypass, SSL expiry impact                     |
-| Platform Deployer | [scripts/platform-deployer/README.md](./scripts/platform-deployer/README.md)               | Blue-green pipeline, cron setup, troubleshooting                 |
-| Cert Manager      | [scripts/cert-manager/README.md](./scripts/cert-manager/README.md)                         | SSL renewal, SELinux gotchas, Oracle Linux ARM guide             |
-| Scripts Index     | [scripts/README.md](./scripts/README.md)                                                   | Overview of all automation scripts                               |
-| CI/CD Workflows   | [.github/workflows/README.md](./.github/workflows/README.md)                               | All 5 workflows, when they trigger, required secrets             |
+| Module            | README                                                                                                                                          | Description                                                      |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| Backend           | <a href="./backend/README.md" target="_blank" rel="noopener noreferrer">backend/README.md</a>                                                   | Spring Boot API, B2 presigned URL config, security, AI/LLM setup |
+| Frontend          | <a href="./frontend/trip-brain-frontend-app/README.md" target="_blank" rel="noopener noreferrer">frontend/trip-brain-frontend-app/README.md</a> | Angular dev setup, routes, troubleshooting                       |
+| Monitor           | <a href="./monitor/trip-brain-monitor/README.md" target="_blank" rel="noopener noreferrer">monitor/trip-brain-monitor/README.md</a>             | Spring Boot Admin, Nginx config, CI/CD workflows explained       |
+| Render Proxy      | <a href="./render-proxy/README.md" target="_blank" rel="noopener noreferrer">render-proxy/README.md</a>                                         | Corporate firewall bypass, SSL expiry impact                     |
+| Platform Deployer | <a href="./scripts/platform-deployer/README.md" target="_blank" rel="noopener noreferrer">scripts/platform-deployer/README.md</a>               | Blue-green pipeline, cron setup, troubleshooting                 |
+| Cert Manager      | <a href="./scripts/cert-manager/README.md" target="_blank" rel="noopener noreferrer">scripts/cert-manager/README.md</a>                         | SSL renewal, SELinux gotchas, Oracle Linux ARM guide             |
+| Scripts Index     | <a href="./scripts/README.md" target="_blank" rel="noopener noreferrer">scripts/README.md</a>                                                   | Overview of all automation scripts                               |
+| CI/CD Workflows   | <a href="./.github/workflows/README.md" target="_blank" rel="noopener noreferrer">.github/workflows/README.md</a>                               | All 5 workflows, when they trigger, required secrets             |
 
 ---
 
@@ -136,7 +136,7 @@ TripBrain runs two separate monitoring layers on the same OCI server:
 
 ### Spring Boot Admin — Application Monitoring
 
-**URL:** [https://spring.cloud1.mooo.com](https://spring.cloud1.mooo.com) · **Port:** `8085` · **Auth:** username/password
+**URL:** <a href="https://spring.cloud1.mooo.com" target="_blank" rel="noopener noreferrer">https://spring.cloud1.mooo.com</a> · **Port:** `8085` · **Auth:** username/password
 
 Monitors all registered Spring Boot instances (tripbrain + the monitor itself) and provides:
 
@@ -146,13 +146,13 @@ Monitors all registered Spring Boot instances (tripbrain + the monitor itself) a
 - Log level changes at runtime (no restart needed)
 - Environment properties and health indicator breakdown
 
-See [monitor/trip-brain-monitor/README.md](./monitor/trip-brain-monitor/README.md) for setup details.
+See <a href="./monitor/trip-brain-monitor/README.md" target="_blank" rel="noopener noreferrer">monitor/trip-brain-monitor/README.md</a> for setup details.
 
 ---
 
 ### Netdata — Real-Time Server Monitoring
 
-**URL:** [https://netdata.cloud1.mooo.com](https://netdata.cloud1.mooo.com) · **Port:** `19999` · **Auth:** HTTP Basic Auth (htpasswd)
+**URL:** <a href="https://netdata.cloud1.mooo.com" target="_blank" rel="noopener noreferrer">https://netdata.cloud1.mooo.com</a> · **Port:** `19999` · **Auth:** HTTP Basic Auth (htpasswd)
 
 Netdata runs directly on the OCI host and provides real-time visibility into the underlying server:
 
@@ -205,7 +205,7 @@ sudo htpasswd -c /etc/nginx/.netdata_htpasswd your_username
 - Email alert triggers for CPU/RAM spikes and service downtime
 - Loki integration for centralised log aggregation and querying
 
-> The SSL certificate for `netdata.cloud1.mooo.com` is managed by the same cert-manager cron job. See [scripts/cert-manager/README.md](./scripts/cert-manager/README.md).
+> The SSL certificate for `netdata.cloud1.mooo.com` is managed by the same cert-manager cron job. See <a href="./scripts/cert-manager/README.md" target="_blank" rel="noopener noreferrer">scripts/cert-manager/README.md</a>.
 
 ---
 
@@ -266,15 +266,15 @@ This entire platform runs on the **Oracle Cloud Always Free** tier — no credit
 
 **Steps to replicate this setup:**
 
-1. Sign up at [cloud.oracle.com](https://cloud.oracle.com) — choose an Always Free account
+1. Sign up at <a href="https://cloud.oracle.com" target="_blank" rel="noopener noreferrer">cloud.oracle.com</a> — choose an Always Free account
 2. Create an **ARM64 Ampere A1** VM running Oracle Linux 9 Minimal
 3. Install Podman (aliased as `docker`), Nginx, Python 3
 4. Copy scripts to `/opt/platform/`
-5. Configure `/opt/platform/.env` (see [`.env.example`](./.env.example))
+5. Configure `/opt/platform/.env` (see <a href="./.env.example" target="_blank" rel="noopener noreferrer">`.env.example`</a>)
 6. Run `sudo bash scripts/cron-manager.sh install` to wire up all automation
 7. Configure Nginx virtual hosts and obtain SSL certs via the cert-manager
 
-See [scripts/cert-manager/README.md](./scripts/cert-manager/README.md) for the full Oracle Linux + SELinux + ARM64 guide.
+See <a href="./scripts/cert-manager/README.md" target="_blank" rel="noopener noreferrer">scripts/cert-manager/README.md</a> for the full Oracle Linux + SELinux + ARM64 guide.
 
 ---
 
@@ -297,7 +297,7 @@ PR merged to main
             └─ Sends SUCCESS/FAILED email report
 ```
 
-See [scripts/platform-deployer/README.md](./scripts/platform-deployer/README.md) for full details.
+See <a href="./scripts/platform-deployer/README.md" target="_blank" rel="noopener noreferrer">scripts/platform-deployer/README.md</a> for full details.
 
 ---
 
@@ -332,14 +332,14 @@ git checkout -b feat/your-feature-name
 
 ### PR Guidelines
 
-- **PR titles must follow [Conventional Commits](https://www.conventionalcommits.org/):**  
+- **PR titles must follow <a href="https://www.conventionalcommits.org/" target="_blank" rel="noopener noreferrer">Conventional Commits</a>:**  
   `feat: add feature`, `fix: fix bug`, `docs: update readme`, `chore: update deps`
 - All PRs run the quality gate automatically — ensure `npm run lint`, `./gradlew check`, and Prettier pass locally before pushing
 - One approval required before merge
 
 ### Good First Issues
 
-Look for issues tagged `good first issue` or `help wanted` on the [Issues](https://github.com/ikaushikpal/TripBrain/issues) page.
+Look for issues tagged `good first issue` or `help wanted` on the <a href="https://github.com/ikaushikpal/TripBrain/issues" target="_blank" rel="noopener noreferrer">Issues</a> page.
 
 ### What you can contribute
 
@@ -354,7 +354,7 @@ Look for issues tagged `good first issue` or `help wanted` on the [Issues](https
 
 ## 🔐 Environment Variables
 
-All configuration is in one file. See [`.env.example`](./.env.example) for the complete reference with descriptions for every variable.
+All configuration is in one file. See <a href="./.env.example" target="_blank" rel="noopener noreferrer">`.env.example`</a> for the complete reference with descriptions for every variable.
 
 Key variables:
 
@@ -373,13 +373,13 @@ Key variables:
 
 ## 📄 License
 
-This project is open source under the [MIT License](./LICENSE).
+This project is open source under the <a href="./LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a>.
 
 ---
 
 <div align="center">
 
-Built with ❤️ by [Kaushik Pal](https://github.com/ikaushikpal) · Running free on Oracle Cloud · Open to contributions
+Built with ❤️ by <a href="https://github.com/ikaushikpal" target="_blank" rel="noopener noreferrer">Kaushik Pal</a> · Running free on Oracle Cloud · Open to contributions
 
 ⭐ **If this project helped you or you found it interesting, please consider starring it — it really helps!**
 
