@@ -30,7 +30,7 @@ class HealthChecker:
                         )
                         return True
 
-            except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, ConnectionError) as error:
+            except Exception as error:
                 self.logger.log(
                     f"Health check attempt {attempt}/{self.config.health_retries} failed: {error}"
                 )

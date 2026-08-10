@@ -57,18 +57,19 @@ class DockerManager:
             f"{port}:8080",
             "--restart",
             "unless-stopped",
-            "-e",
-            f"SPRING_BOOT_MANAGEMENT_URL=http://{container_name}:8080/actuator",
-            "-e",
-            f"SPRING_BOOT_HEALTH_URL=http://{container_name}:8080/actuator/health",
-            "-e",
-            "SPRING_BOOT_ADMIN_URL=http://trip-brain-monitor:8085",
-            "-e",
-            f"SPRING_BOOT_SERVICE_URL=http://{container_name}:8080",
         ]
 
+        # Add .env file first so explicit -e overrides take precedence
         if self.config.env_file.exists():
             command.extend(["--env-file", str(self.config.env_file)])
+
+        # Internal bridge network URLs for container-to-container communication
+        command.extend([
+            "-e", f"SPRING_BOOT_MANAGEMENT_URL=http://{container_name}:8080/actuator",
+            "-e", f"SPRING_BOOT_HEALTH_URL=http://{container_name}:8080/actuator/health",
+            "-e", "SPRING_BOOT_ADMIN_URL=http://trip-brain-monitor:8085",
+            "-e", f"SPRING_BOOT_SERVICE_URL=http://{container_name}:8080",
+        ])
 
         command.append(self.config.image_name)
         self.docker(*command)

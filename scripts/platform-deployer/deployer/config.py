@@ -20,7 +20,7 @@ class DeploymentConfig:
     network_name: str = "platform-network"
     nginx_upstream_file: Path = Path("/etc/nginx/conf.d/tripbrain-upstream.conf")
     health_path: str = "/actuator/health"
-    health_timeout_seconds: int = 5
+    health_timeout_seconds: int = 10
     health_retries: int = 30
     health_retry_delay_seconds: int = 5
     blue_port: int = 8081
