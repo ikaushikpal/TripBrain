@@ -171,57 +171,57 @@ jobs:
   # Job 4: PR Approval Gate
   # Ensures PR has at least 1 non-author approval and no active requested changes
   # ----------------------------------------------------------------------------
-  approval-gate:
-    name: PR Approval Gate
-    if: github.event.pull_request.draft == false # Skip execution if PR is in draft mode
-    runs-on: ubuntu-latest
-
-    # Requires both frontend and backend test jobs to complete successfully first
-    needs:
-      - frontend-quality
-      - backend-quality
-
-    steps:
-      # Verify PR has at least 1 approval and no active CHANGES_REQUESTED review.
-      # Uses gh CLI + jq (both pre-installed on GitHub runners) instead of
-      # actions/github-script to avoid the Node 20 deprecation warning.
-      - name: Verify approvals
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          PR_NUMBER="${{ github.event.pull_request.number }}"
-          REPO="${{ github.repository }}"
-
-          # Fetch all reviews for this PR (paginated, up to 100)
-          REVIEWS=$(gh api "repos/$REPO/pulls/$PR_NUMBER/reviews" --paginate)
-
-          # For each reviewer keep only their most recent review state,
-          # then check for CHANGES_REQUESTED and count APPROVALs.
-          RESULT=$(echo "$REVIEWS" | jq -r '
-            # Group reviews by reviewer login
-            group_by(.user.login)
-            # Keep only the last (most recent) review per reviewer
-            | map({ user: .[0].user.login, state: (. | last | .state) })
-            | {
-                changes_requested: (map(select(.state == "CHANGES_REQUESTED")) | length),
-                approvals:         (map(select(.state == "APPROVED"))          | length)
-              }
-          ')
-
-          CHANGES=$(echo "$RESULT" | jq -r '.changes_requested')
-          APPROVALS=$(echo "$RESULT" | jq -r '.approvals')
-
-          echo "Active CHANGES_REQUESTED reviews : $CHANGES"
-          echo "Valid approvals                  : $APPROVALS"
-
-          if [ "$CHANGES" -gt 0 ]; then
-            echo "::error::Merge blocked: there is an active CHANGES_REQUESTED review."
-            exit 1
-          fi
-
-          if [ "$APPROVALS" -lt 1 ]; then
-            echo "::error::Merge blocked: at least one non-author approval is required."
-            exit 1
-          fi
-
-          echo "✅ Approval gate passed with $APPROVALS valid approval(s)."
+  # TODO: Uncomment this job when the project has additional reviewers/maintainers.
+  #       Currently disabled — solo maintainer, self-approval not possible on GitHub.
+  #
+  # approval-gate:
+  #   name: PR Approval Gate
+  #   if: github.event.pull_request.draft == false
+  #   runs-on: ubuntu-latest
+  #
+  #   needs:
+  #     - frontend-quality
+  #     - backend-quality
+  #
+  #   steps:
+  #     # Verify PR has at least 1 approval and no active CHANGES_REQUESTED review.
+  #     # Uses gh CLI + jq (both pre-installed on GitHub runners) instead of
+  #     # actions/github-script to avoid the Node 20 deprecation warning.
+  #     - name: Verify approvals
+  #       env:
+  #         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       run: |
+  #         PR_NUMBER="${{ github.event.pull_request.number }}"
+  #         REPO="${{ github.repository }}"
+  #
+  #         # Fetch all reviews for this PR (paginated, up to 100)
+  #         REVIEWS=$(gh api "repos/$REPO/pulls/$PR_NUMBER/reviews" --paginate)
+  #
+  #         # For each reviewer keep only their most recent review state,
+  #         # then check for CHANGES_REQUESTED and count APPROVALs.
+  #         RESULT=$(echo "$REVIEWS" | jq -r '
+  #           group_by(.user.login)
+  #           | map({ user: .[0].user.login, state: (. | last | .state) })
+  #           | {
+  #               changes_requested: (map(select(.state == "CHANGES_REQUESTED")) | length),
+  #               approvals:         (map(select(.state == "APPROVED"))          | length)
+  #             }
+  #         ')
+  #
+  #         CHANGES=$(echo "$RESULT" | jq -r '.changes_requested')
+  #         APPROVALS=$(echo "$RESULT" | jq -r '.approvals')
+  #
+  #         echo "Active CHANGES_REQUESTED reviews : $CHANGES"
+  #         echo "Valid approvals                  : $APPROVALS"
+  #
+  #         if [ "$CHANGES" -gt 0 ]; then
+  #           echo "::error::Merge blocked: there is an active CHANGES_REQUESTED review."
+  #           exit 1
+  #         fi
+  #
+  #         if [ "$APPROVALS" -lt 1 ]; then
+  #           echo "::error::Merge blocked: at least one non-author approval is required."
+  #           exit 1
+  #         fi
+  #
+  #         echo "✅ Approval gate passed with $APPROVALS valid approval(s)."
