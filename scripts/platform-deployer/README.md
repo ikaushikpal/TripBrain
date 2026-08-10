@@ -183,7 +183,7 @@ Emails are sent **only** when something actually happens:
 
 All emails are marked **high-priority** (`X-Priority: 1`) so they appear flagged as important in Gmail and Outlook.
 
-Gmail setup: generate an **App Password** at [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords) and put it in your `.env` as `GMAIL_PASSWORD_TOKEN`.
+Gmail setup: generate an **App Password** at <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer">myaccount.google.com/apppasswords</a> and put it in your `.env` as `GMAIL_PASSWORD_TOKEN`.
 
 ---
 

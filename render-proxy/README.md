@@ -1,6 +1,6 @@
 # TripBrain Render Gateway Proxy 🌐
 
-A lightweight Nginx reverse-proxy deployed on [Render](https://render.com) (`https://tripbrain-11du.onrender.com`) that transparently forwards all traffic to the primary production host at `https://tripbrain.mooo.com`.
+A lightweight Nginx reverse-proxy deployed on <a href="https://render.com" target="_blank" rel="noopener noreferrer">Render</a> (`https://tripbrain-11du.onrender.com`) that transparently forwards all traffic to the primary production host at `https://tripbrain.mooo.com`.
 
 ---
 
@@ -48,7 +48,7 @@ exec nginx -c /tmp/nginx.conf -g "daemon off;"
 
 ### Automated (CI/CD)
 
-Every push to `main` that touches `render-proxy/` triggers the GitHub Actions workflow [release-render-proxy.yaml](../.github/workflows/release-render-proxy.yaml), which builds and pushes `ikaushikpal/trip-brain-render-proxy:latest` to Docker Hub. Render auto-deploys from there.
+Every push to `main` that touches `render-proxy/` triggers the GitHub Actions workflow <a href="../.github/workflows/release-render-proxy.yaml" target="_blank" rel="noopener noreferrer">release-render-proxy.yaml</a>, which builds and pushes `ikaushikpal/trip-brain-render-proxy:latest` to Docker Hub. Render auto-deploys from there.
 
 ### Manual multi-arch build
 
@@ -74,7 +74,7 @@ This proxy talks to the backend **over HTTPS**. Nginx verifies the upstream TLS 
 | **CI/CD health checks** | GitHub Actions / Render deploy hooks can fail | Deployments may be rejected as unhealthy              |
 | **API clients**         | Any HTTPS client with strict cert validation  | `SSLHandshakeException` / connection refused          |
 
-> **The cert on `tripbrain.mooo.com` is the single point of failure for the entire stack.** The cert-manager cron job renews it automatically 30 days before expiry. See [`scripts/cert-manager/README.md`](../scripts/cert-manager/README.md).
+> **The cert on `tripbrain.mooo.com` is the single point of failure for the entire stack.** The cert-manager cron job renews it automatically 30 days before expiry. See <a href="../scripts/cert-manager/README.md" target="_blank" rel="noopener noreferrer">`scripts/cert-manager/README.md`</a>.
 
 ---
 
@@ -181,4 +181,4 @@ This confirms the issue is on the OCI server side, not the proxy. Common causes:
 
 ## 🗂️ File Reference
 
-Whenever changes are merged into the `main` branch, GitHub Actions automatically triggers [.github/workflows/release-render-proxy.yaml](file:///Users/kaushikpal/Desktop/codes/projects/spring-ai/trip-brain/.github/workflows/release-render-proxy.yaml) to compile, tag, and publish `ikaushikpal/trip-brain-render-proxy:latest` to Docker Hub. Render then automatically deploys the updated image via webhook/polling.
+Whenever changes are merged into the `main` branch, GitHub Actions automatically triggers <a href="file:///Users/kaushikpal/Desktop/codes/projects/spring-ai/trip-brain/.github/workflows/release-render-proxy.yaml" target="_blank" rel="noopener noreferrer">.github/workflows/release-render-proxy.yaml</a> to compile, tag, and publish `ikaushikpal/trip-brain-render-proxy:latest` to Docker Hub. Render then automatically deploys the updated image via webhook/polling.
