@@ -27,7 +27,7 @@ cron (every 1 min)
 ### Blue-Green Port Mapping
 
 | Slot  | Host Port | Container Port |
-|-------|-----------|----------------|
+| ----- | --------- | -------------- |
 | Blue  | `8081`    | `8080`         |
 | Green | `8082`    | `8080`         |
 
@@ -55,13 +55,13 @@ scripts/platform-deployer/
 
 ## Prerequisites
 
-| Requirement | Notes |
-|---|---|
-| Python 3.8+ | Available as `python3` |
-| Docker / Podman | Script uses `docker` — Podman alias is fine |
-| Nginx | Must be installed, running, and writable by root |
-| `/opt/platform/.env` | All secrets and config (see below) |
-| `/opt/platform/state/` | Created automatically on first run |
+| Requirement            | Notes                                            |
+| ---------------------- | ------------------------------------------------ |
+| Python 3.8+            | Available as `python3`                           |
+| Docker / Podman        | Script uses `docker` — Podman alias is fine      |
+| Nginx                  | Must be installed, running, and writable by root |
+| `/opt/platform/.env`   | All secrets and config (see below)               |
+| `/opt/platform/state/` | Created automatically on first run               |
 
 ---
 
@@ -70,12 +70,12 @@ scripts/platform-deployer/
 All variables are loaded automatically from `/opt/platform/.env`.  
 See `.env.example` at the project root for a full reference.
 
-| Variable | Required | Description |
-|---|---|---|
-| `GMAIL_PASSWORD_TOKEN` | ✅ | Gmail App Password for email reports |
-| `IMAGE_NAME` | ❌ | Docker image to deploy (default: `ikaushikpal/trip-brain:latest`) |
-| `SPRING_ADMIN_USERNAME` | ❌ | Spring Boot Admin dashboard username |
-| `SPRING_ADMIN_PASSWORD` | ❌ | Spring Boot Admin dashboard password |
+| Variable                | Required | Description                                                       |
+| ----------------------- | -------- | ----------------------------------------------------------------- |
+| `GMAIL_PASSWORD_TOKEN`  | ✅       | Gmail App Password for email reports                              |
+| `IMAGE_NAME`            | ❌       | Docker image to deploy (default: `ikaushikpal/trip-brain:latest`) |
+| `SPRING_ADMIN_USERNAME` | ❌       | Spring Boot Admin dashboard username                              |
+| `SPRING_ADMIN_PASSWORD` | ❌       | Spring Boot Admin dashboard password                              |
 
 ---
 
@@ -137,10 +137,10 @@ sudo bash /opt/platform/cron-manager.sh install
 
 This provisions two cron jobs under root's crontab:
 
-| Job | Schedule | Description |
-|---|---|---|
-| `deploy.py` | Every minute `* * * * *` | Blue-green deployment poller |
-| `manage_cert.py` | `0 3 * * *` (03:00 AM) | SSL certificate auto-renewal |
+| Job              | Schedule                 | Description                  |
+| ---------------- | ------------------------ | ---------------------------- |
+| `deploy.py`      | Every minute `* * * * *` | Blue-green deployment poller |
+| `manage_cert.py` | `0 3 * * *` (03:00 AM)   | SSL certificate auto-renewal |
 
 ### View installed cron jobs
 
@@ -175,11 +175,11 @@ The deployment entry looks like this:
 
 Emails are sent **only** when something actually happens:
 
-| Event | Email sent? |
-|---|---|
-| Image unchanged, container healthy | ❌ No |
-| New image deployed successfully | ✅ Yes — SUCCESS |
-| Health check failed / any error | ✅ Yes — FAILED |
+| Event                              | Email sent?      |
+| ---------------------------------- | ---------------- |
+| Image unchanged, container healthy | ❌ No            |
+| New image deployed successfully    | ✅ Yes — SUCCESS |
+| Health check failed / any error    | ✅ Yes — FAILED  |
 
 All emails are marked **high-priority** (`X-Priority: 1`) so they appear flagged as important in Gmail and Outlook.
 
@@ -284,10 +284,10 @@ If these two values differ, the next cron run will trigger a fresh deployment au
 
 ## State Files Reference
 
-| File | Description |
-|---|---|
-| `/opt/platform/state/tripbrain-active` | Current active slot (`blue` or `green`) |
-| `/opt/platform/state/tripbrain-digest` | SHA256 digest of the last deployed image |
-| `/opt/platform/.env` | All secrets and environment variables |
-| `/var/log/tripbrain-deploy.log` | Rolling cron stdout/stderr log |
-| `/data/tripbrain/platform-deployer-logs/` | Per-deployment detailed log files |
+| File                                      | Description                              |
+| ----------------------------------------- | ---------------------------------------- |
+| `/opt/platform/state/tripbrain-active`    | Current active slot (`blue` or `green`)  |
+| `/opt/platform/state/tripbrain-digest`    | SHA256 digest of the last deployed image |
+| `/opt/platform/.env`                      | All secrets and environment variables    |
+| `/var/log/tripbrain-deploy.log`           | Rolling cron stdout/stderr log           |
+| `/data/tripbrain/platform-deployer-logs/` | Per-deployment detailed log files        |

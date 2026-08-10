@@ -7,21 +7,21 @@ It serves the Angular frontend as static files, exposes REST APIs, orchestrates 
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Framework | Spring Boot 3.5 (Java 25) |
-| AI Orchestration | Spring AI 1.1.4 |
-| LLM — Chat | Google Gemini (`gemini-*` models) |
-| LLM — Fallback | Groq (LLaMA 3.3 70B via OpenAI-compatible API) |
-| Embeddings | Google Gemini Embedding 2 |
-| Vector Store | Qdrant (default) or OpenSearch |
-| Database | PostgreSQL (JPA/Hibernate) |
-| Cache | Redis (Caffeine fallback) |
-| File Storage | Backblaze B2 (S3-compatible, AWS SDK v2) |
-| OCR | Tesseract 4 (Tess4J) |
-| PDF Generation | iText 9 |
-| Security | JWT (JJWT), Spring Security |
-| Build | Gradle 8 |
+| Layer            | Technology                                     |
+| ---------------- | ---------------------------------------------- |
+| Framework        | Spring Boot 3.5 (Java 25)                      |
+| AI Orchestration | Spring AI 1.1.4                                |
+| LLM — Chat       | Google Gemini (`gemini-*` models)              |
+| LLM — Fallback   | Groq (LLaMA 3.3 70B via OpenAI-compatible API) |
+| Embeddings       | Google Gemini Embedding 2                      |
+| Vector Store     | Qdrant (default) or OpenSearch                 |
+| Database         | PostgreSQL (JPA/Hibernate)                     |
+| Cache            | Redis (Caffeine fallback)                      |
+| File Storage     | Backblaze B2 (S3-compatible, AWS SDK v2)       |
+| OCR              | Tesseract 4 (Tess4J)                           |
+| PDF Generation   | iText 9                                        |
+| Security         | JWT (JJWT), Spring Security                    |
+| Build            | Gradle 8                                       |
 
 ---
 
@@ -51,16 +51,16 @@ Nginx (OCI)  →  Spring Boot container (port 8080)
 
 ## Key Modules
 
-| Package | Purpose |
-|---|---|
-| `config/` | Security, CORS, CORS, JWT filter, Qdrant, Cache, LLM bulkhead |
-| `controller/` | REST endpoints — Auth, Chat, Conversations, Admin, Geocoding |
-| `service/` | Business logic — AI orchestration, PDF, B2 storage, JWT, geocoding |
-| `model/` | JPA entities |
-| `repository/` | Spring Data JPA repositories |
-| `rag/` | RAG pipeline for PDF document retrieval |
-| `advisor/` | Spring AI advisors (conversation history, logging) |
-| `tool/` | Spring AI tools (web search via Tavily, etc.) |
+| Package       | Purpose                                                            |
+| ------------- | ------------------------------------------------------------------ |
+| `config/`     | Security, CORS, CORS, JWT filter, Qdrant, Cache, LLM bulkhead      |
+| `controller/` | REST endpoints — Auth, Chat, Conversations, Admin, Geocoding       |
+| `service/`    | Business logic — AI orchestration, PDF, B2 storage, JWT, geocoding |
+| `model/`      | JPA entities                                                       |
+| `repository/` | Spring Data JPA repositories                                       |
+| `rag/`        | RAG pipeline for PDF document retrieval                            |
+| `advisor/`    | Spring AI advisors (conversation history, logging)                 |
+| `tool/`       | Spring AI tools (web search via Tavily, etc.)                      |
 
 ---
 
@@ -71,32 +71,32 @@ See [`.env.example`](../.env.example) at the project root for all required keys.
 
 ### Required Variables
 
-| Variable | Description |
-|---|---|
-| `GEMINI_KEY` | Google AI Studio API key |
-| `GROQ_KEY` | Groq API key |
-| `DATABASE_URL` | PostgreSQL JDBC URL |
-| `DATABASE_USERNAME` | PostgreSQL username |
-| `DATABASE_PASSWORD` | PostgreSQL password |
-| `REDIS_URL` | Redis connection URL |
-| `JWT_SECRET` | 256-bit hex secret for signing JWTs |
-| `B2_ACCESS_KEY_ID` | Backblaze B2 application key ID |
-| `B2_SECRET_ACCESS_KEY` | Backblaze B2 application key secret |
-| `B2_ENDPOINT` | B2 S3-compatible endpoint (e.g. `https://s3.us-west-004.backblazeb2.com`) |
-| `B2_REGION` | B2 region string (e.g. `us-west-004`) |
-| `B2_BUCKET_NAME` | B2 bucket name |
+| Variable               | Description                                                               |
+| ---------------------- | ------------------------------------------------------------------------- |
+| `GEMINI_KEY`           | Google AI Studio API key                                                  |
+| `GROQ_KEY`             | Groq API key                                                              |
+| `DATABASE_URL`         | PostgreSQL JDBC URL                                                       |
+| `DATABASE_USERNAME`    | PostgreSQL username                                                       |
+| `DATABASE_PASSWORD`    | PostgreSQL password                                                       |
+| `REDIS_URL`            | Redis connection URL                                                      |
+| `JWT_SECRET`           | 256-bit hex secret for signing JWTs                                       |
+| `B2_ACCESS_KEY_ID`     | Backblaze B2 application key ID                                           |
+| `B2_SECRET_ACCESS_KEY` | Backblaze B2 application key secret                                       |
+| `B2_ENDPOINT`          | B2 S3-compatible endpoint (e.g. `https://s3.us-west-004.backblazeb2.com`) |
+| `B2_REGION`            | B2 region string (e.g. `us-west-004`)                                     |
+| `B2_BUCKET_NAME`       | B2 bucket name                                                            |
 
 ### Optional Variables
 
-| Variable | Default | Description |
-|---|---|---|
-| `GROQ_MODEL` | `llama-3.1-8b-instant` | Groq model to use |
-| `TAVILY_KEY` | — | Web search for AI tools |
-| `UNSPLASH_ACCESS_KEY` | — | Destination images |
-| `QDRANT_HOST` | `http://localhost:6333` | Qdrant vector store endpoint |
-| `QDRANT_KEY` | — | Qdrant API key (if secured) |
-| `VECTORSTORE_TYPE` | `qdrant` | `qdrant` or `opensearch` |
-| `TESSDATA_PATH` | — | Path to Tesseract tessdata dir |
+| Variable              | Default                 | Description                    |
+| --------------------- | ----------------------- | ------------------------------ |
+| `GROQ_MODEL`          | `llama-3.1-8b-instant`  | Groq model to use              |
+| `TAVILY_KEY`          | —                       | Web search for AI tools        |
+| `UNSPLASH_ACCESS_KEY` | —                       | Destination images             |
+| `QDRANT_HOST`         | `http://localhost:6333` | Qdrant vector store endpoint   |
+| `QDRANT_KEY`          | —                       | Qdrant API key (if secured)    |
+| `VECTORSTORE_TYPE`    | `qdrant`                | `qdrant` or `opensearch`       |
+| `TESSDATA_PATH`       | —                       | Path to Tesseract tessdata dir |
 
 ---
 
@@ -150,6 +150,7 @@ Presigned download URLs only work if the bucket is **private**. If the bucket is
 #### 3. Application Key Must Have Full Bucket Access
 
 The key created in Backblaze must have these permissions for the specific bucket:
+
 - `readFiles`
 - `writeFiles`
 - `deleteFiles`
@@ -200,10 +201,10 @@ Configured to allow all origins (`*`) with credentials. In production, tighten t
 
 The `LlmBulkheadManager` uses semaphores to prevent exceeding free-tier API limits:
 
-| Model | Concurrent limit |
-|---|---|
-| Groq (LLaMA) | 2 concurrent requests |
-| Google Gemini | 1 concurrent request |
+| Model         | Concurrent limit      |
+| ------------- | --------------------- |
+| Groq (LLaMA)  | 2 concurrent requests |
+| Google Gemini | 1 concurrent request  |
 
 If you are on a paid API plan, increase these limits in `LlmBulkheadManager.java`.
 
@@ -249,13 +250,13 @@ curl http://127.0.0.1:8082/actuator/health | python3 -m json.tool
 
 ### 3. Backblaze B2 — Presigned URL Errors
 
-| Symptom | Likely cause |
-|---|---|
-| `SignatureDoesNotMatch` | Region or endpoint mismatch in `.env` |
-| `403 Forbidden` on upload | Missing CORS rules on the B2 bucket |
-| `NoSuchBucket` | Wrong bucket name or path-style not enabled |
-| `Access Denied` | Application key missing `writeFiles` permission |
-| Presigned URL works in Postman but fails in browser | CORS rules on B2 not set for your domain |
+| Symptom                                             | Likely cause                                    |
+| --------------------------------------------------- | ----------------------------------------------- |
+| `SignatureDoesNotMatch`                             | Region or endpoint mismatch in `.env`           |
+| `403 Forbidden` on upload                           | Missing CORS rules on the B2 bucket             |
+| `NoSuchBucket`                                      | Wrong bucket name or path-style not enabled     |
+| `Access Denied`                                     | Application key missing `writeFiles` permission |
+| Presigned URL works in Postman but fails in browser | CORS rules on B2 not set for your domain        |
 
 ```bash
 # Test B2 connectivity from the server
@@ -370,6 +371,7 @@ cd backend
 ```
 
 The `backend/.env` file is picked up automatically via:
+
 ```yaml
 spring:
   config:

@@ -72,24 +72,24 @@ Corporate Networks (Zscaler/VPN blocked .mooo.com)
 
 ## 🛠️ Tech Stack
 
-| Layer | Technology |
-|---|---|
-| **Backend** | Java 25, Spring Boot 3.5, Spring AI 1.1.4 |
-| **Frontend** | Angular 21, TailwindCSS v4, SSR, Vitest |
-| **AI / LLM** | Google Gemini, Groq (LLaMA 3.3 70B) |
-| **Database** | PostgreSQL (Aiven) |
-| **Cache** | Redis / Valkey (Aiven) |
-| **Vector Store** | Qdrant (or OpenSearch) |
-| **File Storage** | Backblaze B2 (S3-compatible) |
-| **PDF Engine** | iText 9, custom emoji mapping, SVG thumbnails |
-| **OCR** | Tesseract 4 (Tess4J) |
-| **Security** | Spring Security, JWT (JJWT), RBAC |
-| **Reverse Proxy** | Nginx + Let's Encrypt SSL |
-| **App Monitoring** | Spring Boot Admin 3.4 |
-| **Server Monitoring** | Netdata (real-time CPU, RAM, Nginx, disk) |
-| **CI/CD** | GitHub Actions (5 workflows) |
-| **Deployment** | Docker, Blue-Green, Python automation scripts |
-| **Infrastructure** | Oracle Cloud Free Tier (ARM64 Ampere A1), Oracle Linux 9 |
+| Layer                 | Technology                                               |
+| --------------------- | -------------------------------------------------------- |
+| **Backend**           | Java 25, Spring Boot 3.5, Spring AI 1.1.4                |
+| **Frontend**          | Angular 21, TailwindCSS v4, SSR, Vitest                  |
+| **AI / LLM**          | Google Gemini, Groq (LLaMA 3.3 70B)                      |
+| **Database**          | PostgreSQL (Aiven)                                       |
+| **Cache**             | Redis / Valkey (Aiven)                                   |
+| **Vector Store**      | Qdrant (or OpenSearch)                                   |
+| **File Storage**      | Backblaze B2 (S3-compatible)                             |
+| **PDF Engine**        | iText 9, custom emoji mapping, SVG thumbnails            |
+| **OCR**               | Tesseract 4 (Tess4J)                                     |
+| **Security**          | Spring Security, JWT (JJWT), RBAC                        |
+| **Reverse Proxy**     | Nginx + Let's Encrypt SSL                                |
+| **App Monitoring**    | Spring Boot Admin 3.4                                    |
+| **Server Monitoring** | Netdata (real-time CPU, RAM, Nginx, disk)                |
+| **CI/CD**             | GitHub Actions (5 workflows)                             |
+| **Deployment**        | Docker, Blue-Green, Python automation scripts            |
+| **Infrastructure**    | Oracle Cloud Free Tier (ARM64 Ampere A1), Oracle Linux 9 |
 
 ---
 
@@ -117,16 +117,16 @@ trip-brain/
 
 Each module has its own detailed README:
 
-| Module | README | Description |
-|---|---|---|
-| Backend | [backend/README.md](./backend/README.md) | Spring Boot API, B2 presigned URL config, security, AI/LLM setup |
-| Frontend | [frontend/trip-brain-frontend-app/README.md](./frontend/trip-brain-frontend-app/README.md) | Angular dev setup, routes, troubleshooting |
-| Monitor | [monitor/trip-brain-monitor/README.md](./monitor/trip-brain-monitor/README.md) | Spring Boot Admin, Nginx config, CI/CD workflows explained |
-| Render Proxy | [render-proxy/README.md](./render-proxy/README.md) | Corporate firewall bypass, SSL expiry impact |
-| Platform Deployer | [scripts/platform-deployer/README.md](./scripts/platform-deployer/README.md) | Blue-green pipeline, cron setup, troubleshooting |
-| Cert Manager | [scripts/cert-manager/README.md](./scripts/cert-manager/README.md) | SSL renewal, SELinux gotchas, Oracle Linux ARM guide |
-| Scripts Index | [scripts/README.md](./scripts/README.md) | Overview of all automation scripts |
-| CI/CD Workflows | [.github/workflows/README.md](./.github/workflows/README.md) | All 5 workflows, when they trigger, required secrets |
+| Module            | README                                                                                     | Description                                                      |
+| ----------------- | ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------- |
+| Backend           | [backend/README.md](./backend/README.md)                                                   | Spring Boot API, B2 presigned URL config, security, AI/LLM setup |
+| Frontend          | [frontend/trip-brain-frontend-app/README.md](./frontend/trip-brain-frontend-app/README.md) | Angular dev setup, routes, troubleshooting                       |
+| Monitor           | [monitor/trip-brain-monitor/README.md](./monitor/trip-brain-monitor/README.md)             | Spring Boot Admin, Nginx config, CI/CD workflows explained       |
+| Render Proxy      | [render-proxy/README.md](./render-proxy/README.md)                                         | Corporate firewall bypass, SSL expiry impact                     |
+| Platform Deployer | [scripts/platform-deployer/README.md](./scripts/platform-deployer/README.md)               | Blue-green pipeline, cron setup, troubleshooting                 |
+| Cert Manager      | [scripts/cert-manager/README.md](./scripts/cert-manager/README.md)                         | SSL renewal, SELinux gotchas, Oracle Linux ARM guide             |
+| Scripts Index     | [scripts/README.md](./scripts/README.md)                                                   | Overview of all automation scripts                               |
+| CI/CD Workflows   | [.github/workflows/README.md](./.github/workflows/README.md)                               | All 5 workflows, when they trigger, required secrets             |
 
 ---
 
@@ -139,6 +139,7 @@ TripBrain runs two separate monitoring layers on the same OCI server:
 **URL:** [https://spring.cloud1.mooo.com](https://spring.cloud1.mooo.com) · **Port:** `8085` · **Auth:** username/password
 
 Monitors all registered Spring Boot instances (tripbrain + the monitor itself) and provides:
+
 - Live UP/DOWN status of each application instance
 - JVM heap, GC activity, thread count
 - HTTP request traces
@@ -154,12 +155,14 @@ See [monitor/trip-brain-monitor/README.md](./monitor/trip-brain-monitor/README.m
 **URL:** [https://netdata.cloud1.mooo.com](https://netdata.cloud1.mooo.com) · **Port:** `19999` · **Auth:** HTTP Basic Auth (htpasswd)
 
 Netdata runs directly on the OCI host and provides real-time visibility into the underlying server:
+
 - CPU, RAM, disk I/O, network throughput
 - Nginx request rates, active connections, response codes
 - Docker container resource usage (per-container CPU/RAM)
 - System-level health — no agents or SaaS required
 
 **Nginx virtual host** (`/etc/nginx/sites-available/netdata-cloud1`):
+
 ```nginx
 server {
     listen 80;
@@ -192,11 +195,13 @@ server {
 ```
 
 **Why HTTP Basic Auth?** Netdata has no built-in auth. Since the connection is over HTTPS, Basic Auth credentials are encrypted in transit — secure enough for a personal monitoring dashboard. The password file is managed with `htpasswd`:
+
 ```bash
 sudo htpasswd -c /etc/nginx/.netdata_htpasswd your_username
 ```
 
 **Planned improvements:**
+
 - Email alert triggers for CPU/RAM spikes and service downtime
 - Loki integration for centralised log aggregation and querying
 
@@ -254,11 +259,13 @@ docker compose up --build -d
 This entire platform runs on the **Oracle Cloud Always Free** tier — no credit card charges, no time limits.
 
 **What you get for free:**
+
 - 4 Arm-based Ampere A1 cores + 24 GB RAM (shared across up to 4 VMs)
 - 200 GB block storage
 - 10 TB outbound data transfer per month
 
 **Steps to replicate this setup:**
+
 1. Sign up at [cloud.oracle.com](https://cloud.oracle.com) — choose an Always Free account
 2. Create an **ARM64 Ampere A1** VM running Oracle Linux 9 Minimal
 3. Install Podman (aliased as `docker`), Nginx, Python 3
@@ -351,16 +358,16 @@ All configuration is in one file. See [`.env.example`](./.env.example) for the c
 
 Key variables:
 
-| Variable | Description |
-|---|---|
-| `GEMINI_KEY` | Google AI Studio API key |
-| `GROQ_KEY` | Groq API key |
-| `DATABASE_URL` | PostgreSQL JDBC URL |
-| `REDIS_URL` | Redis connection URL |
-| `B2_*` | Backblaze B2 storage credentials |
-| `JWT_SECRET` | 256-bit hex JWT signing secret |
-| `GMAIL_PASSWORD_TOKEN` | Gmail App Password for deployment email reports |
-| `SPRING_ADMIN_USERNAME/PASSWORD` | Spring Boot Admin credentials |
+| Variable                         | Description                                     |
+| -------------------------------- | ----------------------------------------------- |
+| `GEMINI_KEY`                     | Google AI Studio API key                        |
+| `GROQ_KEY`                       | Groq API key                                    |
+| `DATABASE_URL`                   | PostgreSQL JDBC URL                             |
+| `REDIS_URL`                      | Redis connection URL                            |
+| `B2_*`                           | Backblaze B2 storage credentials                |
+| `JWT_SECRET`                     | 256-bit hex JWT signing secret                  |
+| `GMAIL_PASSWORD_TOKEN`           | Gmail App Password for deployment email reports |
+| `SPRING_ADMIN_USERNAME/PASSWORD` | Spring Boot Admin credentials                   |
 
 ---
 

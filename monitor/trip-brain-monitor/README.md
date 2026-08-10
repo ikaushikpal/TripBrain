@@ -11,13 +11,13 @@ There are **5 GitHub Actions workflows**. Each has a specific trigger condition 
 
 ### Workflow Overview
 
-| Workflow file | Trigger | Purpose |
-|---|---|---|
-| `pr-quality-check.yaml` | PR opened/updated → `main` | Quality gate before merge |
-| `python-scripts-check.yaml` | PR with `scripts/**` changes → `main` | Python script validation before merge |
-| `release-docker-on-main.yaml` | Push/merge → `main` (any path) | Build & publish main app Docker image |
-| `release-monitor-app.yaml` | Push/merge → `main` (`monitor/**` changed) | Build & publish monitor Docker image |
-| `release-render-proxy.yaml` | Push/merge → `main` (`render-proxy/**` changed) | Build & publish render proxy Docker image |
+| Workflow file                 | Trigger                                         | Purpose                                   |
+| ----------------------------- | ----------------------------------------------- | ----------------------------------------- |
+| `pr-quality-check.yaml`       | PR opened/updated → `main`                      | Quality gate before merge                 |
+| `python-scripts-check.yaml`   | PR with `scripts/**` changes → `main`           | Python script validation before merge     |
+| `release-docker-on-main.yaml` | Push/merge → `main` (any path)                  | Build & publish main app Docker image     |
+| `release-monitor-app.yaml`    | Push/merge → `main` (`monitor/**` changed)      | Build & publish monitor Docker image      |
+| `release-render-proxy.yaml`   | Push/merge → `main` (`render-proxy/**` changed) | Build & publish render proxy Docker image |
 
 ---
 
@@ -28,12 +28,12 @@ There are **5 GitHub Actions workflows**. Each has a specific trigger condition 
 
 **Jobs:**
 
-| Job | What it does |
-|---|---|
-| `validate-title` | Enforces [Conventional Commits](https://www.conventionalcommits.org/) PR title format (`feat:`, `fix:`, `chore:` etc.) |
-| `frontend-quality` | `npm ci` → Prettier → ESLint → TypeScript type-check → `ng build` → Vitest tests |
-| `backend-quality` | Gradle `check` (compile + unit tests, skips frontend build) |
-| `approval-gate` | Blocks merge unless at least 1 non-author approval exists and no `CHANGES_REQUESTED` review is active |
+| Job                | What it does                                                                                                           |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| `validate-title`   | Enforces [Conventional Commits](https://www.conventionalcommits.org/) PR title format (`feat:`, `fix:`, `chore:` etc.) |
+| `frontend-quality` | `npm ci` → Prettier → ESLint → TypeScript type-check → `ng build` → Vitest tests                                       |
+| `backend-quality`  | Gradle `check` (compile + unit tests, skips frontend build)                                                            |
+| `approval-gate`    | Blocks merge unless at least 1 non-author approval exists and no `CHANGES_REQUESTED` review is active                  |
 
 > **Must pass before merging.** If any job fails, GitHub branch protection prevents the merge.
 
@@ -46,10 +46,10 @@ There are **5 GitHub Actions workflows**. Each has a specific trigger condition 
 
 **Jobs:**
 
-| Step | What it does |
-|---|---|
-| Byte-compile | `python3 -m py_compile` on all `.py` files — catches syntax errors |
-| CLI output check | Runs `manage_cert.py list` — verifies the CLI entry point works |
+| Step              | What it does                                                                              |
+| ----------------- | ----------------------------------------------------------------------------------------- |
+| Byte-compile      | `python3 -m py_compile` on all `.py` files — catches syntax errors                        |
+| CLI output check  | Runs `manage_cert.py list` — verifies the CLI entry point works                           |
 | Import validation | Imports `DeploymentConfig` and `EmailReporter` from the deployer — catches broken imports |
 
 > This runs **in addition to** `pr-quality-check.yaml` when `scripts/**` files change in a PR.
@@ -63,10 +63,10 @@ There are **5 GitHub Actions workflows**. Each has a specific trigger condition 
 
 **Jobs:**
 
-| Job | What it does |
-|---|---|
-| `version-and-tag` | Reads merged PR title, determines semver bump (`feat` → minor, `fix` → patch, `BREAKING CHANGE` → major), creates and pushes git tags `vX.Y.Z` + `latest` |
-| `docker-build-and-push` | Builds multi-arch (`linux/amd64` + `linux/arm64`) Docker image, pushes `ikaushikpal/trip-brain:latest` + `ikaushikpal/trip-brain:vX.Y.Z` to Docker Hub |
+| Job                     | What it does                                                                                                                                              |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `version-and-tag`       | Reads merged PR title, determines semver bump (`feat` → minor, `fix` → patch, `BREAKING CHANGE` → major), creates and pushes git tags `vX.Y.Z` + `latest` |
+| `docker-build-and-push` | Builds multi-arch (`linux/amd64` + `linux/arm64`) Docker image, pushes `ikaushikpal/trip-brain:latest` + `ikaushikpal/trip-brain:vX.Y.Z` to Docker Hub    |
 
 > Once this pushes a new image digest to Docker Hub, the **cron-based blue-green deployer** on the OCI server automatically picks it up within 1 minute.
 
@@ -79,8 +79,8 @@ There are **5 GitHub Actions workflows**. Each has a specific trigger condition 
 
 **Jobs:**
 
-| Step | What it does |
-|---|---|
+| Step         | What it does                                                                                        |
+| ------------ | --------------------------------------------------------------------------------------------------- |
 | Build & Push | Builds multi-arch Docker image, pushes `ikaushikpal/trip-brain-monitor-app:latest` + versioned tags |
 
 > Changing the monitor application (Spring Boot code or `application.yaml`) triggers this. After it pushes, you must **manually restart** the container on the OCI server to pick up the new image (the monitor is not managed by the blue-green deployer).
@@ -94,8 +94,8 @@ There are **5 GitHub Actions workflows**. Each has a specific trigger condition 
 
 **Jobs:**
 
-| Step | What it does |
-|---|---|
+| Step         | What it does                                                                                         |
+| ------------ | ---------------------------------------------------------------------------------------------------- |
 | Build & Push | Builds multi-arch Docker image, pushes `ikaushikpal/trip-brain-render-proxy:latest` + versioned tags |
 
 > Render.com auto-deploys when Docker Hub receives a new image.
@@ -121,10 +121,10 @@ Developer opens PR
 
 ### Required GitHub Secrets
 
-| Secret | Used by | Description |
-|---|---|---|
-| `DOCKERHUB_USERNAME` | All release workflows | Docker Hub login |
-| `DOCKERHUB_TOKEN` | All release workflows | Docker Hub access token |
+| Secret               | Used by               | Description             |
+| -------------------- | --------------------- | ----------------------- |
+| `DOCKERHUB_USERNAME` | All release workflows | Docker Hub login        |
+| `DOCKERHUB_TOKEN`    | All release workflows | Docker Hub access token |
 
 ---
 
@@ -136,6 +136,7 @@ Spring Boot Admin aggregates the Actuator data exposed by each registered Spring
 - **`trip-brain-monitor`** — the monitor itself (self-registers)
 
 The dashboard gives you instant visibility into:
+
 - Application UP/DOWN status
 - JVM memory, heap usage, GC activity
 - Active HTTP request traces
@@ -211,12 +212,12 @@ server {
 
 All variables are loaded from `/opt/platform/.env`. See [`.env.example`](../../.env.example) at the project root.
 
-| Variable | Default | Description |
-|---|---|---|
-| `ADMIN_DASHBOARD_PORT` | `8085` | Port the Spring Boot server listens on |
-| `SPRING_ADMIN_USERNAME` | `admin` | Dashboard login username |
-| `SPRING_ADMIN_PASSWORD` | `admin123` | Dashboard login password |
-| `SPRING_BOOT_ADMIN_PUBLIC_URL` | `https://spring.cloud1.mooo.com` | Public base URL shown in the UI |
+| Variable                       | Default                          | Description                            |
+| ------------------------------ | -------------------------------- | -------------------------------------- |
+| `ADMIN_DASHBOARD_PORT`         | `8085`                           | Port the Spring Boot server listens on |
+| `SPRING_ADMIN_USERNAME`        | `admin`                          | Dashboard login username               |
+| `SPRING_ADMIN_PASSWORD`        | `admin123`                       | Dashboard login password               |
+| `SPRING_BOOT_ADMIN_PUBLIC_URL` | `https://spring.cloud1.mooo.com` | Public base URL shown in the UI        |
 
 ---
 
@@ -263,13 +264,14 @@ docker push ikaushikpal/trip-brain-monitor-app:latest
 
 The certificate is managed by the cert-manager cron job (see [`scripts/cert-manager/README.md`](../../scripts/cert-manager/README.md)).
 
-| Layer | What breaks |
-|---|---|
-| Browser → Nginx | `NET::ERR_CERT_DATE_INVALID` — dashboard is completely inaccessible |
-| Nginx startup | Nginx refuses to start if the cert file is unreadable |
+| Layer                    | What breaks                                                                                                |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------- |
+| Browser → Nginx          | `NET::ERR_CERT_DATE_INVALID` — dashboard is completely inaccessible                                        |
+| Nginx startup            | Nginx refuses to start if the cert file is unreadable                                                      |
 | `tripbrain` registration | If the admin URL points to `https://` and cert is invalid, registration fails with `SSLHandshakeException` |
 
 **Fix:**
+
 ```bash
 # Renew the cert
 sudo python3 /opt/platform/cert-manager/manage_cert.py spring
@@ -288,6 +290,7 @@ sudo nginx -t && sudo systemctl reload nginx
 Registered instances show `OFFLINE` immediately after registration. The monitor can't poll `http://tripbrain-blue:8080/actuator/health` because DNS resolution fails.
 
 **Check:**
+
 ```bash
 sudo docker inspect trip-brain-monitor \
   --format '{{json .NetworkSettings.Networks}}' | python3 -m json.tool
@@ -295,6 +298,7 @@ sudo docker inspect trip-brain-monitor \
 ```
 
 **Fix:**
+
 ```bash
 sudo docker stop trip-brain-monitor && sudo docker rm trip-brain-monitor
 # Re-run the docker run command with --network platform-network
@@ -307,6 +311,7 @@ sudo docker stop trip-brain-monitor && sudo docker rm trip-brain-monitor
 Registration fails silently if credentials don't match or the admin URL is unreachable.
 
 **Check:**
+
 ```bash
 # Confirm tripbrain container can reach the monitor by name
 sudo docker exec tripbrain-green wget -qO- http://trip-brain-monitor:8085/actuator/health
@@ -316,10 +321,11 @@ sudo docker logs tripbrain-green 2>&1 | grep -i "admin\|register\|401\|connect" 
 ```
 
 **Common causes:**
-| Cause | Fix |
-|---|---|
-| Wrong credentials in `.env` | Ensure `SPRING_ADMIN_USERNAME`/`SPRING_ADMIN_PASSWORD` match on both sides |
-| Monitor container not on `platform-network` | Re-run with `--network platform-network` |
+
+| Cause                                          | Fix                                                                                       |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Wrong credentials in `.env`                    | Ensure `SPRING_ADMIN_USERNAME`/`SPRING_ADMIN_PASSWORD` match on both sides                |
+| Monitor container not on `platform-network`    | Re-run with `--network platform-network`                                                  |
 | `SPRING_BOOT_ADMIN_URL` pointing to public URL | Must be `http://trip-brain-monitor:8085` (internal), not `https://spring.cloud1.mooo.com` |
 
 ---
@@ -329,6 +335,7 @@ sudo docker logs tripbrain-green 2>&1 | grep -i "admin\|register\|401\|connect" 
 The monitor is up but can't reach back to the instances to poll health.
 
 **Check:**
+
 ```bash
 # Test that monitor can reach a tripbrain container's actuator
 sudo docker exec trip-brain-monitor \
@@ -336,6 +343,7 @@ sudo docker exec trip-brain-monitor \
 ```
 
 **Common causes:**
+
 - `tripbrain` containers are on `platform-network` but monitor is not (or vice versa)
 - `SPRING_BOOT_MANAGEMENT_URL` was set to `127.0.0.1` (old config) — must be the container name
 
@@ -346,11 +354,13 @@ sudo docker exec trip-brain-monitor \
 The `X-Forwarded-Proto` header is not being passed correctly by Nginx, or `forward-headers-strategy: framework` is missing from `application.yaml`.
 
 **Check:**
+
 ```bash
 curl -I https://spring.cloud1.mooo.com | grep -i forwarded
 ```
 
 Verify `application.yaml` has:
+
 ```yaml
 server:
   forward-headers-strategy: framework

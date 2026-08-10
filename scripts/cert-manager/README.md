@@ -10,13 +10,13 @@ On completion it sends a **high-priority email** report (success or failure).
 
 > This script is designed specifically for an **Oracle Cloud Infrastructure (OCI) ARM-based VM** running **Oracle Linux (minimal install)**. Several decisions in this codebase exist _because of_ that environment.
 
-| Property | Value |
-|---|---|
-| OS | Oracle Linux 9 (minimal) — RHEL-compatible |
-| Architecture | `aarch64` (ARM64 Ampere A1) |
-| Init system | `systemd` |
-| MAC enforcer | **SELinux** (enforcing by default) |
-| Package manager | `dnf` |
+| Property          | Value                                           |
+| ----------------- | ----------------------------------------------- |
+| OS                | Oracle Linux 9 (minimal) — RHEL-compatible      |
+| Architecture      | `aarch64` (ARM64 Ampere A1)                     |
+| Init system       | `systemd`                                       |
+| MAC enforcer      | **SELinux** (enforcing by default)              |
+| Package manager   | `dnf`                                           |
 | Container runtime | **Podman** (aliased as `docker` via `nodocker`) |
 
 ---
@@ -26,6 +26,7 @@ On completion it sends a **high-priority email** report (success or failure).
 Oracle Linux minimal does **not** ship with Certbot, and installing it via `dnf` on an ARM64 box can pull in mismatched Python dependencies or snap packages that are unavailable on minimal installs.
 
 Running the official `certbot/certbot` Docker image solves all of this:
+
 - No host Python dependency conflicts
 - The image supports `aarch64` natively
 - Certbot is always the latest stable release
@@ -124,11 +125,11 @@ scripts/cert-manager/
 
 Defined in `cert_manager/config.py`:
 
-| Shortcut | Domain | 
-|---|---|
-| `tripbrain` | `tripbrain.mooo.com` |
-| `netdata` | `netdata.cloud1.mooo.com` |
-| `spring` | `spring.cloud1.mooo.com` |
+| Shortcut    | Domain                    |
+| ----------- | ------------------------- |
+| `tripbrain` | `tripbrain.mooo.com`      |
+| `netdata`   | `netdata.cloud1.mooo.com` |
+| `spring`    | `spring.cloud1.mooo.com`  |
 
 ---
 
@@ -218,12 +219,12 @@ sudo tail -f /var/log/tripbrain-cert.log
 
 Emails are sent **only when an operation is actually triggered** (renewal or registration attempt):
 
-| Event | Email sent? |
-|---|---|
-| Certificate still valid (> 30 days) | ❌ No |
-| Renewal triggered — succeeded | ✅ Yes — SUCCESS |
-| Renewal triggered — failed | ✅ Yes — FAILED |
-| Dry-run completed | ✅ Yes — result of test |
+| Event                               | Email sent?             |
+| ----------------------------------- | ----------------------- |
+| Certificate still valid (> 30 days) | ❌ No                   |
+| Renewal triggered — succeeded       | ✅ Yes — SUCCESS        |
+| Renewal triggered — failed          | ✅ Yes — FAILED         |
+| Dry-run completed                   | ✅ Yes — result of test |
 
 All emails are marked **high-priority** (`X-Priority: 1`) and show the domain, operation type, new expiry date and error details if applicable.
 
@@ -342,22 +343,22 @@ grep -i "gmail\|email\|smtp\|WARNING" /var/log/tripbrain-cert.log | tail -20
 
 ## State & Log Files Reference
 
-| Path | Description |
-|---|---|
-| `/etc/letsencrypt/live/<domain>/` | Active cert symlinks (used by Nginx) |
+| Path                                 | Description                                  |
+| ------------------------------------ | -------------------------------------------- |
+| `/etc/letsencrypt/live/<domain>/`    | Active cert symlinks (used by Nginx)         |
 | `/etc/letsencrypt/archive/<domain>/` | All cert versions (Certbot manages rotation) |
-| `/var/log/letsencrypt/` | Certbot's own verbose logs |
-| `/var/log/tripbrain-cert.log` | Cron stdout/stderr rolling log |
+| `/var/log/letsencrypt/`              | Certbot's own verbose logs                   |
+| `/var/log/tripbrain-cert.log`        | Cron stdout/stderr rolling log               |
 
 ---
 
 ## Oracle Linux ARM — Known Gotchas Summary
 
-| Gotcha | Cause | Fix |
-|---|---|---|
-| Nginx can't read certs after renewal | SELinux relabels to `container_file_t` | `restorecon -RFv /etc/letsencrypt` |
-| `docker` not found | Podman not aliased | `ln -s /usr/bin/podman /usr/local/bin/docker` |
-| Port 80 conflict | Nginx still running | Script handles this; manual: `fuser -k 80/tcp` |
-| `restorecon` not found | `policycoreutils` not installed | `sudo dnf install -y policycoreutils` |
-| Certbot can't pull image | OCI egress firewall | Allow port 443 outbound in VCN Security List |
-| `certbot` snap unavailable | No snapd on Oracle Linux minimal | Use Docker image — already handled by this script |
+| Gotcha                               | Cause                                  | Fix                                               |
+| ------------------------------------ | -------------------------------------- | ------------------------------------------------- |
+| Nginx can't read certs after renewal | SELinux relabels to `container_file_t` | `restorecon -RFv /etc/letsencrypt`                |
+| `docker` not found                   | Podman not aliased                     | `ln -s /usr/bin/podman /usr/local/bin/docker`     |
+| Port 80 conflict                     | Nginx still running                    | Script handles this; manual: `fuser -k 80/tcp`    |
+| `restorecon` not found               | `policycoreutils` not installed        | `sudo dnf install -y policycoreutils`             |
+| Certbot can't pull image             | OCI egress firewall                    | Allow port 443 outbound in VCN Security List      |
+| `certbot` snap unavailable           | No snapd on Oracle Linux minimal       | Use Docker image — already handled by this script |

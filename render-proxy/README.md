@@ -36,6 +36,7 @@ exec nginx -c /tmp/nginx.conf -g "daemon off;"
 ```
 
 **`nginx.conf`** proxies everything to the upstream with:
+
 - `proxy_ssl_server_name on` — sends the correct SNI header so the OCI Nginx can match the right SSL virtual host
 - `Host: tripbrain.mooo.com` — ensures the backend sees the correct hostname
 - `proxy_read_timeout 300` — allows long AI inference requests to complete without timing out
@@ -64,14 +65,14 @@ docker buildx build \
 
 This proxy talks to the backend **over HTTPS**. Nginx verifies the upstream TLS certificate by default. If `tripbrain.mooo.com`'s certificate expires or becomes invalid, the following cascade of failures occurs:
 
-| Layer | What breaks | Symptom |
-|---|---|---|
-| **Render proxy → OCI** | Nginx upstream SSL handshake fails | Proxy returns `502 Bad Gateway` to all users |
-| **Enterprise users** | Render proxy is their only route | Entire app is unreachable for corporate network users |
-| **Direct users** | Browser rejects the expired cert | `NET::ERR_CERT_DATE_INVALID` in browser |
-| **Spring Boot Admin** | Monitor polls backend over HTTPS | `PrematureCloseException`, instances show OFFLINE |
-| **CI/CD health checks** | GitHub Actions / Render deploy hooks can fail | Deployments may be rejected as unhealthy |
-| **API clients** | Any HTTPS client with strict cert validation | `SSLHandshakeException` / connection refused |
+| Layer                   | What breaks                                   | Symptom                                               |
+| ----------------------- | --------------------------------------------- | ----------------------------------------------------- |
+| **Render proxy → OCI**  | Nginx upstream SSL handshake fails            | Proxy returns `502 Bad Gateway` to all users          |
+| **Enterprise users**    | Render proxy is their only route              | Entire app is unreachable for corporate network users |
+| **Direct users**        | Browser rejects the expired cert              | `NET::ERR_CERT_DATE_INVALID` in browser               |
+| **Spring Boot Admin**   | Monitor polls backend over HTTPS              | `PrematureCloseException`, instances show OFFLINE     |
+| **CI/CD health checks** | GitHub Actions / Render deploy hooks can fail | Deployments may be rejected as unhealthy              |
+| **API clients**         | Any HTTPS client with strict cert validation  | `SSLHandshakeException` / connection refused          |
 
 > **The cert on `tripbrain.mooo.com` is the single point of failure for the entire stack.** The cert-manager cron job renews it automatically 30 days before expiry. See [`scripts/cert-manager/README.md`](../scripts/cert-manager/README.md).
 
@@ -84,11 +85,13 @@ This proxy talks to the backend **over HTTPS**. Nginx verifies the upstream TLS 
 The proxy successfully received the request but couldn't reach `tripbrain.mooo.com`.
 
 **Check 1 — Is the backend up?**
+
 ```bash
 curl -Iv https://tripbrain.mooo.com/actuator/health
 ```
 
 **Check 2 — Is the SSL cert valid?**
+
 ```bash
 curl -vI https://tripbrain.mooo.com 2>&1 | grep -E "SSL|expire|issuer|subject"
 
@@ -98,6 +101,7 @@ echo | openssl s_client -connect tripbrain.mooo.com:443 -servername tripbrain.mo
 ```
 
 **Check 3 — Is the OCI VM reachable?**
+
 ```bash
 # Ping OCI host
 ping tripbrain.mooo.com
@@ -165,21 +169,21 @@ The `nginx.conf` already sets the required `Upgrade` and `Connection` headers. I
 
 This confirms the issue is on the OCI server side, not the proxy. Common causes:
 
-| Cause | Fix |
-|---|---|
-| Nginx on OCI is stopped | `sudo systemctl start nginx` |
-| Cert expired → Nginx won't start | `sudo restorecon -RFv /etc/letsencrypt && sudo systemctl start nginx` |
-| OCI firewall blocks port 443 | Check VCN Security List — allow TCP 443 ingress |
-| Docker container (tripbrain) crashed | `sudo docker ps -a` — restart if exited |
-| Nginx upstream points to wrong port | `cat /etc/nginx/conf.d/tripbrain-upstream.conf` |
+| Cause                                | Fix                                                                   |
+| ------------------------------------ | --------------------------------------------------------------------- |
+| Nginx on OCI is stopped              | `sudo systemctl start nginx`                                          |
+| Cert expired → Nginx won't start     | `sudo restorecon -RFv /etc/letsencrypt && sudo systemctl start nginx` |
+| OCI firewall blocks port 443         | Check VCN Security List — allow TCP 443 ingress                       |
+| Docker container (tripbrain) crashed | `sudo docker ps -a` — restart if exited                               |
+| Nginx upstream points to wrong port  | `cat /etc/nginx/conf.d/tripbrain-upstream.conf`                       |
 
 ---
 
 ## 🗂️ File Reference
 
-| File | Description |
-|---|---|
-| [`nginx.conf`](./nginx.conf) | Nginx proxy config — forwards all traffic to `tripbrain.mooo.com` |
-| [`start.sh`](./start.sh) | Injects `$PORT` env var and starts Nginx |
-| [`Dockerfile`](./Dockerfile) | Alpine Nginx image packaging |
-| [`../.github/workflows/release-render-proxy.yaml`](../.github/workflows/release-render-proxy.yaml) | CI/CD pipeline to build and push the Docker image |
+| File                                                                                               | Description                                                       |
+| -------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| [`nginx.conf`](./nginx.conf)                                                                       | Nginx proxy config — forwards all traffic to `tripbrain.mooo.com` |
+| [`start.sh`](./start.sh)                                                                           | Injects `$PORT` env var and starts Nginx                          |
+| [`Dockerfile`](./Dockerfile)                                                                       | Alpine Nginx image packaging                                      |
+| [`../.github/workflows/release-render-proxy.yaml`](../.github/workflows/release-render-proxy.yaml) | CI/CD pipeline to build and push the Docker image                 |

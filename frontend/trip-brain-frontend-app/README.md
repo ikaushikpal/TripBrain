@@ -7,16 +7,16 @@ Built with Server-Side Rendering (SSR), TailwindCSS v4, and served statically fr
 
 ## Tech Stack
 
-| Technology | Version | Purpose |
-|---|---|---|
-| Angular | 21 | SPA framework with SSR |
-| `@angular/ssr` | 21 | Server-Side Rendering via Express |
-| TailwindCSS | v4 | Utility-first CSS |
-| Leaflet | 1.9 | Interactive maps |
-| Marked | 18 | Markdown rendering for AI responses |
-| Lucide Angular | — | Icon library |
-| Vitest | 4 | Unit test runner |
-| Prettier | 3 | Code formatter |
+| Technology     | Version | Purpose                             |
+| -------------- | ------- | ----------------------------------- |
+| Angular        | 21      | SPA framework with SSR              |
+| `@angular/ssr` | 21      | Server-Side Rendering via Express   |
+| TailwindCSS    | v4      | Utility-first CSS                   |
+| Leaflet        | 1.9     | Interactive maps                    |
+| Marked         | 18      | Markdown rendering for AI responses |
+| Lucide Angular | —       | Icon library                        |
+| Vitest         | 4       | Unit test runner                    |
+| Prettier       | 3       | Code formatter                      |
 
 ---
 
@@ -43,15 +43,15 @@ Browser → https://tripbrain.mooo.com
 
 ## Application Routes
 
-| Route | Access | Description |
-|---|---|---|
-| `/` | Public | Landing / home page |
-| `/auth/login` | Public | Login page |
-| `/auth/register` | Public | Registration page |
-| `/dashboard` | 🔒 Auth required | AI trip planning dashboard |
-| `/gallery` | Public | Trip gallery |
-| `/admin` | 🔒 Admin only | Admin panel |
-| `/share/:id` | Public | Shareable trip chat view |
+| Route            | Access           | Description                |
+| ---------------- | ---------------- | -------------------------- |
+| `/`              | Public           | Landing / home page        |
+| `/auth/login`    | Public           | Login page                 |
+| `/auth/register` | Public           | Registration page          |
+| `/dashboard`     | 🔒 Auth required | AI trip planning dashboard |
+| `/gallery`       | Public           | Trip gallery               |
+| `/admin`         | 🔒 Admin only    | Admin panel                |
+| `/share/:id`     | Public           | Shareable trip chat view   |
 
 Route guards: `authGuard` (JWT check) and `adminGuard` (role check).
 
@@ -64,7 +64,7 @@ Defined in `src/app/core/constants.ts`:
 ```ts
 const isLocalhost4200 = typeof window !== 'undefined' && window.location.port === '4200';
 export const BASE_API_URL = isLocalhost4200 ? 'http://localhost:8080/api' : '/api';
-export const BASE_URL     = isLocalhost4200 ? 'http://localhost:8080' : '';
+export const BASE_URL = isLocalhost4200 ? 'http://localhost:8080' : '';
 ```
 
 - **Local dev** (`ng serve` on port 4200) → calls `http://localhost:8080/api`
@@ -142,6 +142,7 @@ npm test          # Vitest unit tests
 The Angular static files may not have been copied correctly into the Spring Boot jar.
 
 **Check:**
+
 ```bash
 # Inside the running container, confirm static files exist
 sudo docker exec tripbrain-green ls /app/resources/static/
@@ -200,6 +201,7 @@ npm install
 ### Leaflet map tiles not loading
 
 Map tiles are fetched from OpenStreetMap CDN at runtime. This fails if:
+
 - The browser is offline
 - A corporate proxy blocks `*.tile.openstreetmap.org`
 
@@ -210,6 +212,7 @@ No fix needed in code — purely a network/proxy issue on the client side.
 ### Markdown not rendering in AI responses
 
 The `marked` library renders AI response text. If markdown appears as raw text:
+
 - Check the browser console for JS errors
 - Confirm `marked` is present in `node_modules`
 
