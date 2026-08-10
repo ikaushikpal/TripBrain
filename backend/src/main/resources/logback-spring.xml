@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- Import Spring Boot default log patterns and console appender -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+
+    <!--
+        Log directory configuration:
+        Reads LOG_PATH environment variable.
+        If LOG_PATH is not set, falls back to ${java.io.tmpdir}/tripbrain
+        which resolves to:
+        - Windows: C:\Users\<user>\AppData\Local\Temp\tripbrain
+        - Linux/macOS/Docker: /tmp/tripbrain (or /logs/tripbrain when LOG_PATH=/logs/tripbrain)
+    -->
+    <springProperty scope="context" name="LOG_DIR" source="LOG_PATH" defaultValue="${java.io.tmpdir}/tripbrain"/>
+
+    <!-- Daily Rolling File Appender with 14-day log retention -->
+    <appender name="DAILY_ROLLING_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR}/tripbrain.log</file>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- Rollover daily: logs/tripbrain/tripbrain-2026-08-10.0.log -->
+            <fileNamePattern>${LOG_DIR}/tripbrain-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+
+            <!-- Automatically purge log files older than 14 days -->
+            <maxHistory>14</maxHistory>
+
+            <!-- Maximum file size before creating a new indexed log file for the day -->
+            <maxFileSize>100MB</maxFileSize>
+
+            <!-- Total disk storage cap for all log archives -->
+            <totalSizeCap>3GB</totalSizeCap>
+
+            <!-- Purge expired archives on application startup -->
+            <cleanHistoryOnStart>true</cleanHistoryOnStart>
+        </rollingPolicy>
+
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- Configure Root Logger -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="DAILY_ROLLING_FILE"/>
+    </root>
+
+</configuration>

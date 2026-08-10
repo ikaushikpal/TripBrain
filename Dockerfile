@@ -48,8 +48,11 @@ WORKDIR /app
 # Copy the built jar file
 COPY --from=backend-builder /app/build/libs/*.jar app.jar
 
-# Create default uploads directory inside container
-RUN mkdir -p uploads/final_trip_pdfs
+# Create default uploads & logs directory inside container
+RUN mkdir -p uploads/final_trip_pdfs /logs/tripbrain
+
+# Default container log path
+ENV LOG_PATH=/logs/tripbrain
 
 EXPOSE 8080
 
