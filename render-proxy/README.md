@@ -181,9 +181,4 @@ This confirms the issue is on the OCI server side, not the proxy. Common causes:
 
 ## 🗂️ File Reference
 
-| File                                                                                               | Description                                                       |
-| -------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| [`nginx.conf`](./nginx.conf)                                                                       | Nginx proxy config — forwards all traffic to `tripbrain.mooo.com` |
-| [`start.sh`](./start.sh)                                                                           | Injects `$PORT` env var and starts Nginx                          |
-| [`Dockerfile`](./Dockerfile)                                                                       | Alpine Nginx image packaging                                      |
-| [`../.github/workflows/release-render-proxy.yaml`](../.github/workflows/release-render-proxy.yaml) | CI/CD pipeline to build and push the Docker image                 |
+Whenever changes are merged into the `main` branch, GitHub Actions automatically triggers [.github/workflows/release-render-proxy.yaml](file:///Users/kaushikpal/Desktop/codes/projects/spring-ai/trip-brain/.github/workflows/release-render-proxy.yaml) to compile, tag, and publish `ikaushikpal/trip-brain-render-proxy:latest` to Docker Hub. Render then automatically deploys the updated image via webhook/polling.
