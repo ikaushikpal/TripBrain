@@ -2,15 +2,11 @@
 # Workflow Name: Python Scripts Quality Gate
 # Purpose: Automatically runs byte-compilation, CLI output verification, and import
 #          checks under Python 3.9 runtime whenever files under 'scripts/**' change.
+#          Runs on Pull Requests only — not on direct pushes to main.
 # ==============================================================================
 name: Python Scripts Quality Gate
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'scripts/**'
   pull_request:
     branches:
       - main

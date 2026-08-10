@@ -1,255 +1,379 @@
-# TripBrain — Smart AI Travel Itinerary Planner ✈️
+# ✈️ TripBrain — AI-Powered Travel Itinerary Planner
 
-TripBrain is a pair-programmed, production-grade web application that plans travel itineraries using Spring AI and a multi-agent orchestration architecture. It rotates through active LLM models, matches user parameters, generates clean A4 PDF documents with custom typography & icons, caches search details using Valkey/Redis, uploads resulting documents directly to Backblaze B2 storage, and enforces strict role-based security & resource-level privacy.
+> **TripBrain** is a production-grade, open-source AI travel planner built with Spring AI and Angular.  
+> It orchestrates multiple LLMs (Gemini + Groq/LLaMA), generates beautifully formatted PDF itineraries, caches results in Redis, stores files on Backblaze B2, and deploys itself via a fully automated zero-downtime blue-green pipeline — **all running on Oracle Cloud Free Tier. No cloud bill. Zero cost.**
 
----
+[![PR Quality Gate](https://github.com/ikaushikpal/TripBrain/actions/workflows/pr-quality-check.yaml/badge.svg)](https://github.com/ikaushikpal/TripBrain/actions/workflows/pr-quality-check.yaml)
+[![Release Docker](https://github.com/ikaushikpal/TripBrain/actions/workflows/release-docker-on-main.yaml/badge.svg)](https://github.com/ikaushikpal/TripBrain/actions/workflows/release-docker-on-main.yaml)
 
-## 🛠️ Technology Stack
-
-- **Backend**: Java 25, Spring Boot 3.5.x, Spring Security (Stateless JWT Auth & RBAC), Spring AI 1.1.4 (OpenAI, Gemini & Groq integrations), Hibernate/JPA.
-- **Frontend**: Angular 21, CSS Variables, RxJS, Signals, Server-Side Rendering (SSR) & Vitest unit testing.
-- **Database & Cache**: PostgreSQL (Storage), Qdrant / OpenSearch (Vector Store), Valkey / Redis (Caching), HikariCP (Tuned connection pool for 1 CPU / 1.4GB RAM).
-- **PDF Compilation**: iText Core (version 9.6.0), custom emoji mappings, SVG vector thumbnail generator.
-- **Reverse Proxy & SSL**: Nginx HTTPS reverse proxy, Let's Encrypt Certbot SSL certificate automation.
-- **CI/CD & Deployment**: GitHub Actions, Docker Blue-Green zero-downtime deployment, automated cron poller.
+🌐 **Live:** [https://tripbrain.mooo.com](https://tripbrain.mooo.com)  
+🔁 **Blocked by corporate VPN/firewall?** Use the Render proxy: [https://tripbrain-11du.onrender.com](https://tripbrain-11du.onrender.com)  
+📊 **Monitor:** [https://spring.cloud1.mooo.com](https://spring.cloud1.mooo.com)
 
 ---
 
-## 📂 Project Structure
+## 👋 A Note from the Author
 
-```text
+Hi! I'm **Kaushik**, the developer behind TripBrain. I built this project to explore Spring AI, multi-agent LLM orchestration, and production-grade infrastructure — all on a zero-cost cloud setup.
+
+🔍 **I'm currently looking for new opportunities.** If you find this project interesting and your company is hiring (or you can refer me), I'd genuinely appreciate it. Feel free to reach out via GitHub or [LinkedIn](https://www.linkedin.com/in/ikaushikpal).
+
+Every star ⭐, issue, PR, or referral means a lot — thank you for being here.
+
+---
+
+## 🚀 What TripBrain Does
+
+- 🤖 **Multi-LLM orchestration** — Gemini (primary) + Groq LLaMA (fallback), with a bulkhead rate limiter to respect free-tier API limits
+- 🗺️ **AI trip planning** — generates fully structured, day-by-day itineraries via a multi-step agent pipeline
+- 📄 **PDF generation** — beautifully typeset A4 PDF documents with custom fonts, icons, and Unsplash destination images
+- 🔍 **RAG over PDFs** — upload your own travel documents and ask questions about them via Qdrant vector search
+- 🗄️ **File storage** — PDFs stored on Backblaze B2 (S3-compatible), served via presigned URLs
+- 🔐 **Full auth** — JWT-based stateless auth with RBAC (USER / ADMIN roles)
+- 📤 **Trip sharing** — shareable public links for trip itineraries
+- 🖼️ **Gallery** — browse publicly shared trips
+- 📊 **App monitoring** — Spring Boot Admin dashboard for JVM health, metrics, threads, log levels
+- 📡 **Server monitoring** — Netdata real-time dashboard for CPU, RAM, disk I/O, network, and Nginx metrics
+- 🔄 **Zero-downtime deploys** — automated blue-green deployment via cron, with email notifications
+
+---
+
+## 🏗️ Architecture Overview
+
+```
+                         ┌──────────────────────────────────────────────────┐
+                         │         Oracle Cloud Free Tier (ARM64)            │
+                         │                                                    │
+  Browser ──HTTPS──► Nginx (tripbrain.mooo.com)                             │
+                         │   ├─► tripbrain-blue:8080   (Active slot)        │
+                         │   └─► tripbrain-green:8082  (Idle slot)          │
+                         │            │                                       │
+                         │            ├── PostgreSQL  (Aiven)                │
+                         │            ├── Redis       (Valkey/Aiven)         │
+                         │            ├── Qdrant      (Vector store)         │
+                         │            ├── Backblaze B2 (File storage)        │
+                         │            ├── Gemini API  (LLM + Embeddings)     │
+                         │            └── Groq API    (LLM fallback)         │
+                         │                                                    │
+                         │  Nginx (spring.cloud1.mooo.com)                   │
+                         │  └─► trip-brain-monitor:8085                      │
+                         │       Spring Boot Admin (JVM health & metrics)    │
+                         │                                                    │
+                         │  Nginx (netdata.cloud1.mooo.com) + Basic Auth     │
+                         │  └─► Netdata Agent:19999                          │
+                         │       Real-time server metrics (CPU/RAM/Nginx)    │
+                         └──────────────────────────────────────────────────┘
+
+Corporate Networks (Zscaler/VPN blocked .mooo.com)
+  └── tripbrain-11du.onrender.com  →  Nginx Render Proxy  →  tripbrain.mooo.com
+```
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|---|---|
+| **Backend** | Java 25, Spring Boot 3.5, Spring AI 1.1.4 |
+| **Frontend** | Angular 21, TailwindCSS v4, SSR, Vitest |
+| **AI / LLM** | Google Gemini, Groq (LLaMA 3.3 70B) |
+| **Database** | PostgreSQL (Aiven) |
+| **Cache** | Redis / Valkey (Aiven) |
+| **Vector Store** | Qdrant (or OpenSearch) |
+| **File Storage** | Backblaze B2 (S3-compatible) |
+| **PDF Engine** | iText 9, custom emoji mapping, SVG thumbnails |
+| **OCR** | Tesseract 4 (Tess4J) |
+| **Security** | Spring Security, JWT (JJWT), RBAC |
+| **Reverse Proxy** | Nginx + Let's Encrypt SSL |
+| **App Monitoring** | Spring Boot Admin 3.4 |
+| **Server Monitoring** | Netdata (real-time CPU, RAM, Nginx, disk) |
+| **CI/CD** | GitHub Actions (5 workflows) |
+| **Deployment** | Docker, Blue-Green, Python automation scripts |
+| **Infrastructure** | Oracle Cloud Free Tier (ARM64 Ampere A1), Oracle Linux 9 |
+
+---
+
+## 📂 Repository Structure
+
+```
 trip-brain/
-├── backend/                  # Spring Boot application
-│   ├── src/main/java/        # Java source code (SecurityConfig, Controllers, Services)
-│   ├── src/main/resources/   # Application config (application.yaml, static assets)
-│   └── build.gradle          # Gradle project configuration
-├── frontend/                 # Client application
-│   └── trip-brain-frontend-app/
-│       ├── src/              # Angular components, signals, routes, services
-│       └── package.json      # Dependencies and scripts
-├── monitor/
-│   └── trip-brain-monitor/   # Spring Boot Admin Server (spring.cloud1.mooo.com)
-├── scripts/                  # Production deployment & operations scripts
-│   ├── platform-deployer/    # Modular Python Blue-Green deployment package (deploy.py)
-│   ├── cert-manager/         # Modular Python SSL certificate manager (manage_cert.py)
-│   ├── cron-manager.sh       # Automated cron job management script
-│   └── setup-blue-green-platform.sh # Master platform setup script
-├── Dockerfile                # Multi-stage image build definition
-└── docker-compose.yml        # Docker execution setup
+├── backend/                          # Spring Boot monolith (API + serves Angular)
+├── frontend/trip-brain-frontend-app/ # Angular 21 SPA
+├── monitor/trip-brain-monitor/       # Spring Boot Admin dashboard server
+├── render-proxy/                     # Nginx reverse proxy (deployed on Render.com)
+├── scripts/
+│   ├── platform-deployer/            # Blue-green Python deployment pipeline
+│   ├── cert-manager/                 # Let's Encrypt SSL Python manager
+│   └── cron-manager.sh               # Cron job provisioner
+├── .github/workflows/                # 5 GitHub Actions CI/CD workflows
+├── Dockerfile                        # Multi-stage production image build
+├── docker-compose.yml                # Local / compose-based deployment
+└── .env.example                      # All environment variables with descriptions
 ```
 
 ---
 
-## 📊 Spring Boot Admin Platform Monitoring
+## 📖 Documentation
 
-We have configured a dedicated **Spring Boot Admin Dashboard Server** (`monitor/trip-brain-monitor/`) to monitor the health, metrics, environment properties, thread dumps, and actuator endpoints of `trip-brain` and future platform microservices.
+Each module has its own detailed README:
 
-- **Admin Server Domain**: `https://spring.cloud1.mooo.com`
-- **Monitored App Domain**: `https://tripbrain.mooo.com`
-- **Default Authentication Credentials**:
-  - Username: `admin` (overridable via `SPRING_ADMIN_USERNAME`)
-  - Password: `admin123` (overridable via `SPRING_ADMIN_PASSWORD`)
-- **Docker Image**: `ikaushikpal/trip-brain-monitor-app:latest`
-- **Automated CI/CD Workflow**: [.github/workflows/release-monitor-app.yaml](file:///Users/kaushikpal/Desktop/codes/projects/spring-ai/trip-brain/.github/workflows/release-monitor-app.yaml)
-
-To run the Spring Boot Admin Server locally:
-
-```bash
-cd monitor/trip-brain-monitor
-./gradlew bootRun
-```
-The monitor dashboard will be available at `http://localhost:8085`.
+| Module | README | Description |
+|---|---|---|
+| Backend | [backend/README.md](./backend/README.md) | Spring Boot API, B2 presigned URL config, security, AI/LLM setup |
+| Frontend | [frontend/trip-brain-frontend-app/README.md](./frontend/trip-brain-frontend-app/README.md) | Angular dev setup, routes, troubleshooting |
+| Monitor | [monitor/trip-brain-monitor/README.md](./monitor/trip-brain-monitor/README.md) | Spring Boot Admin, Nginx config, CI/CD workflows explained |
+| Render Proxy | [render-proxy/README.md](./render-proxy/README.md) | Corporate firewall bypass, SSL expiry impact |
+| Platform Deployer | [scripts/platform-deployer/README.md](./scripts/platform-deployer/README.md) | Blue-green pipeline, cron setup, troubleshooting |
+| Cert Manager | [scripts/cert-manager/README.md](./scripts/cert-manager/README.md) | SSL renewal, SELinux gotchas, Oracle Linux ARM guide |
+| Scripts Index | [scripts/README.md](./scripts/README.md) | Overview of all automation scripts |
+| CI/CD Workflows | [.github/workflows/README.md](./.github/workflows/README.md) | All 5 workflows, when they trigger, required secrets |
 
 ---
 
-## 🔒 Security & Authorization Architecture
+## 📡 Monitoring Stack
 
-- **Spring Security `SecurityFilterChain`**: Stateless JWT authentication filter (`JwtAuthenticationFilter`) validating Bearer tokens and populating `SecurityContextHolder`.
-- **Method-Level Security (`@EnableMethodSecurity`)**: `@PreAuthorize` annotations across controllers enforcing role checks (`ROLE_USER`, `ROLE_ADMIN`).
-- **Resource Ownership & Privacy Isolation**:
-  - **Private Chats**: Owner-only access (`verifyReadAccess` & `verifyWriteAccess`). Administrators (`ROLE_ADMIN`) **cannot view or modify** another user's private conversations.
-  - **Shared Trips**: Public trips and gallery items are read-only (`@PreAuthorize("permitAll()")`).
-- **Admin Cascade Cleanup**: Soft-deleting or purging a user via `UserService.deleteUser(userId)` cascades through generated PDF files (local & Backblaze cloud), `TripPdf` entities, `ChatMessage` records, `Conversation` records, and `RefreshToken` entities.
+TripBrain runs two separate monitoring layers on the same OCI server:
 
----
+### Spring Boot Admin — Application Monitoring
 
-## 🤖 Automated Cron Jobs Management
+**URL:** [https://spring.cloud1.mooo.com](https://spring.cloud1.mooo.com) · **Port:** `8085` · **Auth:** username/password
 
-We provide a dedicated script `cron-manager.sh` to provision, monitor, and clean up automated system cron tasks on your deployment server:
+Monitors all registered Spring Boot instances (tripbrain + the monitor itself) and provides:
+- Live UP/DOWN status of each application instance
+- JVM heap, GC activity, thread count
+- HTTP request traces
+- Log level changes at runtime (no restart needed)
+- Environment properties and health indicator breakdown
 
-```bash
-# Provision / install automated cron jobs
-sudo bash scripts/cron-manager.sh install
-
-# View active cron jobs & log file status
-sudo bash scripts/cron-manager.sh list
-
-# Remove TripBrain cron jobs
-sudo bash scripts/cron-manager.sh remove
-```
-
-### Configured Automated Cron Schedules:
-1. **1-Minute Blue-Green Deployment Poller** (`* * * * *`):
-   Runs `/opt/platform/platform-deployer/deploy.py` every 1 minute. Detects new `ikaushikpal/tripbrain:latest` Docker images, starts target container (Blue/Green), polls `/actuator/health`, updates Nginx upstream, reloads Nginx zero-downtime, and decommissions old containers.
-2. **Daily SSL Certificate Auto-Renewal Check** (`0 3 * * *`):
-   Runs `/opt/platform/cert-manager/manage_cert.py tripbrain` daily at 03:00 AM. Checks OpenSSL expiry, executes standalone Dockerized Certbot HTTP-01 challenge if certificate expires within 30 days, and reloads Nginx.
+See [monitor/trip-brain-monitor/README.md](./monitor/trip-brain-monitor/README.md) for setup details.
 
 ---
 
-## 🚀 Server Platform Setup & CLI Commands
+### Netdata — Real-Time Server Monitoring
 
-### 1. Master Server Setup
-To provision directory structures, Nginx configuration files (`/etc/nginx/conf.d/tripbrain.conf`), and install cron jobs on an Oracle Linux / RHEL / Ubuntu server:
+**URL:** [https://netdata.cloud1.mooo.com](https://netdata.cloud1.mooo.com) · **Port:** `19999` · **Auth:** HTTP Basic Auth (htpasswd)
 
-```bash
-sudo bash scripts/setup-blue-green-platform.sh
+Netdata runs directly on the OCI host and provides real-time visibility into the underlying server:
+- CPU, RAM, disk I/O, network throughput
+- Nginx request rates, active connections, response codes
+- Docker container resource usage (per-container CPU/RAM)
+- System-level health — no agents or SaaS required
+
+**Nginx virtual host** (`/etc/nginx/sites-available/netdata-cloud1`):
+```nginx
+server {
+    listen 80;
+    server_name netdata.cloud1.mooo.com;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name netdata.cloud1.mooo.com;
+
+    ssl_certificate     /etc/letsencrypt/live/netdata.cloud1.mooo.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/netdata.cloud1.mooo.com/privkey.pem;
+
+    location / {
+        auth_basic           "Netdata";
+        auth_basic_user_file /etc/nginx/.netdata_htpasswd;  # bcrypt htpasswd file
+
+        proxy_pass http://127.0.0.1:19999;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto https;
+
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade    $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
 ```
 
-### 2. Manual Blue-Green Deployment Execution
-To manually trigger a Blue-Green deployment check:
-
+**Why HTTP Basic Auth?** Netdata has no built-in auth. Since the connection is over HTTPS, Basic Auth credentials are encrypted in transit — secure enough for a personal monitoring dashboard. The password file is managed with `htpasswd`:
 ```bash
-python3 scripts/platform-deployer/deploy.py
+sudo htpasswd -c /etc/nginx/.netdata_htpasswd your_username
 ```
 
-### 3. SSL Certificate Operations
-To manage Let's Encrypt SSL certificates:
+**Planned improvements:**
+- Email alert triggers for CPU/RAM spikes and service downtime
+- Loki integration for centralised log aggregation and querying
 
-```bash
-# Register or renew certificate (tripbrain & netdata)
-sudo python3 scripts/cert-manager/manage_cert.py tripbrain
-sudo python3 scripts/cert-manager/manage_cert.py netdata
-
-# Run renewal dry-run test
-sudo python3 scripts/cert-manager/manage_cert.py tripbrain dry-run
-sudo python3 scripts/cert-manager/manage_cert.py netdata dry-run
-
-# List configured domain applications
-python3 scripts/cert-manager/manage_cert.py list
-```
-
-### 4. Gmail SMTP Email Notifications Setup
-To enable automated Gmail SMTP email reports (`iamkaushik2014@gmail.com`) for deployment runs and log persistence (`/data/tripbrain/platform-deployer-logs/`), export your Gmail App Password in your environment or add it to `/opt/platform/.env`:
-
-```bash
-export GMAIL_APP_PASSWORD="your-16-char-gmail-app-password"
-```
+> The SSL certificate for `netdata.cloud1.mooo.com` is managed by the same cert-manager cron job. See [scripts/cert-manager/README.md](./scripts/cert-manager/README.md).
 
 ---
 
-## ⚡ Local Development & Testing
+## ⚡ Quick Start (Local Development)
 
-### 1. Backend Development Server
-Ensure Java 25 is installed. Create `backend/.env` with your API keys, then run:
+### Prerequisites
+
+- Java 25+
+- Node.js 20+ / npm 11+
+- Docker
+- API keys: Gemini, Groq, PostgreSQL, Redis, Qdrant, Backblaze B2
+
+### 1. Clone and configure
+
+```bash
+git clone https://github.com/ikaushikpal/TripBrain.git
+cd TripBrain
+
+# Copy example env and fill in your keys
+cp .env.example backend/.env
+```
+
+### 2. Run the backend
 
 ```bash
 cd backend
-./gradlew bootRun
-```
-The backend API will start on `http://localhost:8080`.
-
-### 2. Backend Verification & Tests
-To run full static analysis, compilation, and unit/integration tests with in-memory H2 database:
-
-```bash
-cd backend
-./gradlew check --no-daemon
+./gradlew bootRun -PskipFrontend
+# API starts at http://localhost:8080
 ```
 
-### 3. Frontend Development Server
-Ensure Node.js 20+ is installed:
+### 3. Run the frontend
 
 ```bash
 cd frontend/trip-brain-frontend-app
 npm install
-npm run start
-```
-Open `http://localhost:4200` to access the interactive web dashboard.
-
-### 4. Frontend Formatting & Tests
-```bash
-cd frontend/trip-brain-frontend-app
-
-# Format code with Prettier
-npm run format
-
-# Run formatting & type check
-npm run lint
-
-# Run Vitest unit tests
-npm test -- --watch=false
+npm start
+# UI starts at http://localhost:4200
 ```
 
----
-
-## 🐳 Docker Deployment
-
-To build and run the unified application locally in Docker:
+### 4. Run with Docker Compose
 
 ```bash
-# Build and start container
 docker compose up --build -d
-
-# Stream application logs
-docker compose logs -f
+# App available at http://localhost:8080
 ```
-The application will be available at `http://localhost:8080`.
-
-___
-Viewed README.md:50-110
-
-The specified sections and command blocks are present in [README.md](file:///Users/kaushikpal/Desktop/codes/projects/spring-ai/trip-brain/README.md#L52-L103):
-
-```markdown
-## 🤖 Automated Cron Jobs Management
-
-We provide a dedicated script `cron-manager.sh` to provision, monitor, and clean up automated system cron tasks on your deployment server:
-
-```bash
-# Provision / install automated cron jobs
-sudo bash scripts/cron-manager.sh install
-
-# View active cron jobs & log file status
-sudo bash scripts/cron-manager.sh list
-
-# Remove TripBrain cron jobs
-sudo bash scripts/cron-manager.sh remove
-```
-
-### Configured Automated Cron Schedules:
-1. **1-Minute Blue-Green Deployment Poller** (`* * * * *`):
-   Runs `/opt/platform/platform-deployer/deploy.py` every 1 minute. Detects new `ikaushikpal/tripbrain:latest` Docker images, starts target container (Blue/Green), polls `/actuator/health`, updates Nginx upstream, reloads Nginx zero-downtime, and decommissions old containers.
-2. **Daily SSL Certificate Auto-Renewal Check** (`0 3 * * *`):
-   Runs `/opt/platform/cert-manager/manage_cert.py tripbrain` daily at 03:00 AM. Checks OpenSSL expiry, executes standalone Dockerized Certbot HTTP-01 challenge if certificate expires within 30 days, and reloads Nginx.
 
 ---
 
-## 🚀 Server Platform Setup & CLI Commands
+## 🌩️ Deploying on Oracle Cloud Free Tier (Zero Cost)
 
-### 1. Master Server Setup
-To provision directory structures, Nginx configuration files (`/etc/nginx/conf.d/tripbrain.conf`), and install cron jobs on an Oracle Linux / RHEL / Ubuntu server:
+This entire platform runs on the **Oracle Cloud Always Free** tier — no credit card charges, no time limits.
 
-```bash
-sudo bash scripts/setup-blue-green-platform.sh
+**What you get for free:**
+- 4 Arm-based Ampere A1 cores + 24 GB RAM (shared across up to 4 VMs)
+- 200 GB block storage
+- 10 TB outbound data transfer per month
+
+**Steps to replicate this setup:**
+1. Sign up at [cloud.oracle.com](https://cloud.oracle.com) — choose an Always Free account
+2. Create an **ARM64 Ampere A1** VM running Oracle Linux 9 Minimal
+3. Install Podman (aliased as `docker`), Nginx, Python 3
+4. Copy scripts to `/opt/platform/`
+5. Configure `/opt/platform/.env` (see [`.env.example`](./.env.example))
+6. Run `sudo bash scripts/cron-manager.sh install` to wire up all automation
+7. Configure Nginx virtual hosts and obtain SSL certs via the cert-manager
+
+See [scripts/cert-manager/README.md](./scripts/cert-manager/README.md) for the full Oracle Linux + SELinux + ARM64 guide.
+
+---
+
+## 🔄 Deployment Pipeline
+
+Every commit merged to `main` triggers an automated chain:
+
+```
+PR merged to main
+    │
+    ├─► GitHub Actions builds multi-arch Docker image
+    │   └─► ikaushikpal/trip-brain:latest pushed to Docker Hub
+    │
+    └─► Cron job on OCI server (runs every 1 min)
+            ├─ Pulls latest image digest
+            ├─ Detects change → starts new container (blue/green)
+            ├─ Polls /actuator/health (30 retries)
+            ├─ Switches Nginx upstream → zero-downtime cutover
+            ├─ Stops old container
+            └─ Sends SUCCESS/FAILED email report
 ```
 
-### 2. Manual Blue-Green Deployment Execution
-To manually trigger a Blue-Green deployment check:
+See [scripts/platform-deployer/README.md](./scripts/platform-deployer/README.md) for full details.
+
+---
+
+## 🗺️ Roadmap
+
+### Planned Migrations (Coming Soon)
+
+- **PostgreSQL**: Migrate from Aiven managed PostgreSQL → **Oracle Autonomous Database (Always Free)**
+- **File Storage**: Migrate from Backblaze B2 → **Oracle Object Storage (Always Free)** — keeping the same S3-compatible interface via `pathStyleAccessEnabled(true)`
+
+These migrations will make the stack **100% Oracle Cloud native** with zero external SaaS dependencies.
+
+### Other Planned Features
+
+- [ ] Multi-destination trip chaining
+- [ ] Budget planning with live currency conversion
+- [ ] Trip collaboration (shared editing)
+- [ ] Mobile-responsive PWA improvements
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Here's how to get started:
+
+### Fork & Branch
 
 ```bash
-python3 scripts/platform-deployer/deploy.py
+git clone https://github.com/ikaushikpal/TripBrain.git
+git checkout -b feat/your-feature-name
 ```
 
-### 3. SSL Certificate Operations
-To manage Let's Encrypt SSL certificates:
+### PR Guidelines
 
-```bash
-# Register or renew certificate
-sudo python3 scripts/cert-manager/manage_cert.py tripbrain
+- **PR titles must follow [Conventional Commits](https://www.conventionalcommits.org/):**  
+  `feat: add feature`, `fix: fix bug`, `docs: update readme`, `chore: update deps`
+- All PRs run the quality gate automatically — ensure `npm run lint`, `./gradlew check`, and Prettier pass locally before pushing
+- One approval required before merge
 
-# Run renewal dry-run test
-sudo python3 scripts/cert-manager/manage_cert.py tripbrain dry-run
+### Good First Issues
 
-# List configured domain applications
-python3 scripts/cert-manager/manage_cert.py list
-```
+Look for issues tagged `good first issue` or `help wanted` on the [Issues](https://github.com/ikaushikpal/TripBrain/issues) page.
+
+### What you can contribute
+
+- Bug fixes
+- New AI tools / agents
+- Frontend UI improvements
+- More vector store backends
+- Documentation improvements
+- Performance optimizations
+
+---
+
+## 🔐 Environment Variables
+
+All configuration is in one file. See [`.env.example`](./.env.example) for the complete reference with descriptions for every variable.
+
+Key variables:
+
+| Variable | Description |
+|---|---|
+| `GEMINI_KEY` | Google AI Studio API key |
+| `GROQ_KEY` | Groq API key |
+| `DATABASE_URL` | PostgreSQL JDBC URL |
+| `REDIS_URL` | Redis connection URL |
+| `B2_*` | Backblaze B2 storage credentials |
+| `JWT_SECRET` | 256-bit hex JWT signing secret |
+| `GMAIL_PASSWORD_TOKEN` | Gmail App Password for deployment email reports |
+| `SPRING_ADMIN_USERNAME/PASSWORD` | Spring Boot Admin credentials |
+
+---
+
+## 📄 License
+
+This project is open source under the [MIT License](./LICENSE).
+
+---
+
+<div align="center">
+
+Built with ❤️ by [Kaushik Pal](https://github.com/ikaushikpal) · Running free on Oracle Cloud · Open to contributions
+
+⭐ **If this project helped you or you found it interesting, please consider starring it — it really helps!**
+
+</div>
