@@ -36,7 +36,15 @@ class NginxManager:
         systemctl_bin = shutil.which("systemctl") or "/usr/bin/systemctl"
 
         self.logger.log("Testing Nginx configuration")
-        self.runner.run([nginx_bin, "-t"])
+        try:
+            self.runner.retry_run([nginx_bin, "-t"], max_retries=3, max_wait=10.0)
+        except Exception as error:
+            self.logger.log(f"ERROR: Nginx config test failed: {error}")
+            raise
 
         self.logger.log("Reloading Nginx service")
-        self.runner.run([systemctl_bin, "reload", "nginx"])
+        try:
+            self.runner.retry_run([systemctl_bin, "reload", "nginx"], max_retries=3, max_wait=10.0)
+        except Exception as error:
+            self.logger.log(f"ERROR: Nginx reload failed: {error}")
+            raise

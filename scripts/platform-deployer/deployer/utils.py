@@ -63,3 +63,37 @@ class CommandRunner:
                 )
 
         return result
+
+    def retry_run(
+        self,
+        command: List[str],
+        check: bool = True,
+        max_retries: int = 3,
+        max_wait: float = 10.0,
+    ) -> subprocess.CompletedProcess[str]:
+        """Executes a command with exponential backoff retries on failure.
+
+        Waits min(2^attempt, max_wait) seconds between retries.
+        Raises RuntimeError after all retries are exhausted if check=True.
+        """
+        last_error: Exception | None = None
+
+        for attempt in range(max_retries + 1):
+            try:
+                result = self.run(command, check=check)
+                if result.returncode == 0 or not check:
+                    return result
+            except RuntimeError as error:
+                last_error = error
+
+            if attempt < max_retries:
+                wait = min(2 ** attempt, max_wait)
+                self.logger.log(
+                    f"Attempt {attempt + 1}/{max_retries} failed — retrying in {wait:.0f}s..."
+                )
+                time.sleep(wait)
+
+        if check and last_error:
+            raise last_error
+
+        return result  # type: ignore[return-value]
