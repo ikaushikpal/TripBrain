@@ -48,18 +48,41 @@ public class ClientClientConfig {
         @Value("classpath:/promptTemplates/exportPrompt.st")
         private Resource exportSystemPrompt;
 
-        @Value("${spring.ai.openai.chat.options.model:llama-3.1-8b-instant}")
-        private String modelName;
+        // =========================================================================
+        // GROQ CONFIGURATION (COMMENTED OUT AS PER USER REQUEST)
+        // =========================================================================
+        // @Value("${spring.ai.openai.chat.options.model:openai/gpt-oss-120b}")
+        // private String modelName;
+        //
+        // @Bean
+        // @Primary
+        // ChatClient.Builder groqChatClientBuilder(OpenAiChatModel openAiChatModel,
+        //                 ContentModerationAdvisor contentModerationAdvisor) {
+        //         ChatOptions chatOptions = ChatOptions.builder()
+        //                         .model(modelName)
+        //                         .temperature(0.7)
+        //                         .build();
+        //         return ChatClient.builder(openAiChatModel)
+        //                         .defaultOptions(chatOptions)
+        //                         .defaultAdvisors(contentModerationAdvisor);
+        // }
+
+        // =========================================================================
+        // GEMINI CONFIGURATION (ACTIVE)
+        // =========================================================================
+        @Value("${spring.ai.google.genai.chat.options.model:gemini-3.5-flash-lite}")
+        private String geminiModelName;
 
         @Bean
         @Primary
-        ChatClient.Builder groqChatClientBuilder(OpenAiChatModel openAiChatModel,
+        ChatClient.Builder geminiChatClientBuilder(
+                        org.springframework.ai.google.genai.GoogleGenAiChatModel googleGenAiChatModel,
                         ContentModerationAdvisor contentModerationAdvisor) {
-                ChatOptions chatOptions = ChatOptions.builder()
-                                .model(modelName)
+                org.springframework.ai.chat.prompt.ChatOptions chatOptions = org.springframework.ai.chat.prompt.ChatOptions.builder()
+                                .model(geminiModelName)
                                 .temperature(0.7)
                                 .build();
-                return ChatClient.builder(openAiChatModel)
+                return ChatClient.builder(googleGenAiChatModel)
                                 .defaultOptions(chatOptions)
                                 .defaultAdvisors(contentModerationAdvisor);
         }
@@ -170,10 +193,16 @@ public class ClientClientConfig {
         @Bean("exportChatClient")
         ChatClient exportChatClient(ChatClient.Builder chatClientBuilder) {
 
-                ChatOptions exportOptions = ChatOptions.builder()
-                                // .model("llama-3.1-8b-instant")
-                                .model("llama-3.3-70b-versatile")
-                                .temperature(0.2) // lower temp → more deterministic JSON
+                // --- GROQ EXPORT OPTIONS (COMMENTED OUT) ---
+                // ChatOptions exportOptions = ChatOptions.builder()
+                //                 .model("openai/gpt-oss-120b")
+                //                 .temperature(0.2)
+                //                 .build();
+
+                // --- GEMINI EXPORT OPTIONS (ACTIVE) ---
+                org.springframework.ai.chat.prompt.ChatOptions exportOptions = org.springframework.ai.chat.prompt.ChatOptions.builder()
+                                .model("gemini-3.5-flash-lite")
+                                .temperature(0.2) // lower temp → more deterministic Markdown/JSON
                                 .build();
 
                 return chatClientBuilder.clone()

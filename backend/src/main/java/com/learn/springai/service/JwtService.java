@@ -28,11 +28,11 @@ public class JwtService {
     @Value("${app.jwt.secret}")
     private String jwtSecret;
 
-    @Value("${app.jwt.access-token-expiration-ms}")
+    @Value("${app.jwt.access-token-expiration-ms:900000}")
     private long jwtExpirationMs;
 
     @Getter
-    @Value("${app.jwt.refresh-token-expiration-ms}")
+    @Value("${app.jwt.refresh-token-expiration-ms:604800000}")
     private long refreshTokenExpirationMs;
 
     private final RefreshTokenRepository refreshTokenRepository;

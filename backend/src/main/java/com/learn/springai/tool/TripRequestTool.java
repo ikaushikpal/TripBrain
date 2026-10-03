@@ -37,7 +37,7 @@ public class TripRequestTool {
         }
     }
 
-    @Tool(name = "updateTripRequest", description = "Update travel/trip parameters. Pass ONLY the updated fields inside the updates map. Valid keys: source, destination, startDate (YYYY-MM-DD), endDate (YYYY-MM-DD), adults, children, travellerType (SOLO, COUPLE, FAMILY, GROUP), maxBudget, dailyBudgetPerPerson, currency, budgetPreference (BACKPACKER, MID, LUXURY), cabinClass (ECONOMY, BUSINESS), directFlightsOnly (boolean), minHotelStars, maxHotelStars, privateTransfersPreferred (boolean), notes")
+    @Tool(name = "updateTripRequest", description = "CRITICAL: Call this tool immediately whenever the user provides or modifies ANY travel parameters. Pass only the updated fields in the updates map. Supported keys: source, destination, startDate (YYYY-MM-DD), endDate (YYYY-MM-DD), adults, children, travellerType (SOLO, COUPLE, FAMILY_WITH_KIDS, GROUP_FRIENDS), maxBudget, dailyBudgetPerPerson, currency, budgetPreference (BACKPACKER, MID, LUXURY), cabinClass (ECONOMY, BUSINESS), directFlightsOnly (boolean), minHotelStars, maxHotelStars, privateTransferPreferred (boolean), notes, mustVisitPlaces (array of string places/attractions to visit), avoidPlaces (array of string places to avoid)")
     public String updateTripRequest(
             String conversationId,
             @ToolParam(description = "Map of key-value pairs representing the updates to apply.") java.util.Map<String, Object> updates) {

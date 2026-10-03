@@ -45,9 +45,15 @@ export class ChatService {
   public readonly conversationUpdated$ = new EventEmitter<void>();
   public readonly conversationDeleted$ = new EventEmitter<string>();
 
-  getUserConversations(): Observable<Conversation[]> {
+  clearConversationsCache() {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('trip_brain_cached_conversations');
+    }
+  }
+
+  getUserConversations(bypassCache: boolean = false): Observable<Conversation[]> {
     const cachedStr =
-      typeof window !== 'undefined'
+      !bypassCache && typeof window !== 'undefined'
         ? localStorage.getItem('trip_brain_cached_conversations')
         : null;
     const cachedList: Conversation[] = cachedStr ? JSON.parse(cachedStr) : [];
@@ -227,38 +233,58 @@ export class ChatService {
         return;
       }
 
-      const token = this.authService.getAccessToken();
-      const url =
-        `${this.apiUrl}/chat/${conversationId}/stream?message=${encodeURIComponent(message)}` +
-        (token ? `&token=${encodeURIComponent(token)}` : '');
-      const eventSource = new EventSource(url);
+      let eventSource: EventSource | null = null;
+      let hasRetriedWithNewToken = false;
 
-      eventSource.addEventListener('status', (e: MessageEvent) => {
-        observer.next({ event: 'status', data: e.data });
-      });
+      const connect = (token: string | null) => {
+        const url =
+          `${this.apiUrl}/chat/${conversationId}/stream?message=${encodeURIComponent(message)}` +
+          (token ? `&token=${encodeURIComponent(token)}` : '');
+        eventSource = new EventSource(url);
 
-      eventSource.addEventListener('text', (e: MessageEvent) => {
-        try {
-          const parsed = JSON.parse(e.data);
-          observer.next({
-            event: 'text',
-            data: parsed.content !== undefined ? parsed.content : e.data,
-          });
-        } catch {
-          observer.next({ event: 'text', data: e.data });
-        }
-      });
+        eventSource.addEventListener('status', (e: MessageEvent) => {
+          observer.next({ event: 'status', data: e.data });
+        });
 
-      eventSource.addEventListener('error', (e) => {
-        if (eventSource.readyState === EventSource.CLOSED) {
-          observer.complete();
-        } else {
-          observer.error(e);
-        }
-      });
+        eventSource.addEventListener('text', (e: MessageEvent) => {
+          try {
+            const parsed = JSON.parse(e.data);
+            observer.next({
+              event: 'text',
+              data: parsed.content !== undefined ? parsed.content : e.data,
+            });
+          } catch {
+            observer.next({ event: 'text', data: e.data });
+          }
+        });
+
+        eventSource.addEventListener('error', (e) => {
+          if (eventSource?.readyState === EventSource.CLOSED) {
+            observer.complete();
+          } else {
+            // Attempt automatic token refresh and reconnection once if access token expired
+            if (!hasRetriedWithNewToken && this.authService.getRefreshToken()) {
+              hasRetriedWithNewToken = true;
+              eventSource?.close();
+              this.authService.refreshAccessToken().subscribe({
+                next: (res) => {
+                  connect(res.accessToken);
+                },
+                error: (err) => {
+                  observer.error(err);
+                },
+              });
+            } else {
+              observer.error(e);
+            }
+          }
+        });
+      };
+
+      connect(this.authService.getAccessToken());
 
       return () => {
-        eventSource.close();
+        eventSource?.close();
       };
     });
   }
@@ -267,5 +293,11 @@ export class ChatService {
     return this.http.get<{ downloadUrl: string }>(
       `${this.apiUrl}/conversations/trips/${conversationId}/download-url`,
     );
+  }
+
+  downloadPdfBlob(conversationId: string): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/conversations/trips/${conversationId}/download`, {
+      responseType: 'blob',
+    });
   }
 }

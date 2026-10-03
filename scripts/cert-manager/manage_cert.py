@@ -143,6 +143,12 @@ def main() -> None:
             workflow.renew_if_needed()
     except Exception as error:
         log.exception("Certificate operation failed: %s", error)
+        try:
+            if not NginxManager.is_running():
+                log.info("Ensuring Nginx is running after failure...")
+                NginxManager.start()
+        except Exception as nginx_err:
+            log.error("Failed to start Nginx after failure: %s", nginx_err)
         sys.exit(1)
 
 

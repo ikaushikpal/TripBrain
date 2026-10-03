@@ -1,6 +1,5 @@
 package com.learn.springai.service;
 
-import com.itextpdf.io.font.FontProgram;
 import com.itextpdf.io.font.FontProgramFactory;
 import com.itextpdf.io.font.PdfEncodings;
 import com.itextpdf.io.font.constants.StandardFonts;
@@ -47,20 +46,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Deterministic Markdown → iText PDF renderer.
- *
- * Supported Markdown constructs:
- *   ---front-matter---   YAML-like key: value pairs for cover page
- *   # Heading           Big cover-style title (only on cover)
- *   ## Section          Blue section heading with underline
- *   ### Day N — City    Day card header (light-blue band)
- *   | col | col |       Table row (pipe-delimited)
- *   |---|---|           Table header separator (skipped)
- *   - item              Bulleted paragraph
- *   **bold** inline     Bold text run
- *   [text](url)         Clickable hyperlink
- *   plain line          Regular paragraph
- *   blank line          Vertical spacer
+ * Premium, Deterministic Markdown -> iText PDF renderer.
+ * Formats cover page, section headers, day badges, pipe tables,
+ * bullets, numbered lists, blockquotes, bold/italic, and links.
  */
 @Service
 @RequiredArgsConstructor
@@ -70,33 +58,29 @@ public class MarkdownToPdfRenderer {
     private final UnsplashService unsplashService;
 
     // ── Colours ────────────────────────────────────────────────────────────────
-    private static final DeviceRgb PRIMARY    = new DeviceRgb(0x1A, 0x73, 0xE8);
-    private static final DeviceRgb ACCENT     = new DeviceRgb(0xFF, 0x6F, 0x00);
-    private static final DeviceRgb BG_LIGHT   = new DeviceRgb(0xF8, 0xF9, 0xFA);
-    private static final DeviceRgb TEXT_DARK  = new DeviceRgb(0x21, 0x21, 0x21);
-    private static final DeviceRgb TEXT_MUTED = new DeviceRgb(0x75, 0x75, 0x75);
-    private static final DeviceRgb DIVIDER    = new DeviceRgb(0xE0, 0xE0, 0xE0);
-    private static final DeviceRgb WHITE      = new DeviceRgb(0xFF, 0xFF, 0xFF);
-    private static final DeviceRgb DAY_HEADER = new DeviceRgb(0xE8, 0xF0, 0xFE);
-    private static final DeviceRgb DARK_COVER = new DeviceRgb(0x11, 0x18, 0x27);
-    private static final DeviceRgb LINK_COLOR = new DeviceRgb(0x3B, 0x82, 0xF6);
-    private static final DeviceRgb GOLD       = new DeviceRgb(0xFB, 0xBF, 0x24);
+    private static final DeviceRgb PRIMARY     = new DeviceRgb(0x1A, 0x73, 0xE8);
+    private static final DeviceRgb ACCENT      = new DeviceRgb(0xFF, 0x6F, 0x00);
+    private static final DeviceRgb BG_LIGHT    = new DeviceRgb(0xF8, 0xF9, 0xFA);
+    private static final DeviceRgb BG_CALLOUT  = new DeviceRgb(0xEE, 0xF2, 0xFF);
+    private static final DeviceRgb TEXT_DARK   = new DeviceRgb(0x21, 0x21, 0x21);
+    private static final DeviceRgb TEXT_MUTED  = new DeviceRgb(0x61, 0x61, 0x61);
+    private static final DeviceRgb DIVIDER     = new DeviceRgb(0xE0, 0xE0, 0xE0);
+    private static final DeviceRgb WHITE       = new DeviceRgb(0xFF, 0xFF, 0xFF);
+    private static final DeviceRgb DAY_HEADER  = new DeviceRgb(0xE8, 0xF0, 0xFE);
+    private static final DeviceRgb DARK_COVER  = new DeviceRgb(0x11, 0x18, 0x27);
+    private static final DeviceRgb LINK_COLOR  = new DeviceRgb(0x25, 0x63, 0xEB);
+    private static final DeviceRgb GOLD        = new DeviceRgb(0xFB, 0xBF, 0x24);
 
-    // ── Fonts (initialized lazily per render call) ─────────────────────────────
+    // ── Fonts ──────────────────────────────────────────────────────────────────
     private PdfFont fontRegular;
     private PdfFont fontBold;
     private PdfFont fontItalic;
-
-    private static final Pattern LINK_PATTERN = Pattern.compile("\\[([^\\]]+)\\]\\(([^)]+)\\)");
-    private static final Pattern BOLD_PATTERN = Pattern.compile("\\*\\*([^*]+)\\*\\*");
+    private PdfFont fontBoldItalic;
 
     // ─────────────────────────────────────────────────────────────────────────
     // PUBLIC API
     // ─────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Renders the given Markdown string to a PDF byte array.
-     */
     public byte[] render(String markdown, String creatorName) throws IOException {
         initFonts();
 
@@ -107,13 +91,14 @@ public class MarkdownToPdfRenderer {
         doc.setMargins(40, 40, 50, 40);
 
         setupFontProvider(doc);
-
         addPageNumbers(pdfDoc);
 
-        String[] lines = markdown.split("\n", -1);
+        // Clean raw metadata tags and code fence wrappers before processing
+        String cleanMarkdown = cleanMarkdownSource(markdown);
+        String[] lines = cleanMarkdown.split("\n", -1);
         int i = 0;
 
-        // ── Parse optional front-matter block ─────────────────────────────────
+        // ── Parse front-matter ────────────────────────────────────────────────
         Map<String, String> frontMatter = new HashMap<>();
         if (lines.length > 0 && lines[0].trim().equals("---")) {
             i = 1;
@@ -121,12 +106,17 @@ public class MarkdownToPdfRenderer {
                 String fm = lines[i].trim();
                 int colon = fm.indexOf(':');
                 if (colon > 0) {
-                    frontMatter.put(fm.substring(0, colon).trim(), fm.substring(colon + 1).trim());
+                    frontMatter.put(fm.substring(0, colon).trim().toLowerCase(), fm.substring(colon + 1).trim());
                 }
                 i++;
             }
-            i++; // skip closing ---
+            if (i < lines.length && lines[i].trim().equals("---")) {
+                i++; // skip closing ---
+            }
         }
+
+        // Fill in missing front-matter fields by inspecting markdown body
+        enrichFrontMatterFromBody(frontMatter, cleanMarkdown);
 
         // ── Render cover page ─────────────────────────────────────────────────
         renderCoverPage(doc, pdfDoc, frontMatter, creatorName);
@@ -140,22 +130,22 @@ public class MarkdownToPdfRenderer {
         while (i < lines.length) {
             String raw = lines[i];
             String line = raw.stripTrailing();
+            String trimmed = line.trim();
 
-            if (line.startsWith("| ") || line.startsWith("|")) {
-                // Table row
+            // Check if table row
+            if (trimmed.startsWith("|") && trimmed.endsWith("|") && trimmed.length() > 2) {
                 if (!inTable) {
                     inTable = true;
                     tableRows = new ArrayList<>();
                     tableHasHeader = false;
                 }
-                String trimmed = line.trim();
                 if (trimmed.matches("\\|[-| :]+\\|")) {
-                    // Header separator — mark that we've seen it
                     tableHasHeader = true;
                 } else {
-                    String[] cols = Arrays.stream(trimmed.split("\\|"))
+                    // Extract cells without filtering out empty columns
+                    String inner = trimmed.substring(1, trimmed.length() - 1);
+                    String[] cols = Arrays.stream(inner.split("\\|", -1))
                             .map(String::trim)
-                            .filter(s -> !s.isEmpty())
                             .toArray(String[]::new);
                     tableRows.add(cols);
                 }
@@ -168,25 +158,44 @@ public class MarkdownToPdfRenderer {
                     inTable = false;
                 }
 
-                if (line.startsWith("### ")) {
-                    renderDayHeader(doc, line.substring(4).trim());
-                } else if (line.startsWith("## ")) {
-                    renderSectionHeading(doc, line.substring(3).trim());
-                } else if (line.startsWith("# ")) {
-                    // secondary title (body use only — cover handled separately)
-                    doc.add(new Paragraph(line.substring(2).trim())
-                            .setFont(fontBold).setFontSize(18).setFontColor(PRIMARY)
-                            .setMarginTop(12).setMarginBottom(8));
-                } else if (line.startsWith("- ") || line.startsWith("* ")) {
-                    renderBullet(doc, line.substring(2).trim());
-                } else if (line.isBlank()) {
-                    doc.add(new Paragraph("").setMarginBottom(6));
+                if (trimmed.startsWith("### ")) {
+                    renderDayHeader(doc, trimmed.substring(4).trim());
+                } else if (trimmed.startsWith("## ")) {
+                    renderSectionHeading(doc, trimmed.substring(3).trim());
+                } else if (trimmed.startsWith("# ")) {
+                    // Main title inside body
+                    Paragraph titleP = new Paragraph().setFont(fontBold).setFontSize(18).setFontColor(PRIMARY)
+                            .setMarginTop(12).setMarginBottom(8);
+                    appendInlineSpans(titleP, trimmed.substring(2).trim(), 18, PRIMARY, true);
+                    doc.add(titleP);
+                } else if (trimmed.startsWith("#### ")) {
+                    Paragraph subP = new Paragraph().setFont(fontBold).setFontSize(12).setFontColor(TEXT_DARK)
+                            .setMarginTop(8).setMarginBottom(4);
+                    appendInlineSpans(subP, trimmed.substring(5).trim(), 12, TEXT_DARK, true);
+                    doc.add(subP);
+                } else if (trimmed.startsWith("##### ") || trimmed.startsWith("###### ")) {
+                    String headingText = trimmed.replaceFirst("^#{5,6}\\s*", "");
+                    Paragraph subP = new Paragraph().setFont(fontBold).setFontSize(11).setFontColor(TEXT_MUTED)
+                            .setMarginTop(6).setMarginBottom(3);
+                    appendInlineSpans(subP, headingText, 11, TEXT_MUTED, true);
+                    doc.add(subP);
+                } else if (trimmed.matches("^[-*+]\\s+.*")) {
+                    renderBullet(doc, trimmed.replaceFirst("^[-*+]\\s+", ""));
+                } else if (trimmed.matches("^\\d+[.)]\\s+.*")) {
+                    renderNumberedItem(doc, trimmed);
+                } else if (trimmed.startsWith("> ")) {
+                    renderBlockquote(doc, trimmed.substring(2).trim());
+                } else if (trimmed.equals("---") || trimmed.equals("***") || trimmed.equals("___")) {
+                    renderDivider(doc);
+                } else if (trimmed.isEmpty()) {
+                    doc.add(new Paragraph("").setMarginBottom(4));
                 } else {
-                    renderBodyLine(doc, line);
+                    renderBodyLine(doc, trimmed);
                 }
             }
             i++;
         }
+
         // Flush any trailing table
         if (inTable && !tableRows.isEmpty()) {
             flushTable(doc, tableRows, tableHasHeader);
@@ -201,14 +210,28 @@ public class MarkdownToPdfRenderer {
     // ─────────────────────────────────────────────────────────────────────────
 
     private void renderCoverPage(Document doc, PdfDocument pdfDoc, Map<String, String> fm, String creatorName) {
-        String destination = fm.getOrDefault("destination", "Your Destination");
-        String source      = fm.getOrDefault("source", "");
-        String startDate   = fm.getOrDefault("start_date", "");
-        String endDate     = fm.getOrDefault("end_date", "");
-        String days        = fm.getOrDefault("total_days", "");
-        String budget      = fm.getOrDefault("budget", "");
-        String travellers  = fm.getOrDefault("travellers", "");
-        String refId       = fm.getOrDefault("ref_id", "");
+        String destination = cleanValue(fm.getOrDefault("destination", "Your Travel Itinerary"));
+        String source      = cleanValue(fm.getOrDefault("source", "Origin"));
+        String startDate   = cleanValue(fm.getOrDefault("start_date", ""));
+        String endDate     = cleanValue(fm.getOrDefault("end_date", ""));
+        String days        = cleanValue(fm.getOrDefault("total_days", ""));
+        String budget      = cleanValue(fm.getOrDefault("budget", "Flexible"));
+        String travellers  = cleanValue(fm.getOrDefault("travellers", "1"));
+        String refId       = cleanValue(fm.getOrDefault("ref_id", ""));
+
+        // Format dates
+        String datesDisplay = "Upcoming / Flexible Dates";
+        if (!startDate.isEmpty() && !startDate.equalsIgnoreCase("TBD") && !startDate.equalsIgnoreCase("Flexible")) {
+            if (!endDate.isEmpty() && !endDate.equalsIgnoreCase("TBD") && !endDate.equalsIgnoreCase("Flexible")) {
+                datesDisplay = startDate + "  →  " + endDate;
+            } else {
+                datesDisplay = startDate;
+            }
+        }
+
+        String durationDisplay = !days.isEmpty() && !days.equals("0") ? days + " Days" : "Custom Duration";
+        String travellersDisplay = !travellers.isEmpty() && !travellers.equals("0") ? travellers + " Guests" : "1 Traveler";
+        String budgetDisplay = !budget.isEmpty() ? budget.toUpperCase() : "Mid-Range (Standard)";
 
         // Try Unsplash background
         try {
@@ -226,7 +249,7 @@ public class MarkdownToPdfRenderer {
                 canvas.saveState();
                 canvas.setFillColor(new DeviceRgb(0, 0, 0));
                 var gs = new com.itextpdf.kernel.pdf.extgstate.PdfExtGState();
-                gs.setFillOpacity(0.5f);
+                gs.setFillOpacity(0.55f);
                 canvas.setExtGState(gs);
                 canvas.rectangle(0, 0, 595, 842);
                 canvas.fill();
@@ -242,21 +265,21 @@ public class MarkdownToPdfRenderer {
                 .setBorder(Border.NO_BORDER);
 
         Cell titleCell = new Cell()
-                .add(new Paragraph("✈  TripBrain - " + destination)
-                        .setFont(fontBold).setFontSize(26).setFontColor(WHITE))
-                .add(new Paragraph("Your personalised travel itinerary")
+                .add(new Paragraph("✈  TripBrain — " + destination)
+                        .setFont(fontBold).setFontSize(24).setFontColor(WHITE))
+                .add(new Paragraph("Personalised Travel Itinerary & City Guide")
                         .setFont(fontItalic).setFontSize(13).setFontColor(GOLD))
                 .setBorder(Border.NO_BORDER)
-                .setPadding(25);
+                .setPadding(22);
         banner.addCell(titleCell);
 
-        Cell logoCell = new Cell().setBorder(Border.NO_BORDER).setPadding(25);
+        Cell logoCell = new Cell().setBorder(Border.NO_BORDER).setPadding(22);
         try (InputStream logoIs = getClass().getResourceAsStream("/static/apple-touch-icon.png")) {
             if (logoIs != null) {
                 var logoData = com.itextpdf.io.image.ImageDataFactory.create(logoIs.readAllBytes());
                 var logoImg = new com.itextpdf.layout.element.Image(logoData);
-                logoImg.setWidth(50);
-                logoImg.setHeight(50);
+                logoImg.setWidth(48);
+                logoImg.setHeight(48);
                 logoCell.add(logoImg);
             }
         } catch (Exception e) {
@@ -270,25 +293,29 @@ public class MarkdownToPdfRenderer {
         Table grid = new Table(UnitValue.createPercentArray(new float[]{1, 1}))
                 .useAllAvailableWidth().setBorder(Border.NO_BORDER);
         addCoverCell(grid, "From", source);
-        addCoverCell(grid, "To", destination);
-        addCoverCell(grid, "Dates", startDate + " → " + endDate);
-        addCoverCell(grid, "Duration", days + " days");
-        addCoverCell(grid, "Travellers", travellers);
-        addCoverCell(grid, "Budget", budget);
-        addCoverCell(grid, "Created By", creatorName);
-        if (!refId.isBlank()) addCoverCell(grid, "Ref ID", refId.substring(0, Math.min(8, refId.length())).toUpperCase());
+        addCoverCell(grid, "Destination", destination);
+        addCoverCell(grid, "Travel Dates", datesDisplay);
+        addCoverCell(grid, "Duration", durationDisplay);
+        addCoverCell(grid, "Party Size", travellersDisplay);
+        addCoverCell(grid, "Budget Tier", budgetDisplay);
+        addCoverCell(grid, "Planner / Traveler", creatorName != null ? creatorName : "Traveler");
+        if (!refId.isBlank()) {
+            addCoverCell(grid, "Reference ID", refId.substring(0, Math.min(8, refId.length())).toUpperCase());
+        } else {
+            addCoverCell(grid, "Plan Status", "Confirmed & Ready");
+        }
         doc.add(grid);
 
         doc.add(new Paragraph("Generated by TripBrain  •  " + LocalDate.now())
                 .setFont(fontItalic).setFontSize(10).setFontColor(WHITE)
-                .setTextAlignment(TextAlignment.CENTER).setMarginTop(20));
+                .setTextAlignment(TextAlignment.CENTER).setMarginTop(30));
     }
 
     private void addCoverCell(Table table, String label, String value) {
         Cell cell = new Cell()
-                .add(new Paragraph(label).setFontSize(9).setFontColor(TEXT_MUTED))
+                .add(new Paragraph(label).setFont(fontRegular).setFontSize(9).setFontColor(TEXT_MUTED))
                 .add(new Paragraph(value != null && !value.isBlank() ? value : "—")
-                        .setFont(fontBold).setFontSize(13).setFontColor(TEXT_DARK))
+                        .setFont(fontBold).setFontSize(12).setFontColor(TEXT_DARK))
                 .setBackgroundColor(BG_LIGHT)
                 .setBorder(Border.NO_BORDER)
                 .setBorderBottom(new SolidBorder(DIVIDER, 1))
@@ -296,51 +323,119 @@ public class MarkdownToPdfRenderer {
         table.addCell(cell);
     }
 
+    private String cleanValue(String val) {
+        if (val == null) return "";
+        return val.replaceAll("^[\"']|[\"']$", "").trim();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // SECTION & BLOCK ELEMENTS
+    // ─────────────────────────────────────────────────────────────────────────
+
     private void renderSectionHeading(Document doc, String title) {
-        doc.add(new Paragraph(title)
-                .setFont(fontBold).setFontSize(16).setFontColor(PRIMARY)
+        Paragraph p = new Paragraph()
+                .setFont(fontBold).setFontSize(15).setFontColor(PRIMARY)
                 .setBorderBottom(new SolidBorder(PRIMARY, 2))
-                .setPaddingBottom(4).setMarginTop(16).setMarginBottom(10));
+                .setPaddingBottom(4).setMarginTop(14).setMarginBottom(8);
+        appendInlineSpans(p, title, 15, PRIMARY, true);
+        doc.add(p);
     }
 
     private void renderDayHeader(Document doc, String title) {
         Table header = new Table(UnitValue.createPercentArray(new float[]{1}))
                 .useAllAvailableWidth()
                 .setBackgroundColor(DAY_HEADER)
-                .setBorder(new SolidBorder(PRIMARY, 1));
-        header.addCell(new Cell()
-                .add(new Paragraph(title).setFont(fontBold).setFontSize(12).setFontColor(PRIMARY))
-                .setBorder(Border.NO_BORDER).setPadding(8));
+                .setBorder(new SolidBorder(PRIMARY, 1))
+                .setMarginTop(10).setMarginBottom(6);
+
+        Paragraph p = new Paragraph().setFont(fontBold).setFontSize(12).setFontColor(PRIMARY);
+        appendInlineSpans(p, "📅  " + title, 12, PRIMARY, true);
+        header.addCell(new Cell().add(p).setBorder(Border.NO_BORDER).setPadding(7));
         doc.add(header);
     }
 
+    private void renderBullet(Document doc, String text) {
+        Paragraph p = new Paragraph("• ").setFont(fontBold).setFontSize(10).setFontColor(ACCENT);
+        appendInlineSpans(p, text, 10, TEXT_DARK, false);
+        p.setMarginLeft(14).setMarginBottom(3);
+        doc.add(p);
+    }
+
+    private void renderNumberedItem(Document doc, String text) {
+        Pattern numPattern = Pattern.compile("^(\\d+[.)])\\s+(.*)$");
+        Matcher m = numPattern.matcher(text);
+        if (m.find()) {
+            Paragraph p = new Paragraph(m.group(1) + " ").setFont(fontBold).setFontSize(10).setFontColor(PRIMARY);
+            appendInlineSpans(p, m.group(2), 10, TEXT_DARK, false);
+            p.setMarginLeft(14).setMarginBottom(3);
+            doc.add(p);
+        } else {
+            renderBodyLine(doc, text);
+        }
+    }
+
+    private void renderBlockquote(Document doc, String text) {
+        Table quoteTable = new Table(UnitValue.createPercentArray(new float[]{1}))
+                .useAllAvailableWidth()
+                .setBackgroundColor(BG_CALLOUT)
+                .setBorderLeft(new SolidBorder(PRIMARY, 3))
+                .setBorderTop(Border.NO_BORDER)
+                .setBorderRight(Border.NO_BORDER)
+                .setBorderBottom(Border.NO_BORDER)
+                .setMarginTop(4).setMarginBottom(6);
+
+        Paragraph p = new Paragraph().setFont(fontItalic).setFontSize(10).setFontColor(TEXT_DARK);
+        appendInlineSpans(p, text, 10, TEXT_DARK, false);
+        quoteTable.addCell(new Cell().add(p).setBorder(Border.NO_BORDER).setPadding(8));
+        doc.add(quoteTable);
+    }
+
+    private void renderDivider(Document doc) {
+        Table divTable = new Table(UnitValue.createPercentArray(new float[]{1}))
+                .useAllAvailableWidth()
+                .setBorderBottom(new SolidBorder(DIVIDER, 1))
+                .setMarginTop(8).setMarginBottom(8);
+        doc.add(divTable);
+    }
+
+    private void renderBodyLine(Document doc, String text) {
+        Paragraph p = buildInlineParagraph(text, 10, TEXT_DARK);
+        p.setMarginBottom(4);
+        doc.add(p);
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
-    // TABLE
+    // TABLES
     // ─────────────────────────────────────────────────────────────────────────
 
     private void flushTable(Document doc, List<String[]> rows, boolean hasHeader) {
         if (rows.isEmpty()) return;
 
         int cols = rows.stream().mapToInt(r -> r.length).max().orElse(1);
+        if (cols <= 0) return;
+
         float[] widths = new float[cols];
         Arrays.fill(widths, 1f);
 
         Table table = new Table(UnitValue.createPercentArray(widths))
-                .useAllAvailableWidth().setBorder(Border.NO_BORDER).setMarginBottom(8);
+                .useAllAvailableWidth().setBorder(Border.NO_BORDER).setMarginTop(6).setMarginBottom(8);
 
         boolean firstRow = true;
         for (String[] row : rows) {
             boolean isHeader = firstRow && hasHeader;
             firstRow = false;
             for (int c = 0; c < cols; c++) {
-                String val = c < row.length ? row[c] : "";
+                String rawVal = c < row.length ? row[c] : "";
+                String val = cleanInlineMarkdown(rawVal);
                 Cell cell = new Cell()
                         .setBorder(Border.NO_BORDER)
                         .setBorderBottom(new SolidBorder(DIVIDER, isHeader ? 1.5f : 0.5f))
-                        .setPadding(7);
+                        .setPadding(6);
                 if (isHeader) {
                     cell.setBackgroundColor(PRIMARY);
-                    cell.add(new Paragraph(val).setFont(fontBold).setFontSize(9).setFontColor(WHITE));
+                    Paragraph p = new Paragraph().setFont(fontBold).setFontSize(9).setFontColor(WHITE);
+                    appendInlineSpans(p, val, 9, WHITE, true);
+                    cell.add(p);
                 } else {
                     Paragraph p = buildInlineParagraph(val, 9, TEXT_DARK);
                     cell.add(p);
@@ -352,70 +447,141 @@ public class MarkdownToPdfRenderer {
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // BULLET / BODY
+    // INLINE PARSING (Bold, Italic, Links, Code)
     // ─────────────────────────────────────────────────────────────────────────
 
-    private void renderBullet(Document doc, String text) {
-        Paragraph p = new Paragraph("• ").setFont(fontBold).setFontSize(10).setFontColor(ACCENT);
-        appendInlineSpans(p, text, 10, TEXT_DARK);
-        p.setMarginLeft(16).setMarginBottom(4);
-        doc.add(p);
-    }
-
-    private void renderBodyLine(Document doc, String text) {
-        Paragraph p = buildInlineParagraph(text, 10, TEXT_DARK);
-        p.setMarginBottom(4);
-        doc.add(p);
-    }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // INLINE PARSING (bold + hyperlinks)
-    // ─────────────────────────────────────────────────────────────────────────
-
-    /**
-     * Builds a Paragraph with inline bold (**text**) and hyperlink ([text](url)) spans.
-     */
     private Paragraph buildInlineParagraph(String text, float size, DeviceRgb color) {
         Paragraph p = new Paragraph().setFontSize(size).setFontColor(color);
-        appendInlineSpans(p, text, size, color);
+        appendInlineSpans(p, text, size, color, false);
         return p;
     }
 
-    private void appendInlineSpans(Paragraph p, String text, float size, DeviceRgb color) {
-        // Combined pattern: bold or link
-        Pattern combined = Pattern.compile("\\*\\*([^*]+)\\*\\*|\\[([^\\]]+)\\]\\(([^)]+)\\)");
-        Matcher m = combined.matcher(text);
+    private void appendInlineSpans(Paragraph p, String text, float size, DeviceRgb color, boolean parentIsBold) {
+        if (text == null || text.isEmpty()) return;
+
+        // Clean any leftover metadata tags
+        String clean = text.replaceAll("\\[PDF_DOWNLOAD_METADATA:[^\\]]*\\]", "")
+                           .replaceAll("\\[PDF_READY_DOWNLOAD\\]", "")
+                           .replaceAll("\\[HOTEL_RECOMMENDATION_METADATA:[^\\]]*\\]", "")
+                           .replaceAll("\\[VISA_ALERT_METADATA:[^\\]]*\\]", "")
+                           .trim();
+
+        // Pattern matching:
+        // Group 1 & 2: [text](url)
+        // Group 3: ***bold italic*** or ___bold italic___
+        // Group 4: **bold** or __bold__
+        // Group 5: *italic* or _italic_
+        // Group 6: `code`
+        Pattern pattern = Pattern.compile(
+                "\\[([^\\]]+)\\]\\(([^)]+)\\)|" +
+                "\\*\\*\\*([^*]+)\\*\\*\\*|" +
+                "\\*\\*([^*]+)\\*\\*|__([^_]+)__|" +
+                "\\*([^*]+)\\*|_([^_]+)_|" +
+                "`([^`]+)`"
+        );
+
+        Matcher m = pattern.matcher(clean);
         int last = 0;
         while (m.find()) {
             // Plain text before match
             if (m.start() > last) {
-                p.add(new Text(text.substring(last, m.start())).setFontSize(size).setFontColor(color));
+                String plain = clean.substring(last, m.start());
+                p.add(new Text(plain).setFont(parentIsBold ? fontBold : fontRegular).setFontSize(size).setFontColor(color));
             }
-            if (m.group(1) != null) {
-                // Bold
-                p.add(new Text(m.group(1)).setFont(fontBold).setFontSize(size).setFontColor(color));
-            } else {
-                // Hyperlink
-                String linkText = m.group(2);
-                String url = m.group(3);
+
+            if (m.group(1) != null && m.group(2) != null) {
+                // Link [text](url)
+                String linkText = m.group(1);
+                String url = m.group(2).trim();
                 try {
                     Link link = new Link(linkText, PdfAction.createURI(url));
-                    link.setFontSize(size).setFontColor(LINK_COLOR).setUnderline();
+                    link.setFont(fontBold).setFontSize(size).setFontColor(LINK_COLOR).setUnderline();
                     p.add(link);
                 } catch (Exception e) {
-                    p.add(new Text(linkText).setFontSize(size).setFontColor(color));
+                    p.add(new Text(linkText).setFont(fontBold).setFontSize(size).setFontColor(LINK_COLOR));
                 }
+            } else if (m.group(3) != null) {
+                // Bold Italic
+                p.add(new Text(m.group(3)).setFont(fontBoldItalic != null ? fontBoldItalic : fontBold).setFontSize(size).setFontColor(color));
+            } else if (m.group(4) != null || m.group(5) != null) {
+                // Bold
+                String bText = m.group(4) != null ? m.group(4) : m.group(5);
+                p.add(new Text(bText).setFont(fontBold).setFontSize(size).setFontColor(color));
+            } else if (m.group(6) != null || m.group(7) != null) {
+                // Italic
+                String iText = m.group(6) != null ? m.group(6) : m.group(7);
+                p.add(new Text(iText).setFont(fontItalic).setFontSize(size).setFontColor(color));
+            } else if (m.group(8) != null) {
+                // Inline Code
+                p.add(new Text(m.group(8)).setFont(fontRegular).setFontSize(size - 0.5f).setFontColor(new DeviceRgb(0x47, 0x55, 0x69)));
             }
+
             last = m.end();
         }
+
         // Remaining plain text
-        if (last < text.length()) {
-            p.add(new Text(text.substring(last)).setFontSize(size).setFontColor(color));
+        if (last < clean.length()) {
+            p.add(new Text(clean.substring(last)).setFont(parentIsBold ? fontBold : fontRegular).setFontSize(size).setFontColor(color));
+        }
+    }
+
+    private String cleanInlineMarkdown(String text) {
+        if (text == null) return "";
+        return text.trim();
+    }
+
+    private String cleanMarkdownSource(String markdown) {
+        if (markdown == null) return "";
+        return markdown
+                .replaceAll("```markdown\\s*", "")
+                .replaceAll("```\\s*", "")
+                .replaceAll("~~~[a-zA-Z]*\\s*", "")
+                .replaceAll("~~~\\s*", "")
+                .replaceAll("\\[PDF_DOWNLOAD_METADATA:[^\\]]*\\]", "")
+                .replaceAll("\\[PDF_READY_DOWNLOAD\\]", "")
+                .replaceAll("\\[HOTEL_RECOMMENDATION_METADATA:[^\\]]*\\]", "")
+                .replaceAll("\\[VISA_ALERT_METADATA:[^\\]]*\\]", "")
+                .trim();
+    }
+
+    private void enrichFrontMatterFromBody(Map<String, String> fm, String markdown) {
+        // Look for Overview table: | Field | Value |
+        Pattern rowPattern = Pattern.compile("\\|\\s*([A-Za-z ]+)\\s*\\|\\s*([^|\\n]+)\\s*\\|");
+        Matcher m = rowPattern.matcher(markdown);
+        while (m.find()) {
+            String key = m.group(1).trim().toLowerCase().replace(" ", "_");
+            String val = m.group(2).trim();
+            if (!fm.containsKey(key) && !val.equalsIgnoreCase("value") && !val.matches("[-:]+")) {
+                fm.put(key, val);
+            }
+        }
+
+        // Extract destination from title '# Trip Plan — Destination'
+        if (!fm.containsKey("destination")) {
+            Matcher destMatcher = Pattern.compile("# Trip Plan —\\s*([^\\n\\r#]+)").matcher(markdown);
+            if (destMatcher.find()) {
+                fm.put("destination", destMatcher.group(1).trim());
+            }
+        }
+
+        // Extract duration from Day count if total_days is missing
+        if (!fm.containsKey("total_days")) {
+            Matcher dayMatcher = Pattern.compile("### Day (\\d+)").matcher(markdown);
+            int maxDay = 0;
+            while (dayMatcher.find()) {
+                try {
+                    int d = Integer.parseInt(dayMatcher.group(1));
+                    if (d > maxDay) maxDay = d;
+                } catch (NumberFormatException ignored) {}
+            }
+            if (maxDay > 0) {
+                fm.put("total_days", String.valueOf(maxDay));
+            }
         }
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // FONT + PAGE NUMBERS
+    // FONT INITIALIZATION & PAGE NUMBERS
     // ─────────────────────────────────────────────────────────────────────────
 
     private void initFonts() {
@@ -435,63 +601,46 @@ public class MarkdownToPdfRenderer {
                     fontItalic = PdfFontFactory.createFont(is.readAllBytes(), PdfEncodings.IDENTITY_H);
                 }
             }
+            try (InputStream is = getClass().getResourceAsStream("/fonts/static/Roboto-BoldItalic.ttf")) {
+                if (is != null) {
+                    fontBoldItalic = PdfFontFactory.createFont(is.readAllBytes(), PdfEncodings.IDENTITY_H);
+                }
+            }
         } catch (Exception e) {
-            log.error("Failed to load Roboto fonts, falling back to Helvetica", e);
+            log.error("Failed to load Roboto fonts, falling back to standard Helvetica", e);
         }
         try {
             if (fontRegular == null) fontRegular = PdfFontFactory.createFont(StandardFonts.HELVETICA);
             if (fontBold == null) fontBold = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
             if (fontItalic == null) fontItalic = PdfFontFactory.createFont(StandardFonts.HELVETICA_OBLIQUE);
+            if (fontBoldItalic == null) fontBoldItalic = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLDOBLIQUE);
         } catch (Exception e) {
             log.error("Failed to load standard fallback fonts", e);
         }
     }
- 
+
     private void setupFontProvider(Document doc) {
         FontProvider fontProvider = new FontProvider();
-        
-        // 1. Load Roboto Variable Font (Regular)
         try (InputStream is = getClass().getResourceAsStream("/fonts/Roboto-VariableFont_wdth,wght.ttf")) {
             if (is != null) {
                 fontProvider.addFont(FontProgramFactory.createFont(is.readAllBytes()));
-                log.info("Loaded Roboto Variable Font");
             }
-        } catch (Exception e) {
-            log.error("Failed to load Roboto Variable Font", e);
-        }
- 
-        // 2. Load Roboto Italic Variable Font
-        try (InputStream is = getClass().getResourceAsStream("/fonts/Roboto-Italic-VariableFont_wdth,wght.ttf")) {
-            if (is != null) {
-                fontProvider.addFont(FontProgramFactory.createFont(is.readAllBytes()));
-                log.info("Loaded Roboto Italic Variable Font");
-            }
-        } catch (Exception e) {
-            log.error("Failed to load Roboto Italic Variable Font", e);
-        }
- 
-        // 3. Load Roboto Bold Font (static)
+        } catch (Exception ignored) {}
+
         try (InputStream is = getClass().getResourceAsStream("/fonts/static/Roboto-Bold.ttf")) {
             if (is != null) {
                 fontProvider.addFont(FontProgramFactory.createFont(is.readAllBytes()));
-                log.info("Loaded Roboto Bold Static Font");
             }
-        } catch (Exception e) {
-            log.error("Failed to load Roboto Bold Static Font", e);
-        }
- 
-        // 4. Load Noto Color Emoji Font
-        try (InputStream is = getClass().getResourceAsStream("/fonts/NotoColorEmoji-Regular.ttf")) {
+        } catch (Exception ignored) {}
+
+        try (InputStream is = getClass().getResourceAsStream("/fonts/static/Roboto-Italic.ttf")) {
             if (is != null) {
                 fontProvider.addFont(FontProgramFactory.createFont(is.readAllBytes()));
-                log.info("Loaded Noto Color Emoji Font");
             }
-        } catch (Exception e) {
-            log.error("Failed to load Noto Color Emoji Font", e);
-        }
-        
+        } catch (Exception ignored) {}
+
         doc.setFontProvider(fontProvider);
-        doc.setProperty(com.itextpdf.layout.properties.Property.FONT, new String[]{"Roboto", "Noto Color Emoji"});
+        doc.setProperty(com.itextpdf.layout.properties.Property.FONT, new String[]{"Roboto", "Helvetica"});
     }
 
     private void addPageNumbers(PdfDocument pdfDoc) {
@@ -502,7 +651,7 @@ public class MarkdownToPdfRenderer {
                 PdfPage page = docEvent.getPage();
                 int pageNum = pdfDoc.getPageNumber(page);
                 if (pageNum == 1) {
-                    return;
+                    return; // Skip cover page
                 }
                 PdfCanvas canvas = new PdfCanvas(page);
                 Rectangle rect = page.getPageSize();

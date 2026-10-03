@@ -34,8 +34,10 @@ public class UserDTO {
         dto.setLastLoginAt(user.getLastLoginAt());
         dto.setRole(user.getRole());
         dto.setApiCallCount(user.getApiCallCount());
-        if (user.getConversations() != null) {
+        if (user.getConversations() != null && org.hibernate.Hibernate.isInitialized(user.getConversations())) {
             dto.conversations = user.getConversations().stream().map(ConversationDTO::createFromConversation).toList();
+        } else {
+            dto.conversations = java.util.Collections.emptyList();
         }
         return dto;
     }

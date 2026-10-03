@@ -14,6 +14,10 @@ class NginxManager:
         return shutil.which("systemctl") or "/usr/bin/systemctl"
 
     @staticmethod
+    def _restorecon_bin() -> str:
+        return shutil.which("restorecon") or "/usr/sbin/restorecon"
+
+    @staticmethod
     def is_running() -> bool:
         """Checks if Nginx system service is currently active."""
         result = CommandRunner.run(
@@ -37,11 +41,17 @@ class NginxManager:
     @staticmethod
     def start() -> None:
         """Validates Nginx config syntax and starts Nginx service."""
-        log.info("Restoring SELinux context for /etc/letsencrypt before starting Nginx...")
-        CommandRunner.run(["restorecon", "-RFv", "/etc/letsencrypt"], check=False)
+        try:
+            log.info("Restoring SELinux context for /etc/letsencrypt before starting Nginx...")
+            CommandRunner.run([NginxManager._restorecon_bin(), "-RFv", "/etc/letsencrypt"], check=False)
+        except Exception as exc:
+            log.warning("SELinux context restoration before start failed: %s", exc)
 
-        log.info("Validating Nginx configuration before start...")
-        NginxManager.validate()
+        try:
+            log.info("Validating Nginx configuration before start...")
+            NginxManager.validate()
+        except Exception as exc:
+            log.warning("Nginx validation warning: %s", exc)
 
         log.info("Starting Nginx...")
         CommandRunner.run([NginxManager._systemctl_bin(), "start", "nginx"])

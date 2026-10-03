@@ -114,8 +114,13 @@ public class LlmBulkheadManager {
         return Flux.defer(() -> {
             try {
                 groqSemaphore.acquire();
-                return streamSupplier.get()
-                        .doFinally(signal -> groqSemaphore.release());
+                try {
+                    return streamSupplier.get()
+                            .doFinally(signal -> groqSemaphore.release());
+                } catch (Throwable t) {
+                    groqSemaphore.release();
+                    return Flux.error(t);
+                }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 return Flux.error(new RuntimeException("Stream subscription interrupted by Groq bulkhead", e));
@@ -127,8 +132,13 @@ public class LlmBulkheadManager {
         return Flux.defer(() -> {
             try {
                 googleSemaphore.acquire();
-                return streamSupplier.get()
-                        .doFinally(signal -> googleSemaphore.release());
+                try {
+                    return streamSupplier.get()
+                            .doFinally(signal -> googleSemaphore.release());
+                } catch (Throwable t) {
+                    googleSemaphore.release();
+                    return Flux.error(t);
+                }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 return Flux.error(new RuntimeException("Stream subscription interrupted by Google GenAI bulkhead", e));

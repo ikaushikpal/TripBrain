@@ -44,7 +44,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RestController
 @RequestMapping("/api/chat")
-@PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+@PreAuthorize("hasAnyAuthority('USER', 'ROLE_USER', 'ADMIN', 'ROLE_ADMIN')")
 public class ChatController {
 
     private Resource enricherTemplate;
@@ -144,6 +144,14 @@ public class ChatController {
 
         TripRequest saved = tripRequestService.createOrUpdate(
                 conversationId, tripRequestDTO);
+
+        if (conversation != null) {
+            String src = tripRequestDTO.getSource() != null ? tripRequestDTO.getSource().trim() : "";
+            String dest = tripRequestDTO.getDestination() != null ? tripRequestDTO.getDestination().trim() : "";
+            String initialTitle = !src.isBlank() && !dest.isBlank() ? src + " → " + dest : (!dest.isBlank() ? "Trip to " + dest : "New Trip");
+            conversation.setTitle(initialTitle);
+            conversationService.updateConversation(conversation);
+        }
 
         String userPrompt = "Provided information of trip";
         String response = orchestrationService.chat(conversationId, userPrompt, buildEnrichedMessage(conversationId, userPrompt));

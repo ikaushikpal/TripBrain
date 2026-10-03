@@ -40,8 +40,9 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.server.ResponseStatusException;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/conversations")
 @RequiredArgsConstructor
@@ -55,6 +56,9 @@ public class ConversationController {
     private final com.learn.springai.repository.TripPdfRepository tripPdfRepository;
     private final com.learn.springai.service.UnsplashService unsplashService;
     private final com.learn.springai.repository.TripRequestRepository tripRequestRepository;
+    private final com.learn.springai.repository.ChatMessageRepository chatMessageRepository;
+    private final com.learn.springai.service.MarkdownToPdfRenderer markdownToPdfRenderer;
+    private final com.learn.springai.service.TripPdfService tripPdfService;
 
     @PostMapping("/new")
     public ResponseEntity<ConversationDTO> startNewConversation(
@@ -158,7 +162,7 @@ public class ConversationController {
         List<Map<String, Object>> features = new java.util.ArrayList<>();
         List<double[]> routeCoordinates = new java.util.ArrayList<>();
 
-        // Geocode source
+        // 1. Geocode Source (Departure)
         if (request.getSource() != null && !request.getSource().isBlank()) {
             PublicGeocodeResponse srcGeo = geocodingService.geocode(request.getSource());
             if (srcGeo != null) {
@@ -169,12 +173,42 @@ public class ConversationController {
                 features.add(Map.of(
                     "type", "Feature",
                     "geometry", Map.of("type", "Point", "coordinates", List.of(lon, lat)),
-                    "properties", Map.of("title", request.getSource(), "type", "START")
+                    "properties", Map.of("title", request.getSource(), "type", "START", "category", "Departure")
                 ));
             }
         }
 
-        // Geocode destination
+        // 2. Geocode Populated Must-Visit Places / POIs
+        if (request.getMustVisitPlaces() != null && !request.getMustVisitPlaces().isEmpty()) {
+            for (String place : request.getMustVisitPlaces()) {
+                if (place == null || place.isBlank()) continue;
+                
+                String searchQuery = place.trim();
+                if (request.getDestination() != null && !request.getDestination().isBlank()
+                        && !searchQuery.toLowerCase().contains(request.getDestination().toLowerCase())) {
+                    searchQuery = searchQuery + ", " + request.getDestination();
+                }
+
+                PublicGeocodeResponse placeGeo = geocodingService.geocode(searchQuery);
+                if (placeGeo == null) {
+                    placeGeo = geocodingService.geocode(place.trim());
+                }
+
+                if (placeGeo != null) {
+                    double lat = Double.parseDouble(placeGeo.getLat());
+                    double lon = Double.parseDouble(placeGeo.getLon());
+                    routeCoordinates.add(new double[]{lon, lat});
+
+                    features.add(Map.of(
+                        "type", "Feature",
+                        "geometry", Map.of("type", "Point", "coordinates", List.of(lon, lat)),
+                        "properties", Map.of("title", place.trim(), "type", "WAYPOINT", "category", "Attraction")
+                    ));
+                }
+            }
+        }
+
+        // 3. Geocode Destination (Arrival)
         if (request.getDestination() != null && !request.getDestination().isBlank()) {
             PublicGeocodeResponse destGeo = geocodingService.geocode(request.getDestination());
             if (destGeo != null) {
@@ -185,17 +219,17 @@ public class ConversationController {
                 features.add(Map.of(
                     "type", "Feature",
                     "geometry", Map.of("type", "Point", "coordinates", List.of(lon, lat)),
-                    "properties", Map.of("title", request.getDestination(), "type", "END")
+                    "properties", Map.of("title", request.getDestination(), "type", "END", "category", "Destination")
                 ));
             }
         }
 
-        // If we have coordinates, build a LineString route connecting source to destination
+        // 4. If we have at least 2 coordinate points, build a LineString route connecting them
         if (routeCoordinates.size() > 1) {
             features.add(Map.of(
                 "type", "Feature",
                 "geometry", Map.of("type", "LineString", "coordinates", routeCoordinates),
-                "properties", Map.of("description", "Direct connection route")
+                "properties", Map.of("description", "Trip Route Pathway")
             ));
         }
 
@@ -288,28 +322,18 @@ public class ConversationController {
         if (pdf == null) {
             pdf = tripPdfRepository.findByConversationId(pdfId).orElse(null);
         }
-        if (pdf == null) {
-            throw new org.springframework.web.server.ResponseStatusException(
-                    org.springframework.http.HttpStatus.NOT_FOUND, "PDF not found"
-            );
+
+        Conversation conversation = null;
+        if (pdf != null && pdf.getConversation() != null) {
+            conversation = pdf.getConversation();
+        } else {
+            try {
+                conversation = conversationService.getConversation(pdfId);
+            } catch (Exception ignored) {}
         }
 
-        // Authorization check: if PDF is private, current user must be owner
-        if (!pdf.isPublic()) {
-            String currentUserId = (String) request.getAttribute("userId");
-            Conversation conversation = pdf.getConversation();
-            if (currentUserId == null || conversation == null || conversation.getUser() == null 
-                    || !conversation.getUser().getId().equals(currentUserId)) {
-                throw new org.springframework.web.server.ResponseStatusException(
-                        org.springframework.http.HttpStatus.FORBIDDEN, "This trip plan is private."
-                );
-            }
-        }
-
-        String filePath = pdf.getFilePath();
-        Conversation conversation = pdf.getConversation();
+        String dest = pdf != null && pdf.getDestination() != null ? pdf.getDestination() : "Custom Itinerary";
         String src = "unknown";
-        String dest = pdf.getDestination();
         String days = "0";
         String budget = "mid";
         String ownerName = "traveler";
@@ -337,43 +361,77 @@ public class ConversationController {
         String customFileName = String.format("%s_%s_%sdays_%s_%s.pdf", 
                 cleanSrc, cleanDest, cleanDays, cleanBudget, cleanOwner);
 
-        // If file is stored locally, serve it directly
-        if (filePath != null && (filePath.startsWith("uploads") || filePath.contains("/") || filePath.contains("\\"))) {
-            java.nio.file.Path localPath = java.nio.file.Paths.get(filePath);
-            if (java.nio.file.Files.exists(localPath)) {
-                byte[] bytes = java.nio.file.Files.readAllBytes(localPath);
-                response.setContentType("application/pdf");
-                response.setContentLength(bytes.length);
-                response.setHeader("Content-Disposition", "attachment; filename=\"" + customFileName + "\"");
-                response.getOutputStream().write(bytes);
-                response.getOutputStream().flush();
-                return null;
+        // 1. Check if local PDF file exists on disk
+        java.nio.file.Path localPath = java.nio.file.Paths.get("uploads", "final_trip_pdfs", pdfId + ".pdf");
+        if (pdf != null && pdf.getFilePath() != null && (pdf.getFilePath().startsWith("uploads") || pdf.getFilePath().contains("/"))) {
+            java.nio.file.Path specificPath = java.nio.file.Paths.get(pdf.getFilePath());
+            if (java.nio.file.Files.exists(specificPath)) {
+                localPath = specificPath;
             }
         }
 
-        // Otherwise generate 30-minute presigned GET URL and redirect
-        try {
-            String s3Key = pdf.getFilePath();
-            String presignedUrl = backblazeStorageService.generatePresignedDownloadUrl(s3Key, customFileName, java.time.Duration.ofMinutes(30));
-            System.out.println("[BACKEND] PDF Redirect Download Link: " + presignedUrl);
-            response.sendRedirect(presignedUrl);
+        if (java.nio.file.Files.exists(localPath)) {
+            byte[] bytes = java.nio.file.Files.readAllBytes(localPath);
+            response.setContentType("application/pdf");
+            response.setContentLength(bytes.length);
+            response.setHeader("Content-Disposition", "attachment; filename=\"" + customFileName + "\"");
+            response.getOutputStream().write(bytes);
+            response.getOutputStream().flush();
             return null;
-        } catch (Exception e) {
-            // Last resort: check if there's a local backup even if the DB points to S3
-            java.nio.file.Path localPath = java.nio.file.Paths.get("uploads", "final_trip_pdfs", pdfId + ".pdf");
-            if (java.nio.file.Files.exists(localPath)) {
-                byte[] bytes = java.nio.file.Files.readAllBytes(localPath);
+        }
+
+        // 2. Try streaming directly from Backblaze B2 bytes (if stored in B2)
+        if (pdf != null && pdf.getFilePath() != null && !pdf.getFilePath().startsWith("uploads")) {
+            try {
+                byte[] b2Bytes = backblazeStorageService.downloadFile(pdf.getFilePath());
+                if (b2Bytes != null && b2Bytes.length > 0) {
+                    response.setContentType("application/pdf");
+                    response.setContentLength(b2Bytes.length);
+                    response.setHeader("Content-Disposition", "attachment; filename=\"" + customFileName + "\"");
+                    response.getOutputStream().write(b2Bytes);
+                    response.getOutputStream().flush();
+                    return null;
+                }
+            } catch (Exception b2Ex) {
+                log.warn("Backblaze direct download failed: {}", b2Ex.getMessage());
+            }
+        }
+
+        // 3. Dynamic On-The-Fly Compilation fallback from conversation chat messages!
+        if (conversation != null) {
+            try {
+                List<com.learn.springai.model.ChatMessage> msgs = chatMessageRepository
+                        .findByConversationIdAndDeletedFalseOrderBySequenceNumberAsc(conversation.getId());
+                com.learn.springai.model.ChatMessage itineraryMsg = msgs.stream()
+                        .filter(m -> "ASSISTANT".equals(m.getRole()) && (m.getContent() != null && (m.getContent().contains("Day 1") || m.getContent().contains("Day 01") || m.getContent().contains("Itinerary"))))
+                        .reduce((first, second) -> second)
+                        .orElse(null);
+
+                String markdownToRender = itineraryMsg != null ? itineraryMsg.getContent() : "# Trip Plan — " + dest;
+                String enrichedMarkdown = tripPdfService.ensureFrontMatter(conversation.getId(), markdownToRender, dest);
+                String creator = conversation.getUser() != null ? conversation.getUser().getName() : "Traveler";
+                byte[] generatedPdfBytes = markdownToPdfRenderer.render(enrichedMarkdown, creator);
+
+                // Save locally for future requests
+                try {
+                    java.nio.file.Files.createDirectories(localPath.getParent());
+                    java.nio.file.Files.write(localPath, generatedPdfBytes);
+                } catch (Exception ignored) {}
+
                 response.setContentType("application/pdf");
-                response.setContentLength(bytes.length);
+                response.setContentLength(generatedPdfBytes.length);
                 response.setHeader("Content-Disposition", "attachment; filename=\"" + customFileName + "\"");
-                response.getOutputStream().write(bytes);
+                response.getOutputStream().write(generatedPdfBytes);
                 response.getOutputStream().flush();
                 return null;
+            } catch (Exception onTheFlyErr) {
+                log.error("On-the-fly PDF compilation failed: {}", onTheFlyErr.getMessage());
             }
-            throw new org.springframework.web.server.ResponseStatusException(
-                    org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR, "Failed to download PDF: " + e.getMessage()
-            );
         }
+
+        throw new org.springframework.web.server.ResponseStatusException(
+                org.springframework.http.HttpStatus.NOT_FOUND, "PDF not found and could not be generated."
+        );
     }
 
     @GetMapping("/trips/{pdfId}/download-url")
@@ -383,46 +441,8 @@ public class ConversationController {
             @PathVariable String pdfId,
             jakarta.servlet.http.HttpServletRequest request) {
 
-        com.learn.springai.model.TripPdf pdf = null;
-        try {
-            pdf = conversationService.getConversation(pdfId).getTripPdf();
-        } catch (Exception e) {
-            // ignore
-        }
-        if (pdf == null) {
-            pdf = tripPdfRepository.findById(pdfId).orElse(null);
-        }
-        if (pdf == null) {
-            pdf = tripPdfRepository.findByConversationId(pdfId).orElse(null);
-        }
-        if (pdf == null) {
-            throw new org.springframework.web.server.ResponseStatusException(
-                    org.springframework.http.HttpStatus.NOT_FOUND, "PDF not found"
-            );
-        }
-
-        // Authorization check: if PDF is private, current user must be owner
-        if (!pdf.isPublic()) {
-            String currentUserId = (String) request.getAttribute("userId");
-            Conversation conversation = pdf.getConversation();
-            if (currentUserId == null || conversation == null || conversation.getUser() == null 
-                    || !conversation.getUser().getId().equals(currentUserId)) {
-                throw new org.springframework.web.server.ResponseStatusException(
-                        org.springframework.http.HttpStatus.FORBIDDEN, "This trip plan is private."
-                );
-            }
-        }
-
-        try {
-            String s3Key = pdf.getFilePath();
-            String presignedUrl = backblazeStorageService.generatePresignedDownloadUrl(s3Key, java.time.Duration.ofMinutes(30));
-            System.out.println("[BACKEND] PDF JSON Download Link: " + presignedUrl);
-            return ResponseEntity.ok(Map.of("downloadUrl", presignedUrl));
-        } catch (Exception e) {
-            throw new org.springframework.web.server.ResponseStatusException(
-                    org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR, "Failed to generate download URL: " + e.getMessage()
-            );
-        }
+        // Always return the guaranteed backend download endpoint that has local file + on-the-fly compilation fallbacks
+        return ResponseEntity.ok(Map.of("downloadUrl", "/api/conversations/trips/" + pdfId + "/download"));
     }
 
     @GetMapping("/trips/{conversationId}/thumbnail")

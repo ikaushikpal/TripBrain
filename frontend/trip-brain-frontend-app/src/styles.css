@@ -3,11 +3,10 @@
    Dark Glassmorphism + Outfit Typography
    ===================================================== */
 
-/* Google Fonts MUST be imported before tailwindcss */
+/* Google Fonts & Leaflet CSS MUST be imported before tailwindcss */
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
-
-@import 'tailwindcss';
 @import 'leaflet/dist/leaflet.css';
+@import 'tailwindcss';
 
 /* -------------------------------------------------------
    CSS Custom Properties
@@ -84,37 +83,121 @@ body {
 }
 
 /* -------------------------------------------------------
-   Leaflet Map Dark Mode Overrides
+   Leaflet Map Styling & Dimensions Overrides
    ------------------------------------------------------- */
+#trip-map {
+  width: 100% !important;
+  height: 520px !important;
+  min-height: 360px !important;
+  position: relative !important;
+  display: block !important;
+}
+
+@media (max-width: 640px) {
+  #trip-map {
+    height: 360px !important;
+    min-height: 300px !important;
+  }
+}
+
 .leaflet-container {
   background-color: hsl(222, 25%, 8%) !important;
   font-family: 'Outfit', sans-serif !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 300px !important;
 }
+
+/* -------------------------------------------------------
+   Responsive Markdown Body (Chat & Summary)
+   ------------------------------------------------------- */
+.markdown-body table {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  margin: 0.75rem 0;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 8px;
+}
+
+.markdown-body th,
+.markdown-body td {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid hsl(215, 14%, 25%);
+  font-size: 0.8125rem;
+}
+
+.markdown-body pre {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 8px;
+}
+
+.custom-leaflet-div-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
 .leaflet-popup-content-wrapper {
   background-color: hsl(222, 25%, 12%) !important;
   color: white !important;
   border: 1px solid hsl(215, 14%, 25%);
-  border-radius: 12px !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6) !important;
+  padding: 4px 6px !important;
 }
+
 .leaflet-popup-tip {
   background-color: hsl(222, 25%, 12%) !important;
 }
+
+.leaflet-popup-content {
+  margin: 8px 12px !important;
+  line-height: 1.4 !important;
+}
+
+.leaflet-control-zoom {
+  border: 1px solid hsl(215, 14%, 25%) !important;
+  border-radius: 8px !important;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+}
+
 .leaflet-control-zoom a {
   background-color: hsl(222, 25%, 12%) !important;
   color: white !important;
   border-color: hsl(215, 14%, 25%) !important;
+  transition: background-color 0.15s ease;
 }
+
 .leaflet-control-zoom a:hover {
-  background-color: hsl(222, 22%, 18%) !important;
+  background-color: hsl(222, 22%, 20%) !important;
+  color: hsl(217, 91%, 65%) !important;
 }
+
 .leaflet-control-attribution {
-  background-color: hsl(222 25% 8% / 0.8) !important;
-  color: hsl(215, 14%, 50%) !important;
-  font-size: 9px !important;
+  background-color: hsl(222 25% 8% / 0.85) !important;
+  color: hsl(215, 14%, 60%) !important;
+  font-size: 10px !important;
+  border-radius: 4px;
 }
+
 .leaflet-control-attribution a {
-  color: hsl(215, 14%, 50%) !important;
+  color: hsl(217, 91%, 65%) !important;
+  text-decoration: none;
+}
+
+/* Custom Marker Pins */
+.custom-map-pin {
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s ease;
+  user-select: none;
+}
+.custom-map-pin:hover {
+  transform: scale(1.25);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6) !important;
 }
 
 /* -------------------------------------------------------

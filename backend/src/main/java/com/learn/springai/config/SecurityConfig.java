@@ -117,7 +117,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/**").hasAnyAuthority("ADMIN", "ROLE_ADMIN", "USER", "ROLE_USER")
 
                         // Authenticated User Endpoints
-                        .requestMatchers("/api/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/api/**").hasAnyAuthority("USER", "ROLE_USER", "ADMIN", "ROLE_ADMIN")
 
                         // Client-side SPA routes (forwarded to index.html)
                         .anyRequest().permitAll())
