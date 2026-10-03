@@ -554,11 +554,24 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
     const content = msg.content || '';
     const msgType = (msg as any).messageType;
     if (msgType === 'PDF_DOWNLOAD') return true;
-    if (content.includes('[PDF_DOWNLOAD_METADATA:') || content.includes('[PDF_READY_DOWNLOAD]')) return true;
+    if (content.includes('[PDF_DOWNLOAD_METADATA:') || content.includes('[PDF_READY_DOWNLOAD]'))
+      return true;
 
     // Detect if the message contains an itinerary / Day breakdown
-    const hasDays = (content.includes('Day 1') || content.includes('Day 01') || content.includes('## Day') || content.includes('### Day') || content.includes('Day 1:'));
-    const hasItineraryStructure = content.includes('Day 2') || content.includes('Day 02') || content.includes('Overview') || content.includes('Cost Summary') || content.includes('Itinerary') || content.includes('Accommodat') || content.includes('Meals:');
+    const hasDays =
+      content.includes('Day 1') ||
+      content.includes('Day 01') ||
+      content.includes('## Day') ||
+      content.includes('### Day') ||
+      content.includes('Day 1:');
+    const hasItineraryStructure =
+      content.includes('Day 2') ||
+      content.includes('Day 02') ||
+      content.includes('Overview') ||
+      content.includes('Cost Summary') ||
+      content.includes('Itinerary') ||
+      content.includes('Accommodat') ||
+      content.includes('Meals:');
     return hasDays && hasItineraryStructure;
   }
 
@@ -590,7 +603,10 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
         this.chatService.downloadPdfBlob(this.conversationId!).subscribe({
           next: (blob: Blob) => {
             this.isExporting.set(false);
-            this.saveBlobFile(blob, `TripBrain_Itinerary_${this.conversationId!.substring(0, 8)}.pdf`);
+            this.saveBlobFile(
+              blob,
+              `TripBrain_Itinerary_${this.conversationId!.substring(0, 8)}.pdf`,
+            );
             this.notificationService.success('Itinerary PDF downloaded successfully!');
           },
           error: () => {
@@ -685,16 +701,28 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
     const name = (file.name || '').toLowerCase();
     const type = (file.type || '').toLowerCase();
 
-    const validImageExtensions = ['.png', '.jpg', '.jpeg', '.webp', '.gif', '.bmp', '.svg', '.tiff'];
+    const validImageExtensions = [
+      '.png',
+      '.jpg',
+      '.jpeg',
+      '.webp',
+      '.gif',
+      '.bmp',
+      '.svg',
+      '.tiff',
+    ];
     const isImageExt = validImageExtensions.some((ext) => name.endsWith(ext));
     const isPdfExt = name.endsWith('.pdf');
 
-    const isImage = (type.startsWith('image/') && !type.includes('csv') && !type.includes('text')) || isImageExt;
+    const isImage =
+      (type.startsWith('image/') && !type.includes('csv') && !type.includes('text')) || isImageExt;
     const isPdf = type === 'application/pdf' || isPdfExt;
 
     // Explicitly reject CSV, text, and any other non-PDF / non-image formats
     if (name.endsWith('.csv') || name.endsWith('.txt') || (!isImage && !isPdf)) {
-      this.notificationService.error('Invalid format. Only PDF documents and image files (PNG, JPG, JPEG, WEBP, GIF, BMP, SVG) can be attached.');
+      this.notificationService.error(
+        'Invalid format. Only PDF documents and image files (PNG, JPG, JPEG, WEBP, GIF, BMP, SVG) can be attached.',
+      );
       if (event.target) event.target.value = '';
       this.selectedFile.set(null);
       this.selectedFilePreview.set(null);

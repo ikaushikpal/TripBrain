@@ -49,35 +49,40 @@ export class MapOverlayComponent implements AfterViewInit, OnDestroy {
       id: 'osm',
       label: 'OpenStreetMap (Default)',
       url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       maxZoom: 19,
     },
     {
       id: 'hot',
       label: 'Humanitarian OSM',
       url: 'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Tiles style by <a href="https://www.hotosm.org/">HOT</a>',
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Tiles style by <a href="https://www.hotosm.org/">HOT</a>',
       maxZoom: 19,
     },
     {
       id: 'topo',
       label: 'OpenTopoMap',
       url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
-      attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, SRTM | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a>',
+      attribution:
+        'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, SRTM | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a>',
       maxZoom: 17,
     },
     {
       id: 'satellite',
       label: 'ESRI Satellite',
       url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-      attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and GIS Community',
+      attribution:
+        'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and GIS Community',
       maxZoom: 18,
     },
     {
       id: 'street',
       label: 'ESRI Street Map',
       url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
-      attribution: 'Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012',
+      attribution:
+        'Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012',
       maxZoom: 18,
     },
   ];
@@ -141,7 +146,8 @@ export class MapOverlayComponent implements AfterViewInit, OnDestroy {
     const leafletModule = await import('leaflet');
     this.L = leafletModule.default || leafletModule;
 
-    const initialPreset = this.mapStyles.find((s) => s.id === this.activeStyle) || this.mapStyles[0];
+    const initialPreset =
+      this.mapStyles.find((s) => s.id === this.activeStyle) || this.mapStyles[0];
 
     this.mapInstance = this.L.map(this.mapContainer.nativeElement, {
       center: [20, 0],
@@ -193,7 +199,12 @@ export class MapOverlayComponent implements AfterViewInit, OnDestroy {
   }
 
   private renderRouteAndPins() {
-    if (!this.mapInstance || !this.routeLayerGroup || !this.geojsonData?.features?.length || !this.L) {
+    if (
+      !this.mapInstance ||
+      !this.routeLayerGroup ||
+      !this.geojsonData?.features?.length ||
+      !this.L
+    ) {
       return;
     }
 
