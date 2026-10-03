@@ -38,8 +38,8 @@ public class UserProfileService {
 
         try {
             log.info("Extracting user preferences asynchronously for user: {}", userId);
-            String response = llmBulkheadManager.executeWithGroq(() -> routerChatClient.prompt()
-                    .system("You are an assistant. Extract any travel preferences, dietary rules, budget habits, or accommodation requests from the user message. Return them as short bullet points or say 'NONE' if no preference is found.")
+            String response = llmBulkheadManager.executeWithGoogle(() -> routerChatClient.prompt()
+                    .system("<system_instructions>\n  <role>You are a user preference extraction assistant.</role>\n  <task>Extract any travel preferences, dietary rules, budget habits, or accommodation requests from the user message.</task>\n  <output_format>Return them as concise bullet points (starting with '- '), or respond with 'NONE' if no preference is mentioned.</output_format>\n</system_instructions>")
                     .user(userMessage)
                     .call()
                     .content());
@@ -68,7 +68,8 @@ public class UserProfileService {
 
     public List<String> getUserPreferences(String userId) {
         try {
-            org.springframework.ai.vectorstore.SearchRequest request = org.springframework.ai.vectorstore.SearchRequest.builder()
+            org.springframework.ai.vectorstore.SearchRequest request = org.springframework.ai.vectorstore.SearchRequest
+                    .builder()
                     .query("")
                     .filterExpression("user_id == '" + userId + "'")
                     .topK(5)

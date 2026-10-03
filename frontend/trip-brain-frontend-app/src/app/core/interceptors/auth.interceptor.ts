@@ -16,7 +16,7 @@ const refreshTokenSubject = new BehaviorSubject<string | null>(null);
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   if (typeof window === 'undefined') {
-    // Return empty list by default for GET list endpoints, otherwise empty object
+    // Return empty list by default for GET list endpoints during SSR, otherwise empty object
     const isGet = req.method === 'GET';
     const mockBody = isGet ? [] : {};
     return of(new HttpResponse({ status: 200, body: mockBody }));
@@ -32,26 +32,32 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(authReq).pipe(
     catchError((error) => {
+      const isAuthEndpoint =
+        req.url.includes('/auth/login') ||
+        req.url.includes('/auth/refresh') ||
+        req.url.includes('/auth/register');
+
+      // Intercept 401 Unauthorized or 403 Forbidden / 4XX auth failures
       if (
         error instanceof HttpErrorResponse &&
-        error.status === 401 &&
-        !req.url.includes('/auth/login') &&
-        !req.url.includes('/auth/refresh')
+        (error.status === 401 || error.status === 403) &&
+        !isAuthEndpoint &&
+        authService.getRefreshToken()
       ) {
-        return handle401Error(authReq, next, authService);
+        return handleAuthError(authReq, next, authService);
       }
       return throwError(() => error);
     }),
   );
 };
 
-function addTokenHeader(request: HttpRequest<any>, token: string) {
+function addTokenHeader(request: HttpRequest<any>, token: string): HttpRequest<any> {
   return request.clone({
     headers: request.headers.set('Authorization', 'Bearer ' + token),
   });
 }
 
-function handle401Error(
+function handleAuthError(
   request: HttpRequest<any>,
   next: HttpHandlerFn,
   authService: AuthService,
@@ -81,6 +87,7 @@ function handle401Error(
       }),
     );
   } else {
+    // If a refresh is already in flight, queue this request until the new token is available
     return refreshTokenSubject.pipe(
       filter((token) => token !== null),
       take(1),

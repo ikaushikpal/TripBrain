@@ -181,13 +181,20 @@ export class ShareChatComponent implements OnInit {
       }
       return;
     }
-    this.chatService.getDownloadUrl(convId).subscribe({
-      next: (res) => {
-        console.log('Frontend Direct B2 Download URL (Shared):', res.downloadUrl);
-        window.open(res.downloadUrl, '_blank');
+    this.chatService.downloadPdfBlob(convId).subscribe({
+      next: (blob: Blob) => {
+        if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+          const objectUrl = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = objectUrl;
+          a.download = `TripBrain_Itinerary_${convId.substring(0, 8)}.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(() => URL.revokeObjectURL(objectUrl), 15000);
+        }
       },
-      error: (err) => {
-        console.error('Failed to fetch direct download url, falling back to redirect:', err);
+      error: () => {
         const downloadUrl = `${BASE_URL}${url}`;
         window.open(downloadUrl, '_blank');
       },

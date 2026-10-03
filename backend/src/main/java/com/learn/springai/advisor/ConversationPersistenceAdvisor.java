@@ -107,9 +107,11 @@ public class ConversationPersistenceAdvisor implements CallAdvisor, StreamAdviso
                     .getText();
         }
 
-        if (conversation.getTitle() == null) {
-            conversation.setTitle(
-                    userPrompt.length() > 40 ? userPrompt.substring(0, 40) + "..." : userPrompt);
+        if (conversation.getTitle() == null || conversation.getTitle().equalsIgnoreCase("New Chat") || conversation.getTitle().equalsIgnoreCase("Provided information of trip")) {
+            if (userPrompt != null && !userPrompt.isBlank() && !userPrompt.equalsIgnoreCase("Provided information of trip")) {
+                conversation.setTitle(
+                        userPrompt.length() > 40 ? userPrompt.substring(0, 40) + "..." : userPrompt);
+            }
         }
 
         Usage usage = null;
@@ -333,9 +335,11 @@ public class ConversationPersistenceAdvisor implements CallAdvisor, StreamAdviso
                         .getText();
             }
 
-            if (conversation.getTitle() == null) {
-                conversation.setTitle(
-                        finalUserPrompt.length() > 40 ? finalUserPrompt.substring(0, 40) + "..." : finalUserPrompt);
+            if (conversation.getTitle() == null || conversation.getTitle().equalsIgnoreCase("New Chat") || conversation.getTitle().equalsIgnoreCase("Provided information of trip")) {
+                if (finalUserPrompt != null && !finalUserPrompt.isBlank() && !finalUserPrompt.equalsIgnoreCase("Provided information of trip")) {
+                    conversation.setTitle(
+                            finalUserPrompt.length() > 40 ? finalUserPrompt.substring(0, 40) + "..." : finalUserPrompt);
+                }
             }
 
             Usage usage = null;

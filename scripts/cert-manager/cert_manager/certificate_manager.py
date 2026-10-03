@@ -1,6 +1,7 @@
 """
 Certificate manager for inspecting OpenSSL expiry dates and invoking Dockerized Certbot standalone containers.
 """
+import shutil
 from datetime import datetime, timezone
 from typing import List, Optional
 from cert_manager.config import (
@@ -24,6 +25,18 @@ class CertificateManager:
         self.private_key = self.live_dir / "privkey.pem"
 
     @staticmethod
+    def _restorecon_bin() -> str:
+        return shutil.which("restorecon") or "/usr/sbin/restorecon"
+
+    @staticmethod
+    def _openssl_bin() -> str:
+        return shutil.which("openssl") or "/usr/bin/openssl"
+
+    @staticmethod
+    def _docker_bin() -> str:
+        return shutil.which("docker") or "/usr/bin/docker"
+
+    @staticmethod
     def prepare_directories() -> None:
         """Ensures Let's Encrypt host storage directories exist."""
         log.info("Preparing Certbot host storage directories...")
@@ -42,11 +55,14 @@ class CertificateManager:
         Certbot operation.
         """
         log.info("Restoring SELinux context for /etc/letsencrypt...")
-        CommandRunner.run([
-            "restorecon",
-            "-RFv",
-            str(LETSENCRYPT_DIR),
-        ])
+        try:
+            CommandRunner.run([
+                CertificateManager._restorecon_bin(),
+                "-RFv",
+                str(LETSENCRYPT_DIR),
+            ], check=False)
+        except Exception as exc:
+            log.warning("SELinux context restoration error: %s", exc)
 
     def certificate_exists(self) -> bool:
         """Checks if both fullchain.pem and privkey.pem exist."""
@@ -60,7 +76,7 @@ class CertificateManager:
             return None
 
         result = CommandRunner.run([
-            "openssl",
+            self._openssl_bin(),
             "x509",
             "-in",
             str(self.fullchain),
@@ -99,7 +115,7 @@ class CertificateManager:
         self.prepare_directories()
 
         command = [
-            "docker",
+            self._docker_bin(),
             "run",
             "--rm",
             "-p",

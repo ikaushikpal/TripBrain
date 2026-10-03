@@ -34,19 +34,25 @@ class CertificateWorkflow:
             error_message = str(exc)
             raise
         finally:
-            if nginx_was_running:
+            if nginx_was_running or not NginxManager.is_running():
                 log.info("Starting Nginx after certificate operation...")
-                NginxManager.start()
+                try:
+                    NginxManager.start()
+                except Exception as start_err:
+                    log.error("Failed to start Nginx after certificate operation: %s", start_err)
 
             # Email only when a real registration was attempted
             expiry = self.manager.get_expiry_date() if success else None
-            send_cert_report(
-                config=self.config,
-                success=success,
-                expiry_date=expiry,
-                error_message=error_message,
-                operation="register",
-            )
+            try:
+                send_cert_report(
+                    config=self.config,
+                    success=success,
+                    expiry_date=expiry,
+                    error_message=error_message,
+                    operation="register",
+                )
+            except Exception as mail_err:
+                log.error("Failed to send certificate report email: %s", mail_err)
 
     def renew_if_needed(self) -> None:
         """Checks certificate expiry and executes renewal if required."""
@@ -76,19 +82,25 @@ class CertificateWorkflow:
             error_message = str(exc)
             raise
         finally:
-            if nginx_was_running:
+            if nginx_was_running or not NginxManager.is_running():
                 log.info("Starting Nginx after renewal...")
-                NginxManager.start()
+                try:
+                    NginxManager.start()
+                except Exception as start_err:
+                    log.error("Failed to start Nginx after renewal: %s", start_err)
 
             # Email only when renewal was actually triggered
             expiry = self.manager.get_expiry_date() if success else None
-            send_cert_report(
-                config=self.config,
-                success=success,
-                expiry_date=expiry,
-                error_message=error_message,
-                operation="renew",
-            )
+            try:
+                send_cert_report(
+                    config=self.config,
+                    success=success,
+                    expiry_date=expiry,
+                    error_message=error_message,
+                    operation="renew",
+                )
+            except Exception as mail_err:
+                log.error("Failed to send renewal report email: %s", mail_err)
 
     def dry_run(self) -> None:
         """Executes Certbot renewal dry-run test."""
@@ -107,15 +119,21 @@ class CertificateWorkflow:
             error_message = str(exc)
             raise
         finally:
-            if nginx_was_running:
+            if nginx_was_running or not NginxManager.is_running():
                 log.info("Starting Nginx after dry-run...")
-                NginxManager.start()
+                try:
+                    NginxManager.start()
+                except Exception as start_err:
+                    log.error("Failed to start Nginx after dry-run: %s", start_err)
 
             # Email for dry-run too so you can verify the pipeline works
-            send_cert_report(
-                config=self.config,
-                success=success,
-                expiry_date=None,
-                error_message=error_message,
-                operation="dry-run",
-            )
+            try:
+                send_cert_report(
+                    config=self.config,
+                    success=success,
+                    expiry_date=None,
+                    error_message=error_message,
+                    operation="dry-run",
+                )
+            except Exception as mail_err:
+                log.error("Failed to send dry-run report email: %s", mail_err)

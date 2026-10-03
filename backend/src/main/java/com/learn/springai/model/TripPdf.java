@@ -2,8 +2,8 @@ package com.learn.springai.model;
 
 import java.time.LocalDateTime;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -28,6 +28,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "conversation"})
 public class TripPdf {
 
     @Id
@@ -59,7 +60,7 @@ public class TripPdf {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "conversation_id", nullable = false, unique = true)
-    @JsonBackReference
+    @JsonIgnore
     private Conversation conversation;
 
     @PostRemove

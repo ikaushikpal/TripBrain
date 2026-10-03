@@ -100,13 +100,13 @@ export class SidebarComponent implements OnInit {
   ngOnInit() {
     this.loadConversations();
     this.chatService.conversationUpdated$.subscribe(() => {
-      this.loadConversations();
+      this.loadConversations(true);
     });
   }
 
-  loadConversations() {
+  loadConversations(bypassCache: boolean = false) {
     this.isLoading.set(true);
-    this.chatService.getUserConversations().subscribe({
+    this.chatService.getUserConversations(bypassCache).subscribe({
       next: (list) => {
         this.conversations.set(list || []);
         this.isLoading.set(false);
@@ -159,9 +159,20 @@ export class SidebarComponent implements OnInit {
 
     this.isCreating.set(true);
 
+    const generatedTitle =
+      this.prefSource && this.prefDestination
+        ? `${this.prefSource.trim()} → ${this.prefDestination.trim()}`
+        : this.prefDestination
+          ? `Trip to ${this.prefDestination.trim()}`
+          : 'New Trip';
+
     // 1. Create the new conversation record on backend
     this.chatService.startNewConversation(userId).subscribe({
       next: (conv) => {
+        conv.title = generatedTitle;
+        this.chatService.clearConversationsCache();
+        this.conversations.update((list) => [conv, ...list.filter((c) => c.id !== conv.id)]);
+
         // 2. Call the uploadPreferences endpoint to seed initial state and trigger LLM start
         const preferences = {
           source: this.prefSource,
@@ -210,6 +221,7 @@ export class SidebarComponent implements OnInit {
 
         this.chatService.uploadPreferences(conv.id, preferences).subscribe({
           next: () => {
+            this.chatService.clearConversationsCache();
             this.chatService.conversationUpdated$.emit();
             this.isCreating.set(false);
             this.showPreferencesModal.set(false);
@@ -217,8 +229,7 @@ export class SidebarComponent implements OnInit {
             this.resetForm();
           },
           error: () => {
-            // Even if preferences call fails, show the conversation
-            this.conversations.update((list) => [conv, ...list]);
+            this.chatService.clearConversationsCache();
             this.isCreating.set(false);
             this.showPreferencesModal.set(false);
             this.selectConversation(conv.id);

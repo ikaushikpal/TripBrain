@@ -1,7 +1,7 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap, throwError } from 'rxjs';
+import { Observable, tap, catchError, throwError } from 'rxjs';
 
 export interface User {
   id: string;
@@ -76,6 +76,11 @@ export class AuthService {
       tap((res) => {
         this.saveSession(res);
       }),
+      catchError((err) => {
+        // If refresh token is invalid or expired in backend, perform a full logout
+        this.logout();
+        return throwError(() => err);
+      }),
     );
   }
 
@@ -94,6 +99,17 @@ export class AuthService {
       localStorage.removeItem('trip_brain_user');
       localStorage.removeItem('trip_brain_accessToken');
       localStorage.removeItem('trip_brain_refreshToken');
+      localStorage.removeItem('trip_brain_cached_conversations');
+
+      // Thoroughly clear all cached conversation message entries
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('trip_brain_cached_messages_')) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach((k) => localStorage.removeItem(k));
     }
   }
 
@@ -101,8 +117,8 @@ export class AuthService {
     return this.http.post<User>(`${this.apiUrl}/users`, user);
   }
 
-  logout() {
+  logout(redirectUrl: string = '/auth/login') {
     this.clearSession();
-    this.router.navigate(['/auth/login']);
+    this.router.navigate([redirectUrl]);
   }
 }

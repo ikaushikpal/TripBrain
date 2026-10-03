@@ -111,36 +111,49 @@ public class TripPdfService {
             boolean isPublic) throws IOException {
 
         log.info("[TripPdfService] Starting PDF generation from DTO for conversation ID: {}", conversationId);
-        Conversation conversation = conversationRepository.getById(conversationId);
+        Conversation conversation = conversationRepository.findById(conversationId).orElse(null);
         String creatorName = (conversation != null && conversation.getUser() != null) ? conversation.getUser().getName() : "Traveler";
 
         // 1. Generate PDF bytes
-        byte[] pdfBytes = buildPdf(plan, conversationId.toString(), creatorName);
+        byte[] pdfBytes = buildPdf(plan, conversationId, creatorName);
 
-        // 2. Upload PDF directly to Backblaze B2 under /final_trip_pdfs/
+        // 2. Always persist local disk backup
+        try {
+            Path localDir = Paths.get(uploadDir, "final_trip_pdfs").toAbsolutePath();
+            Files.createDirectories(localDir);
+            Path localFile = localDir.resolve(conversationId + ".pdf");
+            Files.write(localFile, pdfBytes);
+            log.info("[TripPdfService] Local PDF backup saved: {}", localFile);
+        } catch (Exception localErr) {
+            log.warn("[TripPdfService] Could not save local PDF backup: {}", localErr.getMessage());
+        }
+
+        // 3. Upload PDF to Backblaze B2 under /final_trip_pdfs/
         String s3Key = "final_trip_pdfs/" + conversationId + ".pdf";
-        String filePath = s3Key;
-        backblazeStorageService.uploadFile(s3Key, pdfBytes, "application/pdf");
-        log.info("[TripPdfService] DTO PDF compiled and successfully uploaded to Backblaze B2: {}", s3Key);
+        try {
+            backblazeStorageService.uploadFile(s3Key, pdfBytes, "application/pdf");
+            log.info("[TripPdfService] PDF compiled and successfully uploaded to Backblaze B2: {}", s3Key);
+        } catch (Exception b2Err) {
+            log.warn("[TripPdfService] Backblaze upload failed, using local storage: {}", b2Err.getMessage());
+        }
 
-        // 3. Upsert metadata
         TripPdf entity = tripPdfRepository
                 .findByConversationId(conversationId)
-                .orElse(TripPdf.builder()
-                        .conversation(conversation)
-                        .build());
+                .orElse(TripPdf.builder().conversation(conversation).build());
 
-        entity.setFilePath(filePath);
+        entity.setFilePath(s3Key);
         entity.setPublicUrl("/api/conversations/trips/" + conversationId + "/download");
         entity.setPublic(isPublic);
         entity.setGeneratedAt(LocalDateTime.now());
-        entity.setDestination(plan.getMeta().getDestination());
-        entity.setTags(generateTags(conversation, "", plan.getMeta().getDestination()));
+        String dest = plan.getMeta() != null && plan.getMeta().getDestination() != null
+                ? plan.getMeta().getDestination()
+                : "Custom Itinerary";
+        entity.setDestination(dest);
+        entity.setTags(generateTags(conversation, "", dest));
 
         // Generate dynamic vector SVG thumbnail preview for frontend cards
         try {
             String dateStr = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd").format(LocalDateTime.now());
-            String dest = plan.getMeta().getDestination();
             String svgContent = String.format("""
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 250" width="100%%" height="100%%">
               <defs>
@@ -179,21 +192,37 @@ public class TripPdfService {
                                                String destination,
                                                boolean isPublic) throws IOException {
         log.info("[TripPdfService] Starting PDF generation from markdown for conversation ID: {}", conversationId);
-        Conversation conversation = conversationRepository.getById(conversationId);
+        Conversation conversation = conversationRepository.findById(conversationId).orElse(null);
         String creatorName = (conversation != null && conversation.getUser() != null) ? conversation.getUser().getName() : "Traveler";
 
-        byte[] pdfBytes = markdownToPdfRenderer.render(markdown, creatorName);
+        String enrichedMarkdown = ensureFrontMatter(conversationId, markdown, destination);
+        byte[] pdfBytes = markdownToPdfRenderer.render(enrichedMarkdown, creatorName);
 
+        // 1. Always persist local disk backup
+        try {
+            Path localDir = Paths.get(uploadDir, "final_trip_pdfs").toAbsolutePath();
+            Files.createDirectories(localDir);
+            Path localFile = localDir.resolve(conversationId + ".pdf");
+            Files.write(localFile, pdfBytes);
+            log.info("[TripPdfService] Local Markdown PDF backup saved: {}", localFile);
+        } catch (Exception localErr) {
+            log.warn("[TripPdfService] Could not save local PDF backup: {}", localErr.getMessage());
+        }
+
+        // 2. Upload to Backblaze B2 (if configured/available)
         String s3Key = "final_trip_pdfs/" + conversationId + ".pdf";
-        String filePath = s3Key;
-        backblazeStorageService.uploadFile(s3Key, pdfBytes, "application/pdf");
-        log.info("[TripPdfService] Markdown PDF compiled and successfully uploaded to Backblaze B2: {}", s3Key);
+        try {
+            backblazeStorageService.uploadFile(s3Key, pdfBytes, "application/pdf");
+            log.info("[TripPdfService] Markdown PDF compiled and successfully uploaded to Backblaze B2: {}", s3Key);
+        } catch (Exception b2Err) {
+            log.warn("[TripPdfService] Backblaze upload failed, using local storage: {}", b2Err.getMessage());
+        }
 
         TripPdf entity = tripPdfRepository
                 .findByConversationId(conversationId)
                 .orElse(TripPdf.builder().conversation(conversation).build());
 
-        entity.setFilePath(filePath);
+        entity.setFilePath(s3Key);
         entity.setPublicUrl("/api/conversations/trips/" + conversationId + "/download");
         entity.setPublic(isPublic);
         entity.setGeneratedAt(LocalDateTime.now());
@@ -230,6 +259,59 @@ public class TripPdfService {
         log.info("[TripPdfService] PDF metadata record successfully stored in database with ID: {} for conversation ID: {}", saved.getId(), conversationId);
         databaseViewManager.refreshViewAsync();
         return saved;
+    }
+
+    public String ensureFrontMatter(String conversationId, String markdown, String defaultDest) {
+        if (markdown == null) markdown = "";
+
+        String clean = markdown.replaceAll("```markdown\\s*", "")
+                .replaceAll("```\\s*", "")
+                .replaceAll("\\[PDF_DOWNLOAD_METADATA:[^\\]]*\\]", "")
+                .replaceAll("\\[PDF_READY_DOWNLOAD\\]", "")
+                .replaceAll("\\[HOTEL_RECOMMENDATION_METADATA:[^\\]]*\\]", "")
+                .replaceAll("\\[VISA_ALERT_METADATA:[^\\]]*\\]", "")
+                .trim();
+
+        if (clean.startsWith("---")) {
+            return clean;
+        }
+
+        String src = "Origin";
+        String dest = defaultDest != null && !defaultDest.isBlank() ? defaultDest : "Destination";
+        String startDate = "Flexible";
+        String endDate = "Flexible";
+        int totalDays = 3;
+        int headcount = 1;
+        String budget = "MID";
+
+        java.util.Optional<TripRequest> tripReqOpt = tripRequestRepository.findByConversationId(conversationId);
+        if (tripReqOpt.isPresent()) {
+            TripRequest tr = tripReqOpt.get();
+            if (tr.getSource() != null && !tr.getSource().isBlank()) src = tr.getSource();
+            if (tr.getDestination() != null && !tr.getDestination().isBlank()) dest = tr.getDestination();
+            if (tr.getStartDate() != null) startDate = tr.getStartDate().toString();
+            if (tr.getEndDate() != null) endDate = tr.getEndDate().toString();
+            if (tr.getTotalDays() > 0) totalDays = tr.getTotalDays();
+            int h = (tr.getAdults() != null ? tr.getAdults() : 1) + (tr.getChildren() != null ? tr.getChildren() : 0);
+            if (h > 0) headcount = h;
+            if (tr.getBudgetPreference() != null) budget = tr.getBudgetPreference().name();
+        }
+
+        String frontMatter = String.format("""
+                ---
+                destination: %s
+                source: %s
+                start_date: %s
+                end_date: %s
+                total_days: %d
+                travellers: %d
+                budget: %s
+                ref_id: %s
+                ---
+
+                """, dest, src, startDate, endDate, totalDays, headcount, budget, conversationId != null ? conversationId : "");
+
+        return frontMatter + clean;
     }
 
     /**

@@ -45,6 +45,8 @@ public class ConversationService {
     private final TripRequestRepository tripRequestRepository;
     private final PublicTripGalleryRepository publicTripGalleryRepository;
     private final DatabaseViewManager databaseViewManager;
+    private final DocumentProcessingService documentProcessingService;
+    private final org.springframework.beans.factory.ObjectProvider<OrchestrationService> orchestrationServiceProvider;
 
     public void verifyReadAccess(String conversationId, String userId) {
         Conversation conversation = getConversation(conversationId);
@@ -197,63 +199,31 @@ public class ConversationService {
 
     public void ingestPdf(String conversationId, org.springframework.web.multipart.MultipartFile file) {
         try {
-            String checksum = ChecksumUtils.calculateSHA256(file);
-            java.util.Optional<TripPdf> existingPdf = tripPdfRepository.findByChecksum(checksum);
-
             Conversation conversation = conversationRepository.findById(conversationId)
                     .orElseThrow(() -> new RuntimeException("Conversation not found"));
 
-            if (existingPdf.isPresent()) {
-                TripPdf sourcePdf = existingPdf.get();
-                // Check if this conversation already has a PDF linked to prevent duplicates
-                if (conversation.getTripPdf() != null) {
-                    return;
-                }
-                // Save a new TripPdf database entry mapping this same physical file metadata to the conversation
-                TripPdf linkedPdf = TripPdf.builder()
-                        .conversation(conversation)
-                        .filePath(sourcePdf.getFilePath())
-                        .publicUrl(sourcePdf.getPublicUrl())
-                        .isPublic(sourcePdf.isPublic())
-                        .generatedAt(LocalDateTime.now())
-                        .destination(sourcePdf.getDestination())
-                        .checksum(checksum)
-                        .thumbnailUrl(sourcePdf.getThumbnailUrl())
-                        .build();
-                tripPdfRepository.save(linkedPdf);
-                // Skip async vector store calculation since it's already embedded in Qdrant
-                return;
+            // 1. Extract text from uploaded file (PDF, Image, etc.) in memory
+            byte[] fileBytes = file.getBytes();
+            String contentType = file.getContentType();
+            String extractedText = documentProcessingService.extractText(fileBytes, contentType);
+            if (extractedText == null || extractedText.isBlank()) {
+                extractedText = "Uploaded file: " + file.getOriginalFilename();
             }
 
-            // Check if this conversation already has a PDF linked
-            if (conversation.getTripPdf() != null) {
-                // Delete existing first to enforce OneToOne correctly
-                tripPdfRepository.delete(conversation.getTripPdf());
-                conversationRepository.flush();
-            }
+            // 2. Index extracted text chunks into Vector DB for RAG retrieval
+            documentProcessingService.indexToVectorDB(extractedText, conversationId, file.getOriginalFilename());
 
-            java.nio.file.Path uploadPath = java.nio.file.Paths.get("uploads").toAbsolutePath();
-            java.nio.file.Files.createDirectories(uploadPath);
-            String filename = java.util.UUID.randomUUID().toString() + "-" + file.getOriginalFilename();
-            java.nio.file.Path targetPath = uploadPath.resolve(filename);
-            java.nio.file.Files.copy(file.getInputStream(), targetPath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            // 3. Add user context note and assistant acknowledgment to conversation chat history
+            documentProcessingService.addContextToConversation(conversation, file.getOriginalFilename(), extractedText);
 
-            // Create new TripPdf entry in database mapping the uploaded file metadata to the conversation
-            TripPdf newPdf = TripPdf.builder()
-                    .conversation(conversation)
-                    .filePath("uploads/" + filename)
-                    .publicUrl("/resources/" + filename)
-                    .isPublic(false)
-                    .generatedAt(LocalDateTime.now())
-                    .destination(file.getOriginalFilename())
-                    .checksum(checksum)
-                    .build();
-            tripPdfRepository.save(newPdf);
+            String finalExtracted = extractedText;
+            // 4. Automatically extract travel parameters from the document and update TripRequest
+            orchestrationServiceProvider.ifAvailable(svc -> svc.extractAndSaveTripRequestDetails(conversationId, finalExtracted));
 
-            org.springframework.core.io.Resource resource = new org.springframework.core.io.FileSystemResource(targetPath.toFile());
-            vectorDBRepository.saveToVectorDB(resource, conversationId, targetPath.toUri().toString());
-        } catch (java.io.IOException e) {
-            throw new RuntimeException("Failed to ingest PDF", e);
+            log.info("File [{}] successfully processed and extracted into conversation [{}]", file.getOriginalFilename(), conversationId);
+        } catch (Exception e) {
+            log.error("Failed to ingest uploaded document for conversation [{}]", conversationId, e);
+            throw new RuntimeException("Failed to ingest document: " + e.getMessage(), e);
         }
     }
 

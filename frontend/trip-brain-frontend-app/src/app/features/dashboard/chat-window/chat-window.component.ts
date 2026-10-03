@@ -43,6 +43,7 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
   @Input() isSidebarOpen = false;
   @Output() toggleSidebar = new EventEmitter<void>();
   @ViewChild('messagesContainer') messagesContainer!: ElementRef;
+  @ViewChild('fileInput') fileInputElement?: ElementRef<HTMLInputElement>;
 
   private readonly chatService = inject(ChatService);
   private readonly sanitizer = inject(DomSanitizer);
@@ -119,9 +120,20 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
   nextCursor: number | null = null;
   isLoadingMore = signal(false);
 
+  // File Preview & Staging State (PDF and Images only)
+  selectedFile = signal<File | null>(null);
+  selectedFilePreview = signal<string | null>(null);
+  selectedFileType = signal<'image' | 'pdf'>('pdf');
+  showFilePreviewModal = signal(false);
+
   ngOnInit() {
     this.loadMessages();
     this.loadWallpaper();
+    this.chatService.conversationUpdated$.subscribe(() => {
+      if (this.conversationId) {
+        this.fetchLatestPageInBackground();
+      }
+    });
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -454,10 +466,7 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
     this.messages.set([...msgs]);
   }
 
-  sendMessage(event?: Event) {
-    if (event) event.preventDefault();
-
-    const content = this.inputMessage.trim();
+  sendPrompt(content: string) {
     if (!content || !this.conversationId || this.isStreaming()) return;
 
     this.inputMessage = '';
@@ -494,6 +503,7 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
           this.isStreaming.set(false);
           assistantBuffer.isStreaming = false;
           this.messages.update((msgs) => [...msgs]);
+          this.notificationService.error('Failed to generate response. Please try again.');
         },
         complete: () => {
           this.streamStatus.set(null);
@@ -510,39 +520,119 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
       });
   }
 
+  sendMessage(event?: Event, fileInput?: HTMLInputElement) {
+    if (event) event.preventDefault();
+
+    if (this.selectedFile()) {
+      this.uploadSelectedFile(fileInput);
+      return;
+    }
+
+    const content = this.inputMessage.trim();
+    if (!content) return;
+    this.sendPrompt(content);
+  }
+
   get allMessages() {
     return this.messages;
   }
 
   getMarkdownHtml(msg: ChatMessage | AssistantBuffer): SafeHtml {
-    const rawMarkdown = msg.content || '';
+    let rawMarkdown = msg.content || '';
+    rawMarkdown = rawMarkdown
+      .replace(/\[PDF_DOWNLOAD_METADATA:[^\]]+\]/g, '')
+      .replace(/\[PDF_READY_DOWNLOAD\]/g, '')
+      .replace(/\[HOTEL_RECOMMENDATION_METADATA:[^\]]+\]/g, '')
+      .replace(/\[VISA_ALERT_METADATA:[^\]]+\]/g, '')
+      .trim();
     const parsedHtml = marked.parse(rawMarkdown, { async: false }) as string;
     return this.sanitizer.bypassSecurityTrustHtml(parsedHtml);
   }
 
   hasPdfDownload(msg: ChatMessage | AssistantBuffer): boolean {
     if (msg.role !== 'ASSISTANT') return false;
-    return (msg.content || '').includes('[PDF_READY_DOWNLOAD]');
+    const content = msg.content || '';
+    const msgType = (msg as any).messageType;
+    if (msgType === 'PDF_DOWNLOAD') return true;
+    if (content.includes('[PDF_DOWNLOAD_METADATA:') || content.includes('[PDF_READY_DOWNLOAD]'))
+      return true;
+
+    // Detect if the message contains an itinerary / Day breakdown
+    const hasDays =
+      content.includes('Day 1') ||
+      content.includes('Day 01') ||
+      content.includes('## Day') ||
+      content.includes('### Day') ||
+      content.includes('Day 1:');
+    const hasItineraryStructure =
+      content.includes('Day 2') ||
+      content.includes('Day 02') ||
+      content.includes('Overview') ||
+      content.includes('Cost Summary') ||
+      content.includes('Itinerary') ||
+      content.includes('Accommodat') ||
+      content.includes('Meals:');
+    return hasDays && hasItineraryStructure;
   }
 
   downloadPdf() {
     if (!this.conversationId) return;
     this.isExporting.set(true);
-    this.chatService.getDownloadUrl(this.conversationId).subscribe({
-      next: (res) => {
+    this.notificationService.info('Preparing your itinerary PDF...');
+
+    this.chatService.downloadPdfBlob(this.conversationId).subscribe({
+      next: (blob: Blob) => {
         this.isExporting.set(false);
-        if (res?.downloadUrl) {
-          window.open(res.downloadUrl, '_blank');
-          this.notificationService.success('PDF itinerary download started!');
-        } else {
-          this.notificationService.error('Download URL not available.');
-        }
+        this.saveBlobFile(blob, `TripBrain_Itinerary_${this.conversationId!.substring(0, 8)}.pdf`);
+        this.notificationService.success('Itinerary PDF downloaded successfully!');
+      },
+      error: () => {
+        // Fallback: trigger export compilation and retry blob download
+        this.exportAndDownloadPdf();
+      },
+    });
+  }
+
+  private exportAndDownloadPdf() {
+    if (!this.conversationId) {
+      this.isExporting.set(false);
+      return;
+    }
+    this.chatService.exportPdf(this.conversationId).subscribe({
+      next: () => {
+        this.chatService.downloadPdfBlob(this.conversationId!).subscribe({
+          next: (blob: Blob) => {
+            this.isExporting.set(false);
+            this.saveBlobFile(
+              blob,
+              `TripBrain_Itinerary_${this.conversationId!.substring(0, 8)}.pdf`,
+            );
+            this.notificationService.success('Itinerary PDF downloaded successfully!');
+          },
+          error: () => {
+            this.isExporting.set(false);
+            this.notificationService.error('Could not download PDF. Please try again.');
+          },
+        });
       },
       error: () => {
         this.isExporting.set(false);
-        this.notificationService.error('Failed to generate PDF download URL.');
+        this.notificationService.error('Failed to generate PDF document.');
       },
     });
+  }
+
+  private saveBlobFile(blob: Blob, filename: string) {
+    if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+      const objectUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = objectUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 15000);
+    }
   }
 
   deleteConversation() {
@@ -572,7 +662,10 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
   detailsShowOptional = false;
 
   generateItinerary() {
-    this.sendMessage();
+    const prompt =
+      this.inputMessage.trim() ||
+      'Please generate a complete, day-by-day travel itinerary for my trip now based on all our preferences and travel details.';
+    this.sendPrompt(prompt);
   }
 
   deleteActiveConversation() {
@@ -597,18 +690,99 @@ export class ChatWindowComponent implements OnInit, OnChanges, AfterViewChecked,
 
   onFileSelected(event: any) {
     const file = event.target?.files?.[0];
+    if (!file) return;
+
+    if (!this.conversationId) {
+      this.notificationService.error('Please select or start a conversation first.');
+      if (event.target) event.target.value = '';
+      return;
+    }
+
+    const name = (file.name || '').toLowerCase();
+    const type = (file.type || '').toLowerCase();
+
+    const validImageExtensions = [
+      '.png',
+      '.jpg',
+      '.jpeg',
+      '.webp',
+      '.gif',
+      '.bmp',
+      '.svg',
+      '.tiff',
+    ];
+    const isImageExt = validImageExtensions.some((ext) => name.endsWith(ext));
+    const isPdfExt = name.endsWith('.pdf');
+
+    const isImage =
+      (type.startsWith('image/') && !type.includes('csv') && !type.includes('text')) || isImageExt;
+    const isPdf = type === 'application/pdf' || isPdfExt;
+
+    // Explicitly reject CSV, text, and any other non-PDF / non-image formats
+    if (name.endsWith('.csv') || name.endsWith('.txt') || (!isImage && !isPdf)) {
+      this.notificationService.error(
+        'Invalid format. Only PDF documents and image files (PNG, JPG, JPEG, WEBP, GIF, BMP, SVG) can be attached.',
+      );
+      if (event.target) event.target.value = '';
+      this.selectedFile.set(null);
+      this.selectedFilePreview.set(null);
+      return;
+    }
+
+    this.selectedFile.set(file);
+
+    if (isImage) {
+      this.selectedFileType.set('image');
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.selectedFilePreview.set(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      this.selectedFileType.set('pdf');
+      this.selectedFilePreview.set(null);
+    }
+  }
+
+  clearSelectedFile(fileInput?: HTMLInputElement) {
+    this.selectedFile.set(null);
+    this.selectedFilePreview.set(null);
+    this.showFilePreviewModal.set(false);
+    if (fileInput) {
+      fileInput.value = '';
+    } else if (this.fileInputElement?.nativeElement) {
+      this.fileInputElement.nativeElement.value = '';
+    }
+  }
+
+  formatFileSize(bytes?: number): string {
+    if (!bytes) return '0 B';
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  }
+
+  uploadSelectedFile(fileInput?: HTMLInputElement) {
+    const file = this.selectedFile();
     if (!file || !this.conversationId) return;
+
     this.isFileUploading.set(true);
-    this.uploadProgressText.set('Ingesting document...');
+    this.uploadProgressText.set('Uploading & analyzing ' + file.name + '...');
+    const messageToSend = this.inputMessage.trim();
+
     this.chatService.uploadPdf(this.conversationId, file).subscribe({
       next: () => {
         this.isFileUploading.set(false);
-        this.notificationService.success('PDF document ingested successfully!');
+        this.notificationService.success('Document uploaded and analyzed successfully!');
+        this.clearSelectedFile(fileInput);
         this.loadMessages();
+        if (messageToSend) {
+          this.sendPrompt(messageToSend);
+        }
       },
       error: () => {
         this.isFileUploading.set(false);
-        this.notificationService.error('Failed to ingest PDF document.');
+        this.notificationService.error('Failed to process uploaded document.');
       },
     });
   }
